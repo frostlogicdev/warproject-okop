@@ -1,89 +1,83 @@
-# War Project — Minecraft Military Modpack
+# War Project
 
-Сборка военных модов для **NeoForge 1.21.1** (Java 21).
+A unified military mod for Minecraft (NeoForge 1.21.1) — realistic trench fortification, field camp, and military base blocks.
 
-## Структура монорепозитория
+## Features
 
-```
-warproject-okop/
-├── okop/          — Окопы и фортификация (15 блоков)
-├── polevoy/       — Полевой лагерь (8 блоков)
-├── baza/          — Военная база (8 блоков)
-└── tools/         — Скрипты (генерация текстур)
-```
+### 🏰 Fortification (Okop) — 15 blocks
+- **Support Beams** — Wooden, Iron, Reinforced (structural support)
+- **Camo Nets** — Forest, Desert, Winter (concealment)
+- **Sandbags** — Stackable 1-4 layers
+- **Horizontal Covers** — Wooden & Log (overhead protection)
+- **Barbed Wire** — Slows and damages entities
+- **Drainage Grate** — Waterloggable floor grate
+- **Firing Slot** — Fortified wall with shooting aperture
+- **Trench Stairs** — Stepped access block
+- **Trench Lantern** — Dim lighting for trenches
+- **Supply Crate** — Storage container (27 slots)
 
-## Моды
+### ⛺ Field Camp (Polevoy) — 8 blocks
+- **Small Tent** — Basic shelter
+- **Command Tent** — Storage container with 54 slots
+- **Medical Tent** — Heals nearby players
+- **Field Kitchen** — Cook food with right-click
+- **First Aid Kit** — Instant healing on use
+- **Field Radio** — Plays ambient radio sounds
+- **Field Spotlight** — Bright directional light
+- **Generator** — Powers nearby redstone
 
-### 🏗️ Okop (Окопы и фортификация)
-Мод ID: `warproject` | 15 блоков
+### 🏢 Military Base (Baza) — 8 blocks
+- **Military Concrete** — Blast-resistant building material
+- **Reinforced Concrete** — Even stronger variant
+- **Concrete Slab** — Half-block variant
+- **HESCO Barrier** — Blast-resistant defensive wall
+- **Metal Gate** — Openable iron gate
+- **Checkpoint Barrier** — Red/white boom barrier
+- **Tank Hedgehog** — Anti-vehicle obstacle
+- **Razor Wire Fence** — Damages and slows entities
 
-| Блок | Описание |
-|------|----------|
-| Деревянная опора | Вертикальная подпорка (дерево) |
-| Железная опора | Вертикальная подпорка (железо) |
-| Усиленная опора | Вертикальная подпорка (усиленная) |
-| Лесная маскировочная сеть | Камуфляж для леса |
-| Пустынная маскировочная сеть | Камуфляж для пустыни |
-| Зимняя маскировочная сеть | Камуфляж для зимы |
-| Мешок с песком | Стекируемый (1-4 слоя) |
-| Деревянное перекрытие | Горизонтальная крышка |
-| Бревенчатое перекрытие | Горизонтальная крышка (брёвна) |
-| Колючая проволока | Замедляет и наносит урон |
-| Дренажная решётка | Убирает замедление |
-| Амбразура | 3D отверстие для стрельбы |
-| Траншейная лестница | Ступенчатый блок |
-| Траншейный фонарь | Тусклый свет + частицы дыма |
-| Ящик снабжения | Контейнер на 27 слотов |
+## Requirements
 
-### 🏕️ Polevoy (Полевой лагерь)
-Мод ID: `polevoy` | 8 блоков
+- Minecraft 1.21.1
+- NeoForge 21.1.77+
+- Java 21
 
-| Блок | Описание |
-|------|----------|
-| Малая палатка | Устанавливает точку возрождения |
-| Командная палатка | Контейнер (27 слотов) |
-| Медицинская палатка | Регенерация I в радиусе 5 блоков |
-| Полевая кухня | Даёт эффект насыщения |
-| Аптечка | Мгновенное лечение (8 HP), одноразовая |
-| Полевая рация | Декоративный блок с искрами |
-| Полевой прожектор | Направленный свет (уровень 15) |
-| Генератор | Постоянный сигнал редстоуна + дым |
-
-### 🏗️ Baza (Военная база)
-Мод ID: `baza` | 8 блоков
-
-| Блок | Описание |
-|------|----------|
-| Военный бетон | Взрывоустойчивость 30 |
-| Железобетон | Взрывоустойчивость 60 |
-| Бетонная плита | Полублок из военного бетона |
-| Барьер Хеско | Габионный барьер с песком |
-| Металлические ворота | Открываются вручную / редстоуном |
-| Шлагбаум | Открывается вручную / редстоуном |
-| Противотанковый ёж | Замедляет + наносит урон |
-| Забор из концертины | Колючая проволока, наносит урон |
-
-## Сборка
-
-Каждый мод собирается независимо:
+## Building
 
 ```bash
-# Генерация текстур (из корня репозитория)
-pip install Pillow
-python tools/generate_textures.py
-
-# Сборка конкретного мода
-cd okop       # или polevoy / baza
+# First time setup - copy gradle wrapper or generate it:
 gradle wrapper --gradle-version 8.8
-./gradlew clean build
+
+# Build the mod
+./gradlew build
+
+# Run client
+./gradlew runClient
 ```
 
-**Требования:**
-- Java 21 (JDK)
-- Gradle 8.8+
-- NeoForge 1.21.1 (версия 21.1.77)
-- Pillow (для генерации текстур)
+## Texture Generation
 
-## Лицензия
+Placeholder textures can be generated with:
+```bash
+python tools/generate_textures.py
+```
 
-All Rights Reserved © FrostLogic
+## Crafting
+
+All 31 blocks have vanilla crafting recipes using standard Minecraft materials.
+
+## Structure
+
+```
+src/main/java/com/frostlogic/warproject/
+├── WarProject.java          # Main mod class
+├── ModBlocks.java           # All 31 block registrations
+├── ModItems.java            # All 31 item registrations
+├── ModBlockEntities.java    # Block entities (crate, tents)
+├── ModCreativeTab.java      # 3 creative tabs
+└── block/                   # All block classes
+```
+
+## License
+
+All Rights Reserved © FrostLogic Dev
