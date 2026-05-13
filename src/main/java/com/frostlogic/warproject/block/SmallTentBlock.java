@@ -13,7 +13,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SmallTentBlock extends Block {
+    // Visual outline - full block for targeting
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
+    // Collision - just the floor so players can walk inside
+    private static final VoxelShape COLLISION = Block.box(0, 0, 0, 16, 1, 16);
 
     public SmallTentBlock(Properties properties) {
         super(properties);
@@ -22,6 +25,11 @@ public class SmallTentBlock extends Block {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         return SHAPE;
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        return COLLISION;
     }
 
     @Override

@@ -18,7 +18,10 @@ import org.jetbrains.annotations.Nullable;
 
 public class MedicalTentBlock extends BaseEntityBlock {
     public static final MapCodec<MedicalTentBlock> CODEC = simpleCodec(MedicalTentBlock::new);
+    // Visual outline
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 16, 16);
+    // Collision - just the floor so players can walk inside
+    private static final VoxelShape COLLISION = Block.box(0, 0, 0, 16, 1, 16);
 
     public MedicalTentBlock(Properties properties) {
         super(properties);
@@ -39,6 +42,11 @@ public class MedicalTentBlock extends BaseEntityBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         return SHAPE;
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+        return COLLISION;
     }
 
     @Nullable
