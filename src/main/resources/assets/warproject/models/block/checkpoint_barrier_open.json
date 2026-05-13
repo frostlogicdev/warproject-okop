@@ -1,7 +1,8 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"post": "warproject:block/checkpoint_barrier", "particle": "warproject:block/checkpoint_barrier"},
+  "textures": {"post": "warproject:block/checkpoint_barrier", "bar": "warproject:block/checkpoint_barrier_bar", "particle": "warproject:block/checkpoint_barrier"},
   "elements": [
-    {"from": [0, 0, 6], "to": [4, 14, 10], "faces": {"up": {"texture": "#post"}, "down": {"texture": "#post"}, "north": {"texture": "#post"}, "south": {"texture": "#post"}, "east": {"texture": "#post"}, "west": {"texture": "#post"}}}
+    {"from": [0, 0, 5], "to": [6, 20, 11], "faces": {"up": {"texture": "#post"}, "down": {"texture": "#post"}, "north": {"texture": "#post"}, "south": {"texture": "#post"}, "east": {"texture": "#post"}, "west": {"texture": "#post"}}},
+    {"from": [1, 20, 7], "to": [4, 32, 9], "faces": {"up": {"texture": "#bar"}, "north": {"texture": "#bar"}, "south": {"texture": "#bar"}, "east": {"texture": "#bar"}, "west": {"texture": "#bar"}}}
   ]
 }

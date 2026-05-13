@@ -2,7 +2,7 @@
   "parent": "minecraft:block/block",
   "textures": {"0": "warproject:block/field_radio", "particle": "warproject:block/field_radio"},
   "elements": [
-    {"from": [2, 0, 2], "to": [14, 10, 14], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [6, 10, 7], "to": [8, 16, 9], "faces": {"up": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {"from": [1, 0, 1], "to": [15, 12, 15], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [6, 12, 7], "to": [8, 22, 9], "faces": {"up": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
   ]
 }

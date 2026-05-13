@@ -2,9 +2,12 @@
   "parent": "minecraft:block/block",
   "textures": {"tent": "warproject:block/command_tent", "floor": "warproject:block/tent_floor", "particle": "warproject:block/command_tent"},
   "elements": [
-    {"from": [0, 0, 0], "to": [16, 1, 16], "faces": {"up": {"texture": "#floor"}, "down": {"texture": "#floor"}, "north": {"texture": "#floor"}, "south": {"texture": "#floor"}, "east": {"texture": "#floor"}, "west": {"texture": "#floor"}}},
-    {"from": [0, 1, 0], "to": [16, 10, 16], "faces": {"north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
-    {"from": [1, 10, 0], "to": [15, 14, 16], "faces": {"up": {"texture": "#tent"}, "down": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
-    {"from": [3, 14, 0], "to": [13, 16, 16], "faces": {"up": {"texture": "#tent"}, "down": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}}
+    {"from": [-8, 0, -8], "to": [24, 1, 24], "faces": {"up": {"texture": "#floor"}, "down": {"texture": "#floor"}, "north": {"texture": "#floor"}, "south": {"texture": "#floor"}, "east": {"texture": "#floor"}, "west": {"texture": "#floor"}}},
+    {"from": [-8, 1, -8], "to": [24, 12, -6], "faces": {"up": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
+    {"from": [-8, 1, 22], "to": [24, 12, 24], "faces": {"up": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
+    {"from": [-8, 1, -6], "to": [-6, 12, 22], "faces": {"north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
+    {"from": [22, 1, -6], "to": [24, 12, 22], "faces": {"north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
+    {"from": [-6, 12, -8], "to": [22, 18, 24], "faces": {"up": {"texture": "#tent"}, "down": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
+    {"from": [-2, 18, -8], "to": [18, 22, 24], "faces": {"up": {"texture": "#tent"}, "down": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}}
   ]
 }

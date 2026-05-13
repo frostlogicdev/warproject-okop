@@ -2,6 +2,6 @@
   "parent": "minecraft:block/block",
   "textures": {"0": "warproject:block/generator", "top": "warproject:block/generator_top", "particle": "warproject:block/generator"},
   "elements": [
-    {"from": [1, 0, 1], "to": [15, 14, 15], "faces": {"up": {"texture": "#top"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {"from": [-1, 0, -1], "to": [17, 16, 17], "faces": {"up": {"texture": "#top"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
   ]
 }
