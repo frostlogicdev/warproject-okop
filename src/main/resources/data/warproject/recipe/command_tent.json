@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["LLL","LCL","PPP"],"key":{"L":{"item":"minecraft:leather"},"C":{"item":"minecraft:chest"},"P":{"item":"minecraft:oak_planks"}},"result":{"id":"warproject:command_tent","count":1}}
