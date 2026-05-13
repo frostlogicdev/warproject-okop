@@ -1,0 +1,13 @@
+{
+  "itemGroup.polevoy": "War Project - Полевой лагерь",
+  "block.polevoy.small_tent": "Малая палатка",
+  "block.polevoy.command_tent": "Командная палатка",
+  "block.polevoy.medical_tent": "Медицинская палатка",
+  "block.polevoy.field_kitchen": "Полевая кухня",
+  "block.polevoy.first_aid_kit": "Аптечка",
+  "block.polevoy.field_radio": "Полевая рация",
+  "block.polevoy.field_spotlight": "Полевой прожектор",
+  "block.polevoy.generator": "Генератор",
+  "container.polevoy.command_tent": "Командная палатка",
+  "message.polevoy.kitchen_used": "Полевой паёк выдан!"
+}
