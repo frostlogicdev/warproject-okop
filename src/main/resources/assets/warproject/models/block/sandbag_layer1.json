@@ -1,9 +1,18 @@
 {
   "parent": "minecraft:block/block",
   "textures": {"all": "warproject:block/sandbag", "particle": "#all"},
-  "elements": [{"from": [0,0,0], "to": [16,4,16], "faces": {
-    "down": {"texture":"#all","cullface":"down"}, "up": {"texture":"#all"},
-    "north": {"texture":"#all","cullface":"north"}, "south": {"texture":"#all","cullface":"south"},
-    "east": {"texture":"#all","cullface":"east"}, "west": {"texture":"#all","cullface":"west"}
-  }}]
+  "elements": [
+    {"comment": "Row 1 — Left bag body",
+     "from": [0, 0, 0], "to": [8, 4, 15],
+     "faces": {"down":{"texture":"#all","cullface":"down"},"up":{"texture":"#all"},"north":{"texture":"#all","cullface":"north"},"south":{"texture":"#all"},"east":{"texture":"#all"},"west":{"texture":"#all","cullface":"west"}}},
+    {"comment": "Row 1 — Left bag top bulge",
+     "from": [1, 4, 1], "to": [7, 5, 14],
+     "faces": {"up":{"texture":"#all"},"north":{"texture":"#all"},"south":{"texture":"#all"},"east":{"texture":"#all"},"west":{"texture":"#all"}}},
+    {"comment": "Row 1 — Right bag body (Z-offset)",
+     "from": [8, 0, 1], "to": [16, 4, 16],
+     "faces": {"down":{"texture":"#all","cullface":"down"},"up":{"texture":"#all"},"north":{"texture":"#all"},"south":{"texture":"#all","cullface":"south"},"east":{"texture":"#all","cullface":"east"},"west":{"texture":"#all"}}},
+    {"comment": "Row 1 — Right bag top bulge",
+     "from": [9, 4, 2], "to": [15, 5, 15],
+     "faces": {"up":{"texture":"#all"},"north":{"texture":"#all"},"south":{"texture":"#all"},"east":{"texture":"#all"},"west":{"texture":"#all"}}}
+  ]
 }
