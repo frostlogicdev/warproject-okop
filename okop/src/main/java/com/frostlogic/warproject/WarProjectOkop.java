@@ -2,7 +2,6 @@ package com.frostlogic.warproject;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
@@ -16,7 +15,6 @@ public class WarProjectOkop {
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModCreativeTab.register(modEventBus);
-        NeoForge.EVENT_BUS.register(this);
         LOGGER.info("War Project - Okop loaded!");
     }
 }
