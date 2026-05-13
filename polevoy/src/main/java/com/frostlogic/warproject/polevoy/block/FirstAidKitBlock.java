@@ -1,10 +1,9 @@
 package com.frostlogic.warproject.polevoy.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -12,15 +11,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class FieldKitchenBlock extends Block {
-    private static final VoxelShape SHAPE = Shapes.or(
-            Block.box(0, 0, 0, 16, 12, 16),
-            Block.box(2, 12, 2, 6, 16, 6));
+public class FirstAidKitBlock extends Block {
+    private static final VoxelShape SHAPE = Block.box(3, 0, 3, 13, 6, 13);
 
-    public FieldKitchenBlock(Properties properties) {
+    public FirstAidKitBlock(Properties properties) {
         super(properties);
     }
 
@@ -33,8 +29,9 @@ public class FieldKitchenBlock extends Block {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                 Player player, BlockHitResult hit) {
         if (!level.isClientSide) {
-            player.addEffect(new MobEffectInstance(MobEffects.SATURATION, 1, 4));
-            player.displayClientMessage(Component.translatable("message.polevoy.kitchen_used"), true);
+            player.heal(8.0f);
+            level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 1.0f, 1.0f);
+            level.removeBlock(pos, false);
         }
         return InteractionResult.SUCCESS;
     }
