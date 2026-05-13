@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["S S", " S ", "S S"],
+  "key": {
+    "S": "minecraft:stick"
+  },
+  "result": {"id": "warproject:drainage_grate", "count": 4}
+}

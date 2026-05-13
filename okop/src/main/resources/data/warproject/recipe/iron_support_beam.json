@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["I", "I", "I"],
+  "key": {
+    "I": "minecraft:iron_ingot"
+  },
+  "result": {"id": "warproject:iron_support_beam", "count": 2}
+}

@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["SDS", "DSD", "SDS"],
+  "key": {
+    "S": "minecraft:string",
+    "D": "minecraft:sand"
+  },
+  "result": {"id": "warproject:desert_camo_net", "count": 2}
+}
