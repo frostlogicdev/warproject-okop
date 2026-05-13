@@ -1,0 +1,11 @@
+{
+  "itemGroup.baza": "War Project - Military Base",
+  "block.baza.military_concrete": "Military Concrete",
+  "block.baza.reinforced_concrete": "Reinforced Concrete",
+  "block.baza.concrete_slab": "Concrete Slab",
+  "block.baza.hesco_barrier": "HESCO Barrier",
+  "block.baza.metal_gate": "Metal Gate",
+  "block.baza.checkpoint_barrier": "Checkpoint Barrier",
+  "block.baza.tank_hedgehog": "Tank Hedgehog",
+  "block.baza.razor_wire_fence": "Razor Wire Fence"
+}
