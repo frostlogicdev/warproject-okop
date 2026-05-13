@@ -190,37 +190,6 @@ def grate_texture(seed=42):
                 pixels.append((30, 30, 30, 200))
     return pixels
 
-def tent_texture(r, g, b, seed=42):
-    """Canvas tent with fold lines."""
-    rng = random.Random(seed)
-    pixels = []
-    for y in range(16):
-        for x in range(16):
-            fold = 0
-            if x == 4 or x == 8 or x == 12:
-                fold = -12
-            if y == 5 or y == 10:
-                fold -= 8
-            noise = rng.randint(-6, 6)
-            pixels.append((clamp(r + fold + noise), clamp(g + fold + noise), clamp(b + fold + noise), 255))
-    return pixels
-
-def cross_on_white(seed=42):
-    """White tent with red cross."""
-    rng = random.Random(seed)
-    pixels = []
-    for y in range(16):
-        for x in range(16):
-            # Red cross
-            is_cross = (6 <= x <= 9 and 2 <= y <= 13) or (3 <= x <= 12 and 6 <= y <= 9)
-            if is_cross:
-                noise = rng.randint(-8, 8)
-                pixels.append((clamp(200 + noise), clamp(40 + noise), clamp(40 + noise), 255))
-            else:
-                noise = rng.randint(-6, 6)
-                pixels.append((clamp(225 + noise), clamp(225 + noise), clamp(230 + noise), 255))
-    return pixels
-
 def hesco_texture(seed=42):
     """HESCO barrier - wire mesh filled with earth."""
     rng = random.Random(seed)
@@ -294,7 +263,7 @@ def crate_texture(is_top=False, seed=42):
             is_cross_plank = (x == 7 or x == 8) if not is_top else (y == 7 or y == 8)
             # Nails at intersections
             is_nail = is_border and is_cross_plank
-            
+
             if is_nail:
                 pixels.append((80, 80, 85, 255))
             elif is_border or is_cross_plank:
@@ -303,60 +272,6 @@ def crate_texture(is_top=False, seed=42):
             else:
                 noise = rng.randint(-10, 10)
                 pixels.append((clamp(145 + noise), clamp(105 + noise), clamp(55 + noise), 255))
-    return pixels
-
-def first_aid_texture(seed=42):
-    """First aid kit - green box with white cross."""
-    rng = random.Random(seed)
-    pixels = []
-    for y in range(16):
-        for x in range(16):
-            is_cross = (6 <= x <= 9 and 3 <= y <= 12) or (4 <= x <= 11 and 6 <= y <= 9)
-            is_border = (x <= 1 or x >= 14 or y <= 1 or y >= 14)
-            noise = rng.randint(-5, 5)
-            if is_border:
-                pixels.append((clamp(50 + noise), clamp(65 + noise), clamp(45 + noise), 255))
-            elif is_cross:
-                pixels.append((clamp(240 + noise), clamp(240 + noise), clamp(245 + noise), 255))
-            else:
-                pixels.append((clamp(70 + noise), clamp(90 + noise), clamp(60 + noise), 255))
-    return pixels
-
-def radio_texture(seed=42):
-    """Field radio - olive drab with knobs and speaker."""
-    rng = random.Random(seed)
-    pixels = []
-    for y in range(16):
-        for x in range(16):
-            is_speaker = (3 <= x <= 12 and 2 <= y <= 8 and (x + y) % 2 == 0)
-            is_knob = (x in [4, 11] and y in [11, 12])
-            is_dial = (7 <= x <= 8 and 10 <= y <= 13)
-            noise = rng.randint(-5, 5)
-            if is_knob:
-                pixels.append((clamp(40 + noise), clamp(40 + noise), clamp(45 + noise), 255))
-            elif is_dial:
-                pixels.append((clamp(180 + noise), clamp(180 + noise), clamp(170 + noise), 255))
-            elif is_speaker:
-                pixels.append((clamp(45 + noise), clamp(55 + noise), clamp(40 + noise), 255))
-            else:
-                pixels.append((clamp(75 + noise), clamp(85 + noise), clamp(65 + noise), 255))
-    return pixels
-
-def spotlight_texture(seed=42):
-    """Spotlight - dark body with bright lens."""
-    rng = random.Random(seed)
-    pixels = []
-    for y in range(16):
-        for x in range(16):
-            dist = ((x - 8)**2 + (y - 8)**2) ** 0.5
-            noise = rng.randint(-5, 5)
-            if dist < 4:
-                glow = int((4 - dist) * 15)
-                pixels.append((clamp(255 + noise), clamp(240 + glow + noise), clamp(180 + glow + noise), 255))
-            elif dist < 6:
-                pixels.append((clamp(200 + noise), clamp(200 + noise), clamp(205 + noise), 255))
-            else:
-                pixels.append((clamp(80 + noise), clamp(80 + noise), clamp(85 + noise), 255))
     return pixels
 
 
@@ -387,21 +302,6 @@ TEXTURES = {
     "trench_lantern": lambda: lantern_texture(seed=14),
     "supply_crate": lambda: crate_texture(is_top=False, seed=15),
     "supply_crate_top": lambda: crate_texture(is_top=True, seed=16),
-
-    # === POLEVOY (Field Camp) ===
-    "small_tent": lambda: tent_texture(90, 110, 75, seed=20),
-    "tent_floor": lambda: noise_fill((100, 85, 60), var=12, seed=21),
-    "command_tent": lambda: tent_texture(75, 95, 65, seed=22),
-    "medical_tent": lambda: tent_texture(220, 220, 225, seed=23),
-    "medical_cross": lambda: cross_on_white(seed=24),
-    "field_kitchen": lambda: metal_texture(100, 100, 105, seed=25),
-    "field_kitchen_top": lambda: metal_texture(80, 80, 85, seed=26),
-    "field_kitchen_pipe": lambda: metal_texture(60, 60, 65, seed=27),
-    "first_aid_kit": lambda: first_aid_texture(seed=28),
-    "field_radio": lambda: radio_texture(seed=29),
-    "field_spotlight": lambda: spotlight_texture(seed=30),
-    "generator": lambda: metal_texture(90, 90, 95, seed=31),
-    "generator_top": lambda: metal_texture(100, 100, 105, seed=32),
 
     # === BAZA (Military Base) ===
     "military_concrete": lambda: concrete_texture(160, 160, 160, seed=40),
