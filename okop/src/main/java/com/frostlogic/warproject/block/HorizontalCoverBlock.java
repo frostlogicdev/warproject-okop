@@ -12,7 +12,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Horizontal cover / log overlay — placed on top of a trench to create a dugout (roofed shelter).
+ * Horizontal cover / log overlay — placed on top of a trench to create a dugout.
  * Acts as a thick slab at the top of the block space.
  */
 public class HorizontalCoverBlock extends HorizontalDirectionalBlock {
@@ -34,7 +34,7 @@ public class HorizontalCoverBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         return SHAPE;
     }
 }

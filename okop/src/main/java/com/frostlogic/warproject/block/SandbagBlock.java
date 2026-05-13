@@ -14,16 +14,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * Stackable sandbags (1-4 layers) for building parapets.
  * Each layer adds a row of individual bag shapes in a brick-like pattern.
- * Bags have a rounded top bulge for realism.
  */
 public class SandbagBlock extends Block {
     public static final IntegerProperty LAYERS = IntegerProperty.create("layers", 1, 4);
 
-    // Collision shapes matched to model heights
-    // Layer 1: row at y 0-5 (body 4px + bulge 1px)
-    // Layer 2: rows up to y 10
-    // Layer 3: rows up to y 14
-    // Layer 4: full block y 16
     private static final VoxelShape SHAPE_1 = Shapes.or(
             Block.box(0, 0, 0, 8, 5, 15),
             Block.box(8, 0, 1, 16, 5, 16));
@@ -53,12 +47,12 @@ public class SandbagBlock extends Block {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         return SHAPES[state.getValue(LAYERS) - 1];
     }
 
     @Override
-    public boolean canBeReplaced(BlockState state, BlockPlaceContext ctx) {
+    protected boolean canBeReplaced(BlockState state, BlockPlaceContext ctx) {
         return ctx.getItemInHand().is(this.asItem()) && state.getValue(LAYERS) < 4;
     }
 

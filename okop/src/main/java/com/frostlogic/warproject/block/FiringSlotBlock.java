@@ -14,17 +14,14 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * Firing slot / embrasure — a block with a narrow slit for shooting from cover.
+ * Firing slot / embrasure — a block with a real 3D through-hole for shooting from cover.
  * Directional: the slit faces the direction the player places it.
- * The 3D model has a real through-hole so you can see through the opening.
  */
 public class FiringSlotBlock extends HorizontalDirectionalBlock {
-    // Hole: x=4..12, y=6..10, through z=0..16 (North-South axis)
     private static final VoxelShape SHAPE_NS = Shapes.join(
             Shapes.block(),
             Block.box(4, 6, 0, 12, 10, 16),
             BooleanOp.ONLY_FIRST);
-    // Hole: z=4..12, y=6..10, through x=0..16 (East-West axis)
     private static final VoxelShape SHAPE_EW = Shapes.join(
             Shapes.block(),
             Block.box(0, 6, 4, 16, 10, 12),
@@ -46,23 +43,23 @@ public class FiringSlotBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         Direction facing = state.getValue(FACING);
         return (facing == Direction.EAST || facing == Direction.WEST) ? SHAPE_EW : SHAPE_NS;
     }
 
     @Override
-    public boolean useShapeForLightOcclusion(BlockState state) {
+    protected boolean useShapeForLightOcclusion(BlockState state) {
         return true;
     }
 
     @Override
-    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
         return 1.0F;
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+    protected boolean propagatesSkylightDown(BlockState state) {
         return true;
     }
 }
