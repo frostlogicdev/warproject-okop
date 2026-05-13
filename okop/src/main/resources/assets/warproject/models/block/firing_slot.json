@@ -1,1 +1,61 @@
-{"parent": "minecraft:block/cube_all", "textures": {"all": "warproject:block/firing_slot"}}
+{
+  "textures": {
+    "stone": "warproject:block/firing_slot",
+    "inner": "warproject:block/firing_slot_inner",
+    "particle": "warproject:block/firing_slot"
+  },
+  "elements": [
+    {
+      "comment": "Bottom slab (y=0..6, full width)",
+      "from": [0, 0, 0],
+      "to": [16, 6, 16],
+      "faces": {
+        "north":  {"uv": [0, 10, 16, 16], "texture": "#stone", "cullface": "north"},
+        "south":  {"uv": [0, 10, 16, 16], "texture": "#stone", "cullface": "south"},
+        "east":   {"uv": [0, 10, 16, 16], "texture": "#stone", "cullface": "east"},
+        "west":   {"uv": [0, 10, 16, 16], "texture": "#stone", "cullface": "west"},
+        "up":     {"uv": [0, 10, 16, 16], "texture": "#inner"},
+        "down":   {"uv": [0, 0, 16, 16],  "texture": "#stone", "cullface": "down"}
+      }
+    },
+    {
+      "comment": "Top slab (y=10..16, full width)",
+      "from": [0, 10, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north":  {"uv": [0, 0, 16, 6],  "texture": "#stone", "cullface": "north"},
+        "south":  {"uv": [0, 0, 16, 6],  "texture": "#stone", "cullface": "south"},
+        "east":   {"uv": [0, 0, 16, 6],  "texture": "#stone", "cullface": "east"},
+        "west":   {"uv": [0, 0, 16, 6],  "texture": "#stone", "cullface": "west"},
+        "up":     {"uv": [0, 0, 16, 16], "texture": "#stone", "cullface": "up"},
+        "down":   {"uv": [0, 0, 16, 16], "texture": "#inner"}
+      }
+    },
+    {
+      "comment": "Left pillar (x=0..4, y=6..10)",
+      "from": [0, 6, 0],
+      "to": [4, 10, 16],
+      "faces": {
+        "north":  {"uv": [12, 6, 16, 10], "texture": "#stone", "cullface": "north"},
+        "south":  {"uv": [0, 6, 4, 10],   "texture": "#stone", "cullface": "south"},
+        "east":   {"uv": [0, 6, 16, 10],  "texture": "#inner"},
+        "west":   {"uv": [0, 6, 16, 10],  "texture": "#stone", "cullface": "west"},
+        "up":     {"uv": [0, 0, 4, 16],   "texture": "#inner"},
+        "down":   {"uv": [0, 0, 4, 16],   "texture": "#inner"}
+      }
+    },
+    {
+      "comment": "Right pillar (x=12..16, y=6..10)",
+      "from": [12, 6, 0],
+      "to": [16, 10, 16],
+      "faces": {
+        "north":  {"uv": [0, 6, 4, 10],   "texture": "#stone", "cullface": "north"},
+        "south":  {"uv": [12, 6, 16, 10], "texture": "#stone", "cullface": "south"},
+        "east":   {"uv": [0, 6, 16, 10],  "texture": "#stone", "cullface": "east"},
+        "west":   {"uv": [0, 6, 16, 10],  "texture": "#inner"},
+        "up":     {"uv": [12, 0, 16, 16], "texture": "#inner"},
+        "down":   {"uv": [12, 0, 16, 16], "texture": "#inner"}
+      }
+    }
+  ]
+}
