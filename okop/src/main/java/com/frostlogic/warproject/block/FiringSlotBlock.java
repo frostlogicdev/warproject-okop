@@ -1,5 +1,6 @@
 package com.frostlogic.warproject.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -13,11 +14,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/**
- * Firing slot / embrasure — a block with a real 3D through-hole for shooting from cover.
- * Directional: the slit faces the direction the player places it.
- */
 public class FiringSlotBlock extends HorizontalDirectionalBlock {
+    public static final MapCodec<FiringSlotBlock> CODEC = simpleCodec(FiringSlotBlock::new);
+
     private static final VoxelShape SHAPE_NS = Shapes.join(
             Shapes.block(),
             Block.box(4, 6, 0, 12, 10, 16),
@@ -30,6 +29,11 @@ public class FiringSlotBlock extends HorizontalDirectionalBlock {
     public FiringSlotBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<FiringSlotBlock> codec() {
+        return CODEC;
     }
 
     @Override
@@ -56,10 +60,5 @@ public class FiringSlotBlock extends HorizontalDirectionalBlock {
     @Override
     protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
         return 1.0F;
-    }
-
-    @Override
-    protected boolean propagatesSkylightDown(BlockState state) {
-        return true;
     }
 }

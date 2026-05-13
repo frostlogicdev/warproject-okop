@@ -1,6 +1,6 @@
 package com.frostlogic.warproject.block;
 
-import com.frostlogic.warproject.ModBlockEntities;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,17 +19,19 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Supply crate — compact 27-slot container for ammo and provisions.
- * Placed in the trench wall, opens like a chest.
- */
 public class SupplyCrateBlock extends BaseEntityBlock {
+    public static final MapCodec<SupplyCrateBlock> CODEC = simpleCodec(SupplyCrateBlock::new);
     public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING =
             HorizontalDirectionalBlock.FACING;
 
     public SupplyCrateBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<SupplyCrateBlock> codec() {
+        return CODEC;
     }
 
     @Override

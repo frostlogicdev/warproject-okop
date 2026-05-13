@@ -1,5 +1,6 @@
 package com.frostlogic.warproject.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -12,11 +13,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/**
- * Trench stairs — quick ascent/descent without jumping.
- * Stair-shaped collision with smooth step-up.
- */
 public class TrenchStairsBlock extends HorizontalDirectionalBlock {
+    public static final MapCodec<TrenchStairsBlock> CODEC = simpleCodec(TrenchStairsBlock::new);
+
     private static final VoxelShape SHAPE_NORTH = Shapes.or(
             Block.box(0, 0, 8, 16, 8, 16),
             Block.box(0, 8, 0, 16, 16, 8));
@@ -33,6 +32,11 @@ public class TrenchStairsBlock extends HorizontalDirectionalBlock {
     public TrenchStairsBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<TrenchStairsBlock> codec() {
+        return CODEC;
     }
 
     @Override

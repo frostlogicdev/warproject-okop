@@ -1,5 +1,6 @@
 package com.frostlogic.warproject.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -11,16 +12,19 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-/**
- * Horizontal cover / log overlay — placed on top of a trench to create a dugout.
- * Acts as a thick slab at the top of the block space.
- */
 public class HorizontalCoverBlock extends HorizontalDirectionalBlock {
+    public static final MapCodec<HorizontalCoverBlock> CODEC = simpleCodec(HorizontalCoverBlock::new);
+
     private static final VoxelShape SHAPE = Block.box(0, 12, 0, 16, 16, 16);
 
     public HorizontalCoverBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    @Override
+    protected MapCodec<HorizontalCoverBlock> codec() {
+        return CODEC;
     }
 
     @Override
