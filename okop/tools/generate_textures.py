@@ -328,31 +328,56 @@ def gen_drainage_grate():
 # ============================================================
 
 def gen_firing_slot():
-    """Stone/concrete block with dark narrow slit in the middle."""
+    """Clean stone/concrete texture for the outer faces of the embrasure.
+    No black slit — the opening is part of the 3D model geometry."""
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
     base = (130, 130, 125)
     dark = (90, 90, 85)
     light = (165, 165, 160)
     fill_noise(img, base, dark, light, 0.15, 0.1)
-    # Stone block mortar lines
+    # Stone block mortar lines (edges)
     for x in range(16):
         img.putpixel((x, 0), vary((80, 80, 75), 5) + (255,))
         img.putpixel((x, 15), vary((80, 80, 75), 5) + (255,))
     for y in range(16):
         img.putpixel((0, y), vary((80, 80, 75), 5) + (255,))
         img.putpixel((15, y), vary((80, 80, 75), 5) + (255,))
-    # Central slit (dark opening)
-    for x in range(4, 12):
-        for y in range(6, 10):
-            img.putpixel((x, y), (20, 20, 25, 255))
-    # Slit border highlight
-    for x in range(4, 12):
-        img.putpixel((x, 5), vary((100, 100, 95), 5) + (255,))
-        img.putpixel((x, 10), vary((100, 100, 95), 5) + (255,))
-    for y in range(5, 11):
-        img.putpixel((3, y), vary((100, 100, 95), 5) + (255,))
-        img.putpixel((12, y), vary((100, 100, 95), 5) + (255,))
+    # Additional mortar cross for a brick/block feel
+    for x in range(16):
+        img.putpixel((x, 7), vary((95, 95, 90), 5) + (255,))
+        img.putpixel((x, 8), vary((95, 95, 90), 5) + (255,))
+    for y in range(0, 8):
+        img.putpixel((7, y), vary((95, 95, 90), 5) + (255,))
+    for y in range(8, 16):
+        img.putpixel((11, y), vary((95, 95, 90), 5) + (255,))
+    # Subtle surface cracks
+    crack_pixels = [(3,3),(4,4),(5,4),(10,11),(11,12),(12,12)]
+    for cx, cy in crack_pixels:
+        img.putpixel((cx, cy), vary((75, 75, 70), 5) + (255,))
     save(img, "firing_slot")
+
+
+def gen_firing_slot_inner():
+    """Darker stone texture for the inner walls of the embrasure hole.
+    Slightly darker and rougher than the outer texture."""
+    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    base = (95, 92, 88)
+    dark = (65, 62, 58)
+    light = (120, 118, 112)
+    fill_noise(img, base, dark, light, 0.2, 0.08)
+    # Rough chiseled marks
+    for y in range(16):
+        for x in range(16):
+            if (x + y * 3) % 7 == 0 and random.random() < 0.5:
+                img.putpixel((x, y), vary((55, 52, 48), 8) + (255,))
+    # Subtle edge wear
+    for x in range(16):
+        img.putpixel((x, 0), vary((75, 72, 68), 5) + (255,))
+        img.putpixel((x, 15), vary((75, 72, 68), 5) + (255,))
+    for y in range(16):
+        img.putpixel((0, y), vary((75, 72, 68), 5) + (255,))
+        img.putpixel((15, y), vary((75, 72, 68), 5) + (255,))
+    save(img, "firing_slot_inner")
 
 
 # ============================================================
@@ -508,6 +533,7 @@ def main():
 
     print("\n[Firing Slot]")
     gen_firing_slot()
+    gen_firing_slot_inner()
 
     print("\n[Trench Stairs]")
     gen_trench_stairs()
@@ -518,7 +544,7 @@ def main():
     print("\n[Supply Crate]")
     gen_supply_crate()
 
-    print(f"\n=== Done! {15} textures generated in {OUTPUT_DIR} ===")
+    print(f"\n=== Done! {16} textures generated in {OUTPUT_DIR} ===")
     print("\nNext steps:")
     print("  1. Review textures in an image viewer")
     print("  2. Run 'gradlew runClient' to test in-game")
