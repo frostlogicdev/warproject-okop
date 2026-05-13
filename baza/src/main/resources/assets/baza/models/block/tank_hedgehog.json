@@ -1,0 +1,12 @@
+{
+  "parent":"minecraft:block/block",
+  "textures":{"metal":"baza:block/tank_hedgehog","particle":"baza:block/tank_hedgehog"},
+  "elements":[
+    {"from":[7,0,0],"to":[9,2,16],"faces":{"up":{"texture":"#metal"},"down":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"east":{"texture":"#metal"},"west":{"texture":"#metal"}}},
+    {"from":[0,0,7],"to":[16,2,9],"faces":{"up":{"texture":"#metal"},"down":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"east":{"texture":"#metal"},"west":{"texture":"#metal"}}},
+    {"from":[6,2,3],"to":[10,6,13],"faces":{"up":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"east":{"texture":"#metal"},"west":{"texture":"#metal"}}},
+    {"from":[3,2,6],"to":[13,6,10],"faces":{"up":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"east":{"texture":"#metal"},"west":{"texture":"#metal"}}},
+    {"from":[5,6,5],"to":[11,10,11],"faces":{"up":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"east":{"texture":"#metal"},"west":{"texture":"#metal"}}},
+    {"from":[6,10,6],"to":[10,14,10],"faces":{"up":{"texture":"#metal"},"north":{"texture":"#metal"},"south":{"texture":"#metal"},"east":{"texture":"#metal"},"west":{"texture":"#metal"}}}
+  ]
+}
