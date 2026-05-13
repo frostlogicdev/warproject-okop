@@ -58,32 +58,6 @@ public class ModBlocks {
             () -> new SupplyCrateBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD)
                     .strength(2.5f).sound(SoundType.WOOD)));
 
-    // ==================== POLEVOY (Field Camp) ====================
-    public static final DeferredBlock<Block> SMALL_TENT = BLOCKS.register("small_tent",
-            () -> new SmallTentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT)
-                    .strength(1.0f).sound(SoundType.WOOL).noOcclusion()));
-    public static final DeferredBlock<Block> COMMAND_TENT = BLOCKS.register("command_tent",
-            () -> new CommandTentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.PLANT)
-                    .strength(1.5f).sound(SoundType.WOOL).noOcclusion()));
-    public static final DeferredBlock<Block> MEDICAL_TENT = BLOCKS.register("medical_tent",
-            () -> new MedicalTentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE)
-                    .strength(1.5f).sound(SoundType.WOOL).noOcclusion()));
-    public static final DeferredBlock<Block> FIELD_KITCHEN = BLOCKS.register("field_kitchen",
-            () -> new FieldKitchenBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
-                    .strength(3.0f, 6.0f).sound(SoundType.METAL).noOcclusion()));
-    public static final DeferredBlock<Block> FIRST_AID_KIT = BLOCKS.register("first_aid_kit",
-            () -> new FirstAidKitBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE)
-                    .strength(1.0f).sound(SoundType.METAL).noOcclusion()));
-    public static final DeferredBlock<Block> FIELD_RADIO = BLOCKS.register("field_radio",
-            () -> new FieldRadioBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN)
-                    .strength(2.0f).sound(SoundType.METAL).noOcclusion()));
-    public static final DeferredBlock<Block> FIELD_SPOTLIGHT = BLOCKS.register("field_spotlight",
-            () -> new FieldSpotlightBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
-                    .strength(2.0f).sound(SoundType.METAL).noOcclusion().lightLevel(s -> 15)));
-    public static final DeferredBlock<Block> GENERATOR = BLOCKS.register("generator",
-            () -> new GeneratorBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
-                    .strength(4.0f, 6.0f).sound(SoundType.METAL).noOcclusion()));
-
     // ==================== BAZA (Military Base) ====================
     public static final DeferredBlock<Block> MILITARY_CONCRETE = BLOCKS.register("military_concrete",
             () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE)

@@ -14,14 +14,6 @@
   "block.warproject.trench_stairs": "Trench Stairs",
   "block.warproject.trench_lantern": "Trench Lantern",
   "block.warproject.supply_crate": "Supply Crate",
-  "block.warproject.small_tent": "Small Tent",
-  "block.warproject.command_tent": "Command Tent",
-  "block.warproject.medical_tent": "Medical Tent",
-  "block.warproject.field_kitchen": "Field Kitchen",
-  "block.warproject.first_aid_kit": "First Aid Kit",
-  "block.warproject.field_radio": "Field Radio",
-  "block.warproject.field_spotlight": "Field Spotlight",
-  "block.warproject.generator": "Generator",
   "block.warproject.military_concrete": "Military Concrete",
   "block.warproject.reinforced_concrete": "Reinforced Concrete",
   "block.warproject.concrete_slab": "Concrete Slab",
@@ -31,9 +23,6 @@
   "block.warproject.tank_hedgehog": "Tank Hedgehog",
   "block.warproject.razor_wire_fence": "Razor Wire Fence",
   "itemGroup.warproject.fortification": "War Project: Fortification",
-  "itemGroup.warproject.field_camp": "War Project: Field Camp",
   "itemGroup.warproject.military_base": "War Project: Military Base",
-  "message.warproject.kitchen_used": "You cook some food on the field kitchen!",
-  "container.warproject.supply_crate": "Supply Crate",
-  "container.warproject.command_tent": "Command Tent"
+  "container.warproject.supply_crate": "Supply Crate"
 }

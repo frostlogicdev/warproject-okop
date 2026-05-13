@@ -14,14 +14,6 @@
   "block.warproject.trench_stairs": "Окопная лестница",
   "block.warproject.trench_lantern": "Окопный фонарь",
   "block.warproject.supply_crate": "Ящик снабжения",
-  "block.warproject.small_tent": "Малая палатка",
-  "block.warproject.command_tent": "Командная палатка",
-  "block.warproject.medical_tent": "Медицинская палатка",
-  "block.warproject.field_kitchen": "Полевая кухня",
-  "block.warproject.first_aid_kit": "Аптечка первой помощи",
-  "block.warproject.field_radio": "Полевая рация",
-  "block.warproject.field_spotlight": "Полевой прожектор",
-  "block.warproject.generator": "Генератор",
   "block.warproject.military_concrete": "Военный бетон",
   "block.warproject.reinforced_concrete": "Укреплённый бетон",
   "block.warproject.concrete_slab": "Бетонная плита",
@@ -31,9 +23,6 @@
   "block.warproject.tank_hedgehog": "Противотанковый ёж",
   "block.warproject.razor_wire_fence": "Забор из колючей проволоки",
   "itemGroup.warproject.fortification": "Военный проект: Фортификация",
-  "itemGroup.warproject.field_camp": "Военный проект: Полевой лагерь",
   "itemGroup.warproject.military_base": "Военный проект: Военная база",
-  "message.warproject.kitchen_used": "Вы приготовили еду на полевой кухне!",
-  "container.warproject.supply_crate": "Ящик снабжения",
-  "container.warproject.command_tent": "Командная палатка"
+  "container.warproject.supply_crate": "Ящик снабжения"
 }
