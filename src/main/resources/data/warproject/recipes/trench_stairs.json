@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["P  ", "PP ", "PPP"],
+  "key": {
+    "P": {"item": "minecraft:oak_planks"}
+  },
+  "result": {"item": "warproject:trench_stairs", "count": 4}
+}

@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["SWS", "WSW", "SWS"],
+  "key": {
+    "S": {"item": "minecraft:string"},
+    "W": {"item": "minecraft:snow_block"}
+  },
+  "result": {"item": "warproject:winter_camo_net", "count": 2}
+}

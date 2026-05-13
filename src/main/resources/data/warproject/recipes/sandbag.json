@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["LLL", "SSS"],
+  "key": {
+    "L": {"item": "minecraft:leather"},
+    "S": {"item": "minecraft:sand"}
+  },
+  "result": {"item": "warproject:sandbag", "count": 4}
+}

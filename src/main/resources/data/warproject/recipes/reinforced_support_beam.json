@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["NIN", "NIN", "NIN"],
+  "key": {
+    "N": {"item": "minecraft:iron_nugget"},
+    "I": {"item": "minecraft:iron_ingot"}
+  },
+  "result": {"item": "warproject:reinforced_support_beam", "count": 2}
+}

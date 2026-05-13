@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["PNP", "P P", "PPP"],
+  "key": {
+    "P": {"item": "minecraft:oak_planks"},
+    "N": {"item": "minecraft:iron_nugget"}
+  },
+  "result": {"item": "warproject:supply_crate", "count": 1}
+}

@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["LLL"],
+  "key": {
+    "L": {"item": "minecraft:oak_log"}
+  },
+  "result": {"item": "warproject:log_horizontal_cover", "count": 3}
+}
