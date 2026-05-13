@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"warproject:block/field_spotlight"},"facing=south":{"model":"warproject:block/field_spotlight","y":180},"facing=east":{"model":"warproject:block/field_spotlight","y":90},"facing=west":{"model":"warproject:block/field_spotlight","y":270}}}
