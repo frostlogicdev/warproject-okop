@@ -1,17 +1,17 @@
 package com.frostlogic.warproject;
 
 import com.frostlogic.warproject.block.SupplyCrateBlockEntity;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, WarProjectOkop.MOD_ID);
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, WarProjectOkop.MOD_ID);
 
-    public static final RegistryObject<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE =
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE =
             BLOCK_ENTITIES.register("supply_crate",
                     () -> BlockEntityType.Builder.of(SupplyCrateBlockEntity::new,
                             ModBlocks.SUPPLY_CRATE.get()).build(null));
