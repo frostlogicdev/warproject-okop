@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"0": "warproject:block/first_aid_kit", "particle": "warproject:block/first_aid_kit"},
+  "elements": [
+    {"from": [2, 0, 2], "to": [14, 8, 14], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"0": "warproject:block/metal_gate", "particle": "warproject:block/metal_gate"},
+  "elements": [
+    {"from": [0, 0, 6], "to": [2, 16, 10], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [14, 0, 6], "to": [16, 16, 10], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [0, 14, 7], "to": [16, 16, 9], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}}},
+    {"from": [2, 0, 7], "to": [14, 2, 9], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}}},
+    {"from": [2, 2, 7.5], "to": [14, 14, 8.5], "faces": {"north": {"texture": "#0"}, "south": {"texture": "#0"}}},
+    {"from": [7, 2, 7], "to": [9, 14, 9], "faces": {"north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+  ]
+}

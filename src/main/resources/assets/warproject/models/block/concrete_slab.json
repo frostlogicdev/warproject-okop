@@ -1,0 +1,1 @@
+{"parent": "minecraft:block/slab", "textures": {"bottom": "warproject:block/military_concrete", "top": "warproject:block/military_concrete", "side": "warproject:block/military_concrete"}}

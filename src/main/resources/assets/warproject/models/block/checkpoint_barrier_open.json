@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"post": "warproject:block/checkpoint_barrier", "particle": "warproject:block/checkpoint_barrier"},
+  "elements": [
+    {"from": [0, 0, 6], "to": [4, 14, 10], "faces": {"up": {"texture": "#post"}, "down": {"texture": "#post"}, "north": {"texture": "#post"}, "south": {"texture": "#post"}, "east": {"texture": "#post"}, "west": {"texture": "#post"}}}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"tent": "warproject:block/command_tent", "floor": "warproject:block/tent_floor", "particle": "warproject:block/command_tent"},
+  "elements": [
+    {"from": [0, 0, 0], "to": [16, 1, 16], "faces": {"up": {"texture": "#floor"}, "down": {"texture": "#floor"}, "north": {"texture": "#floor"}, "south": {"texture": "#floor"}, "east": {"texture": "#floor"}, "west": {"texture": "#floor"}}},
+    {"from": [0, 1, 0], "to": [16, 10, 16], "faces": {"north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
+    {"from": [1, 10, 0], "to": [15, 14, 16], "faces": {"up": {"texture": "#tent"}, "down": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}},
+    {"from": [3, 14, 0], "to": [13, 16, 16], "faces": {"up": {"texture": "#tent"}, "down": {"texture": "#tent"}, "north": {"texture": "#tent"}, "south": {"texture": "#tent"}, "east": {"texture": "#tent"}, "west": {"texture": "#tent"}}}
+  ]
+}
