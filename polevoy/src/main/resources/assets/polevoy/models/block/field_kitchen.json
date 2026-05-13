@@ -1,0 +1,18 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "body": "polevoy:block/field_kitchen",
+    "top": "polevoy:block/field_kitchen_top",
+    "pipe": "polevoy:block/field_kitchen_pipe",
+    "particle": "polevoy:block/field_kitchen"
+  },
+  "elements": [
+    {"from":[0,0,0],"to":[16,2,16],"faces":{"up":{"texture":"#body"},"down":{"texture":"#body"},"north":{"texture":"#body"},"south":{"texture":"#body"},"east":{"texture":"#body"},"west":{"texture":"#body"}}},
+    {"from":[1,2,1],"to":[3,10,3],"faces":{"up":{"texture":"#body"},"north":{"texture":"#body"},"south":{"texture":"#body"},"east":{"texture":"#body"},"west":{"texture":"#body"}}},
+    {"from":[13,2,1],"to":[15,10,3],"faces":{"up":{"texture":"#body"},"north":{"texture":"#body"},"south":{"texture":"#body"},"east":{"texture":"#body"},"west":{"texture":"#body"}}},
+    {"from":[1,2,13],"to":[3,10,15],"faces":{"up":{"texture":"#body"},"north":{"texture":"#body"},"south":{"texture":"#body"},"east":{"texture":"#body"},"west":{"texture":"#body"}}},
+    {"from":[13,2,13],"to":[15,10,15],"faces":{"up":{"texture":"#body"},"north":{"texture":"#body"},"south":{"texture":"#body"},"east":{"texture":"#body"},"west":{"texture":"#body"}}},
+    {"from":[0,10,0],"to":[16,12,16],"faces":{"up":{"texture":"#top"},"down":{"texture":"#top"},"north":{"texture":"#body"},"south":{"texture":"#body"},"east":{"texture":"#body"},"west":{"texture":"#body"}}},
+    {"from":[2,12,2],"to":[6,16,6],"faces":{"up":{"texture":"#pipe"},"north":{"texture":"#pipe"},"south":{"texture":"#pipe"},"east":{"texture":"#pipe"},"west":{"texture":"#pipe"}}}
+  ]
+}
