@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":[" I ","ITI"," I "],"key":{"I":{"item":"minecraft:iron_nugget"},"T":{"item":"minecraft:torch"}},"result":{"id":"warproject:trench_lantern","count":4}}

@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["CSC","C C","CSC"],"key":{"C":{"item":"minecraft:cobblestone"},"S":{"item":"minecraft:stone"}},"result":{"id":"warproject:firing_slot","count":2}}
