@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"0": "warproject:block/trench_stairs", "particle": "warproject:block/trench_stairs"},
+  "elements": [
+    {"from": [0, 0, 8], "to": [16, 8, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [0, 8, 0], "to": [16, 16, 8], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+  ]
+}

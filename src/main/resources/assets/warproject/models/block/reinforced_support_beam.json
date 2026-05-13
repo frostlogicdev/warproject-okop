@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"0": "warproject:block/reinforced_support_beam", "particle": "warproject:block/reinforced_support_beam"},
+  "elements": [
+    {"from": [4, 0, 4], "to": [12, 16, 12], "faces": {"north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}, "up": {"texture": "#0"}, "down": {"texture": "#0"}}}
+  ]
+}

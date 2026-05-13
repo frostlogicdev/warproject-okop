@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"0": "warproject:block/barbed_wire", "particle": "warproject:block/barbed_wire"},
+  "elements": [
+    {"from": [0, 0, 7], "to": [16, 4, 9], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [7, 0, 0], "to": [9, 4, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [1, 4, 6], "to": [15, 8, 10], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [6, 4, 1], "to": [10, 8, 15], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [2, 8, 5], "to": [14, 12, 11], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [5, 8, 2], "to": [11, 12, 14], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+  ]
+}

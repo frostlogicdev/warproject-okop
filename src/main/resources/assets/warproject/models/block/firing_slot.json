@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {"0": "warproject:block/firing_slot", "particle": "warproject:block/firing_slot"},
+  "elements": [
+    {"from": [0, 0, 0], "to": [16, 6, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [0, 10, 0], "to": [16, 16, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [0, 6, 0], "to": [4, 10, 16], "faces": {"north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
+    {"from": [12, 6, 0], "to": [16, 10, 16], "faces": {"north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+  ]
+}
