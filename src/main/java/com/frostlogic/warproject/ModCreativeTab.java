@@ -35,23 +35,7 @@ public class ModCreativeTab {
                         output.accept(ModItems.SUPPLY_CRATE.get());
                     }).build());
 
-    // Tab 2: Field Camp (Polevoy)
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> FIELD_CAMP_TAB = TABS.register("field_camp",
-            () -> CreativeModeTab.builder()
-                    .title(Component.translatable("itemGroup.warproject.field_camp"))
-                    .icon(() -> new ItemStack(ModItems.SMALL_TENT.get()))
-                    .displayItems((params, output) -> {
-                        output.accept(ModItems.SMALL_TENT.get());
-                        output.accept(ModItems.COMMAND_TENT.get());
-                        output.accept(ModItems.MEDICAL_TENT.get());
-                        output.accept(ModItems.FIELD_KITCHEN.get());
-                        output.accept(ModItems.FIRST_AID_KIT.get());
-                        output.accept(ModItems.FIELD_RADIO.get());
-                        output.accept(ModItems.FIELD_SPOTLIGHT.get());
-                        output.accept(ModItems.GENERATOR.get());
-                    }).build());
-
-    // Tab 3: Military Base (Baza)
+    // Tab 2: Military Base (Baza)
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MILITARY_BASE_TAB = TABS.register("military_base",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.warproject.military_base"))

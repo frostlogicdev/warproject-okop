@@ -28,7 +28,266 @@ BLOCK_DIR = os.path.join(ROOT, "src", "main", "resources", "assets",
 ITEM_DIR = os.path.join(ROOT, "src", "main", "resources", "assets",
                         "warproject", "textures", "item")
 
+<<<<<<< HEAD
 SIZE = 16
+=======
+def create_png(width, height, pixels):
+    """Create a minimal PNG file from pixel data."""
+    def chunk(chunk_type, data):
+        c = chunk_type + data
+        crc = struct.pack('>I', zlib.crc32(c) & 0xffffffff)
+        return struct.pack('>I', len(data)) + c + crc
+
+    header = b'\x89PNG\r\n\x1a\n'
+    ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
+    raw = b''
+    for y in range(height):
+        raw += b'\x00'
+        for x in range(width):
+            r, g, b, a = pixels[y * width + x]
+            raw += struct.pack('BBBB', r, g, b, a)
+    idat = chunk(b'IDAT', zlib.compress(raw))
+    iend = chunk(b'IEND', b'')
+    return header + ihdr + idat + iend
+
+def clamp(v, lo=0, hi=255):
+    return max(lo, min(hi, int(v)))
+
+def solid(r, g, b, a=255, size=16):
+    return [(r, g, b, a)] * (size * size)
+
+def noise_fill(base, var=15, size=16, seed=None):
+    rng = random.Random(seed if seed else hash(base) & 0xffffffff)
+    pixels = []
+    for i in range(size * size):
+        r = clamp(base[0] + rng.randint(-var, var))
+        g = clamp(base[1] + rng.randint(-var, var))
+        b = clamp(base[2] + rng.randint(-var, var))
+        pixels.append((r, g, b, 255))
+    return pixels
+
+def wood_texture(base_r, base_g, base_b, seed=42):
+    """Realistic wood grain texture."""
+    rng = random.Random(seed)
+    pixels = []
+    grain_offsets = [rng.randint(-3, 3) for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            grain = (y + grain_offsets[x]) % 4
+            if grain == 0:
+                dr, dg, db = -20, -15, -10
+            elif grain == 1:
+                dr, dg, db = -5, -3, -2
+            elif grain == 2:
+                dr, dg, db = 10, 8, 5
+            else:
+                dr, dg, db = 0, 0, 0
+            noise = rng.randint(-8, 8)
+            r = clamp(base_r + dr + noise)
+            g = clamp(base_g + dg + noise)
+            b = clamp(base_b + db + noise)
+            pixels.append((r, g, b, 255))
+    return pixels
+
+def metal_texture(base_r, base_g, base_b, seed=42):
+    """Brushed metal look."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        row_brightness = rng.randint(-5, 5)
+        for x in range(16):
+            scratch = 15 if rng.random() < 0.08 else 0
+            noise = rng.randint(-6, 6)
+            r = clamp(base_r + noise + row_brightness + scratch)
+            g = clamp(base_g + noise + row_brightness + scratch)
+            b = clamp(base_b + noise + row_brightness + scratch)
+            pixels.append((r, g, b, 255))
+    return pixels
+
+def camo_texture(colors, seed=42):
+    """Multi-color camo pattern."""
+    rng = random.Random(seed)
+    pixels = [None] * 256
+    # Fill with base color
+    for i in range(256):
+        pixels[i] = colors[0]
+    # Add blobs of each color
+    for color in colors[1:]:
+        for _ in range(rng.randint(6, 10)):
+            cx, cy = rng.randint(0, 15), rng.randint(0, 15)
+            radius = rng.randint(1, 3)
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
+                    nx, ny = (cx + dx) % 16, (cy + dy) % 16
+                    if dx*dx + dy*dy <= radius*radius:
+                        pixels[ny * 16 + nx] = color
+    # Add noise
+    result = []
+    for p in pixels:
+        r = clamp(p[0] + rng.randint(-8, 8))
+        g = clamp(p[1] + rng.randint(-8, 8))
+        b = clamp(p[2] + rng.randint(-8, 8))
+        result.append((r, g, b, p[3] if len(p) > 3 else 255))
+    return result
+
+def sandbag_texture(seed=42):
+    """Burlap/canvas sandbag texture with visible stitching."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            # Burlap weave pattern
+            weave = ((x + y) % 3 == 0)
+            base_r, base_g, base_b = (185, 165, 115) if not weave else (170, 150, 100)
+            # Stitch lines at edges
+            if y == 0 or y == 15 or x == 0 or x == 15:
+                base_r, base_g, base_b = 140, 120, 80
+            # Horizontal stitch line
+            if y == 7 or y == 8:
+                base_r -= 15
+                base_g -= 12
+                base_b -= 10
+            noise = rng.randint(-10, 10)
+            pixels.append((clamp(base_r + noise), clamp(base_g + noise), clamp(base_b + noise), 255))
+    return pixels
+
+def concrete_texture(base_r, base_g, base_b, seed=42):
+    """Concrete with small aggregate detail."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            noise = rng.randint(-12, 12)
+            # Aggregate spots
+            if rng.random() < 0.1:
+                noise += rng.choice([-20, 20])
+            r = clamp(base_r + noise)
+            g = clamp(base_g + noise)
+            b = clamp(base_b + noise)
+            pixels.append((r, g, b, 255))
+    return pixels
+
+def wire_texture(seed=42):
+    """Barbed/razor wire - mostly transparent with wire strands."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            # Diagonal wires
+            on_wire = False
+            if abs(x - y) <= 0 or abs(x - (15 - y)) <= 0:
+                on_wire = True
+            # Cross wires
+            if y == 4 or y == 8 or y == 12:
+                if x % 3 == 0:
+                    on_wire = True
+            # Barbs
+            if on_wire and rng.random() < 0.3:
+                pixels.append((160, 160, 165, 255))  # barb highlight
+            elif on_wire:
+                pixels.append((120, 120, 125, 255))  # wire
+            else:
+                pixels.append((0, 0, 0, 0))  # transparent
+    return pixels
+
+def grate_texture(seed=42):
+    """Metal grate with holes."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            is_bar = (x % 4 == 0 or y % 4 == 0)
+            if is_bar:
+                noise = rng.randint(-8, 8)
+                pixels.append((clamp(110 + noise), clamp(110 + noise), clamp(115 + noise), 255))
+            else:
+                pixels.append((30, 30, 30, 200))
+    return pixels
+
+def hesco_texture(seed=42):
+    """HESCO barrier - wire mesh filled with earth."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            is_mesh = (x % 4 == 0 or y % 4 == 0)
+            if is_mesh:
+                noise = rng.randint(-5, 5)
+                pixels.append((clamp(160 + noise), clamp(160 + noise), clamp(165 + noise), 255))
+            else:
+                noise = rng.randint(-12, 12)
+                pixels.append((clamp(155 + noise), clamp(135 + noise), clamp(95 + noise), 255))
+    return pixels
+
+def barrier_stripe(seed=42):
+    """Red and white diagonal stripes for barrier post."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            stripe = ((x + y) // 4) % 2
+            noise = rng.randint(-5, 5)
+            if stripe == 0:
+                pixels.append((clamp(210 + noise), clamp(50 + noise), clamp(45 + noise), 255))
+            else:
+                pixels.append((clamp(235 + noise), clamp(235 + noise), clamp(240 + noise), 255))
+    return pixels
+
+def barrier_bar_texture(seed=42):
+    """Horizontal red/white bar."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            stripe = (x // 4) % 2
+            noise = rng.randint(-5, 5)
+            if stripe == 0:
+                pixels.append((clamp(210 + noise), clamp(50 + noise), clamp(45 + noise), 255))
+            else:
+                pixels.append((clamp(235 + noise), clamp(235 + noise), clamp(240 + noise), 255))
+    return pixels
+
+def lantern_texture(seed=42):
+    """Lantern - dark frame with glowing center."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            dist_center = max(abs(x - 7.5), abs(y - 7.5))
+            if dist_center >= 6:
+                noise = rng.randint(-5, 5)
+                pixels.append((clamp(70 + noise), clamp(70 + noise), clamp(75 + noise), 255))
+            elif dist_center >= 4:
+                noise = rng.randint(-5, 5)
+                pixels.append((clamp(90 + noise), clamp(85 + noise), clamp(80 + noise), 255))
+            else:
+                noise = rng.randint(-10, 10)
+                glow = clamp(8 - dist_center) * 8
+                pixels.append((clamp(220 + glow + noise), clamp(180 + glow + noise), clamp(60 + noise), 255))
+    return pixels
+
+def crate_texture(is_top=False, seed=42):
+    """Wooden crate with planks and nails."""
+    rng = random.Random(seed)
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            # Plank borders
+            is_border = (x == 0 or x == 15 or y == 0 or y == 15)
+            is_cross_plank = (x == 7 or x == 8) if not is_top else (y == 7 or y == 8)
+            # Nails at intersections
+            is_nail = is_border and is_cross_plank
+
+            if is_nail:
+                pixels.append((80, 80, 85, 255))
+            elif is_border or is_cross_plank:
+                noise = rng.randint(-8, 8)
+                pixels.append((clamp(120 + noise), clamp(85 + noise), clamp(40 + noise), 255))
+            else:
+                noise = rng.randint(-10, 10)
+                pixels.append((clamp(145 + noise), clamp(105 + noise), clamp(55 + noise), 255))
+    return pixels
+>>>>>>> 1e4fcc561563caf9e2f866fc49504819f9d59541
 
 
 # ============================================================
@@ -37,6 +296,7 @@ SIZE = 16
 def new_img(bg=(0, 0, 0, 0)):
     return Image.new("RGBA", (SIZE, SIZE), bg)
 
+<<<<<<< HEAD
 
 def put(img, x, y, color):
     """Place a single pixel (no-op outside bounds)."""
@@ -1436,6 +1696,17 @@ BLOCK_TEXTURES = {
     "checkpoint_barrier_bar": make_checkpoint_barrier_bar,
     "tank_hedgehog": make_tank_hedgehog,
     "razor_wire_fence": make_razor_wire_fence,
+=======
+    # === BAZA (Military Base) ===
+    "military_concrete": lambda: concrete_texture(160, 160, 160, seed=40),
+    "reinforced_concrete": lambda: concrete_texture(140, 140, 145, seed=41),
+    "hesco_barrier": lambda: hesco_texture(seed=42),
+    "metal_gate": lambda: metal_texture(130, 130, 135, seed=43),
+    "checkpoint_barrier": lambda: barrier_stripe(seed=44),
+    "checkpoint_barrier_bar": lambda: barrier_bar_texture(seed=45),
+    "tank_hedgehog": lambda: metal_texture(100, 100, 105, seed=46),
+    "razor_wire_fence": lambda: wire_texture(seed=47),
+>>>>>>> 1e4fcc561563caf9e2f866fc49504819f9d59541
 }
 
 # Flat 2D item icons (used by item models with parent=item/generated)
