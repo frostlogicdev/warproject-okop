@@ -1,1 +1,0 @@
-{"variants":{"facing=north":{"model":"warproject:block/firing_slot"},"facing=south":{"model":"warproject:block/firing_slot","y":180},"facing=east":{"model":"warproject:block/firing_slot","y":90},"facing=west":{"model":"warproject:block/firing_slot","y":270}}}

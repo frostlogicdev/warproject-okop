@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["NIN"],
-  "key": {
-    "N": "minecraft:iron_nugget",
-    "I": "minecraft:iron_ingot"
-  },
-  "result": {"id": "warproject:barbed_wire", "count": 4}
-}

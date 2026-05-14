@@ -1,1 +1,0 @@
-{"variants":{"facing=north":{"model":"warproject:block/trench_stairs"},"facing=south":{"model":"warproject:block/trench_stairs","y":180},"facing=east":{"model":"warproject:block/trench_stairs","y":90},"facing=west":{"model":"warproject:block/trench_stairs","y":270}}}

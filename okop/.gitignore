@@ -1,9 +1,0 @@
-build/
-run/
-.gradle/
-.idea/
-*.iml
-out/
-logs/
-*.class
-generated/

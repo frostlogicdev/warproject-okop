@@ -1,1 +1,0 @@
-{"variants":{"facing=north":{"model":"polevoy:block/field_spotlight"},"facing=south":{"model":"polevoy:block/field_spotlight","y":180},"facing=west":{"model":"polevoy:block/field_spotlight","y":270},"facing=east":{"model":"polevoy:block/field_spotlight","y":90}}}

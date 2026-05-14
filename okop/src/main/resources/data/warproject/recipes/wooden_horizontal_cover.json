@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["PPP"],
-  "key": {
-    "P": {"item": "minecraft:oak_planks"}
-  },
-  "result": {"item": "warproject:wooden_horizontal_cover", "count": 3}
-}

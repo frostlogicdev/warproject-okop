@@ -1,9 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "pattern": ["SLS", "LSL", "SLS"],
-  "key": {
-    "S": {"item": "minecraft:string"},
-    "L": {"item": "minecraft:oak_leaves"}
-  },
-  "result": {"item": "warproject:forest_camo_net", "count": 2}
-}

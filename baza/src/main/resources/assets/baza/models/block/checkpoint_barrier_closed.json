@@ -1,8 +1,0 @@
-{
-  "parent":"minecraft:block/block",
-  "textures":{"post":"baza:block/checkpoint_barrier_post","bar":"baza:block/checkpoint_barrier_bar","particle":"baza:block/checkpoint_barrier_post"},
-  "elements":[
-    {"from":[0,0,7],"to":[3,12,9],"faces":{"up":{"texture":"#post"},"down":{"texture":"#post"},"north":{"texture":"#post"},"south":{"texture":"#post"},"east":{"texture":"#post"},"west":{"texture":"#post"}}},
-    {"from":[3,10,7],"to":[16,12,9],"faces":{"up":{"texture":"#bar"},"down":{"texture":"#bar"},"north":{"texture":"#bar"},"south":{"texture":"#bar"},"east":{"texture":"#bar"}}}
-  ]
-}

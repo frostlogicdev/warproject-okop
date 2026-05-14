@@ -1,7 +1,0 @@
-{
-  "parent":"minecraft:block/block",
-  "textures":{"gate":"baza:block/metal_gate","particle":"baza:block/metal_gate"},
-  "elements":[
-    {"from":[0,0,6],"to":[2,16,10],"faces":{"up":{"texture":"#gate"},"down":{"texture":"#gate"},"north":{"texture":"#gate"},"south":{"texture":"#gate"},"east":{"texture":"#gate"},"west":{"texture":"#gate"}}}
-  ]
-}

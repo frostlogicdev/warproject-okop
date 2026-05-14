@@ -1,1 +1,0 @@
-{"variants":{"facing=north":{"model":"warproject:block/wooden_horizontal_cover"},"facing=south":{"model":"warproject:block/wooden_horizontal_cover","y":180},"facing=east":{"model":"warproject:block/wooden_horizontal_cover","y":90},"facing=west":{"model":"warproject:block/wooden_horizontal_cover","y":270}}}
