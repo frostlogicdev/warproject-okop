@@ -1,1 +1,6 @@
-{"parent": "warproject:block/metal_gate"}
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warproject:item/metal_gate"
+  }
+}

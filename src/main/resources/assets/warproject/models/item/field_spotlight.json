@@ -1,1 +1,6 @@
-{"parent": "warproject:block/field_spotlight"}
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warproject:item/field_spotlight"
+  }
+}

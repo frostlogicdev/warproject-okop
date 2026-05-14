@@ -1,1 +1,6 @@
-{"parent": "warproject:block/trench_lantern"}
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warproject:item/trench_lantern"
+  }
+}

@@ -1,1 +1,6 @@
-{"parent": "warproject:block/command_tent"}
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warproject:item/command_tent"
+  }
+}

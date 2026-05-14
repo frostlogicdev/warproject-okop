@@ -1,1 +1,6 @@
-{"parent": "warproject:block/razor_wire_fence"}
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warproject:item/razor_wire_fence"
+  }
+}

@@ -1,1 +1,6 @@
-{"parent": "warproject:block/checkpoint_barrier"}
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warproject:item/checkpoint_barrier"
+  }
+}

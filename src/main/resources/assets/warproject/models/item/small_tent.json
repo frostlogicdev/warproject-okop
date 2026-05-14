@@ -1,1 +1,6 @@
-{"parent": "warproject:block/small_tent"}
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "warproject:item/small_tent"
+  }
+}
