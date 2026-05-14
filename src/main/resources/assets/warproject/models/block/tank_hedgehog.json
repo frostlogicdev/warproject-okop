@@ -1,11 +1,61 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/tank_hedgehog", "particle": "warproject:block/tank_hedgehog"},
+  "textures": {
+    "0": "warproject:block/tank_hedgehog",
+    "particle": "warproject:block/tank_hedgehog"
+  },
   "elements": [
-    {"from": [5, 0, -4], "to": [11, 4, 20], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [-4, 0, 5], "to": [20, 4, 11], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [3, 4, 1], "to": [13, 10, 15], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [1, 4, 3], "to": [15, 10, 13], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [4, 10, 4], "to": [12, 18, 12], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {
+      "_comment": "Beam along X axis",
+      "from": [-4, 6, 6],
+      "to": [20, 10, 10],
+      "faces": {
+        "up":    {"texture": "#0", "uv": [0, 0, 16, 3]},
+        "down":  {"texture": "#0", "uv": [0, 0, 16, 3]},
+        "north": {"texture": "#0", "uv": [0, 0, 16, 3]},
+        "south": {"texture": "#0", "uv": [0, 0, 16, 3]},
+        "east":  {"texture": "#0", "uv": [0, 0, 3, 3]},
+        "west":  {"texture": "#0", "uv": [0, 0, 3, 3]}
+      }
+    },
+    {
+      "_comment": "Beam along Z axis",
+      "from": [6, 6, -4],
+      "to": [10, 10, 20],
+      "faces": {
+        "up":    {"texture": "#0", "uv": [0, 0, 3, 16]},
+        "down":  {"texture": "#0", "uv": [0, 0, 3, 16]},
+        "east":  {"texture": "#0", "uv": [0, 0, 16, 3]},
+        "west":  {"texture": "#0", "uv": [0, 0, 16, 3]},
+        "north": {"texture": "#0", "uv": [0, 0, 3, 3]},
+        "south": {"texture": "#0", "uv": [0, 0, 3, 3]}
+      }
+    },
+    {
+      "_comment": "Beam along Y axis (vertical)",
+      "from": [6, -4, 6],
+      "to": [10, 20, 10],
+      "faces": {
+        "north": {"texture": "#0", "uv": [0, 0, 3, 16]},
+        "south": {"texture": "#0", "uv": [0, 0, 3, 16]},
+        "east":  {"texture": "#0", "uv": [0, 0, 3, 16]},
+        "west":  {"texture": "#0", "uv": [0, 0, 3, 16]},
+        "up":    {"texture": "#0", "uv": [0, 0, 3, 3]},
+        "down":  {"texture": "#0", "uv": [0, 0, 3, 3]}
+      }
+    },
+    {
+      "_comment": "Central reinforcement plate",
+      "from": [5, 5, 5],
+      "to": [11, 11, 11],
+      "faces": {
+        "up":    {"texture": "#0", "uv": [4, 4, 10, 10]},
+        "down":  {"texture": "#0", "uv": [4, 4, 10, 10]},
+        "north": {"texture": "#0", "uv": [4, 4, 10, 10]},
+        "south": {"texture": "#0", "uv": [4, 4, 10, 10]},
+        "east":  {"texture": "#0", "uv": [4, 4, 10, 10]},
+        "west":  {"texture": "#0", "uv": [4, 4, 10, 10]}
+      }
+    }
   ]
 }

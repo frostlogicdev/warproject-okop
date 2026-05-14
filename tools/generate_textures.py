@@ -275,27 +275,16 @@ def make_metal_gate():
 
 
 def make_tank_hedgehog():
-    """Cross-section: dark steel with 3 crossing beams."""
+    """Steel I-beam side texture: light metal with rivets along edges.
+    The cross/hedgehog shape is built in the block model from 3 beams."""
     rng = random.Random(146)
-    base = (110, 113, 120, 255)
-    hi = shade(base, 30)
-    lo = shade(base, -30)
-    img = new_img((30, 30, 35, 255))
-    # X cross
-    for k in range(SIZE):
-        for off in (-1, 0, 1):
-            put(img, k, k + off, base)
-            put(img, k, (15 - k) + off, base)
-        put(img, k, k, hi)
-        put(img, k, 15 - k, hi)
-    # vertical bar
-    for y in range(SIZE):
-        put(img, 7, y, lo)
-        put(img, 8, y, base)
-        put(img, 9, y, hi)
-    # central bolt
-    fill_rect(img, 7, 7, 8, 8, (40, 40, 45, 255))
-    jitter(img, rng, 4)
+    base = (118, 122, 130, 255)
+    img = metal_plate(base, seed=146, rivets=True, scratches=True)
+    # extra rivets along the long edges to read as a beam
+    for x in (0, 4, 8, 12, 15):
+        put(img, x, 1, (45, 48, 55, 255))
+        put(img, x, 14, (45, 48, 55, 255))
+    jitter(img, rng, 3)
     return img
 
 
@@ -448,31 +437,42 @@ def make_razor_wire_fence():
 
 
 def make_drainage_grate():
-    """Cross-hatched metal grate with holes."""
+    """Solid metal grate plate — no see-through holes, just patterned metal."""
     rng = random.Random(111)
-    bar = (135, 138, 145, 255)
-    hi = (175, 180, 190, 255)
-    lo = (85, 90, 100, 255)
-    hole = (10, 12, 18, 230)
-    img = new_img(hole)
-    # frame
-    stroke_rect(img, 0, 0, 15, 15, bar)
-    # horizontal & vertical bars every 5 px (cells 4x4)
+    plate = (132, 135, 142, 255)
+    plate_hi = (168, 172, 180, 255)
+    plate_lo = (95, 98, 105, 255)
+    bar = (165, 168, 175, 255)
+    bar_hi = (200, 203, 210, 255)
+    cell = (118, 121, 128, 255)
+    img = new_img(plate)
+    # raised cells (4x4 with embossed border) — NOT holes
+    for cy0 in (1, 6, 11):
+        for cx0 in (1, 6, 11):
+            cx1 = cx0 + 3
+            cy1 = cy0 + 3
+            for y in range(cy0, cy1 + 1):
+                for x in range(cx0, cx1 + 1):
+                    img.putpixel((x, y), cell)
+            for x in range(cx0, cx1 + 1):
+                img.putpixel((x, cy0), plate_hi)
+                img.putpixel((x, cy1), plate_lo)
+            for y in range(cy0, cy1 + 1):
+                img.putpixel((cx0, y), plate_hi)
+                img.putpixel((cx1, y), plate_lo)
+    # horizontal & vertical bars between cells
     for k in range(SIZE):
-        for line in (5, 10):
-            put(img, k, line, bar)
-            put(img, line, k, bar)
-    # highlights on bars
-    for k in range(SIZE):
-        for line in (5, 10):
-            put(img, k, line - 0, bar)
-        # subtle hi on top of horizontals
-        put(img, k, 5, hi if k % 2 else bar)
-        put(img, k, 10, lo if k % 2 else bar)
-    # bolts at frame intersections
+        for line in (0, 5, 10, 15):
+            img.putpixel((k, line), bar)
+            img.putpixel((line, k), bar)
+    # bar highlights
+    for k in range(0, SIZE, 2):
+        img.putpixel((k, 0), bar_hi)
+        img.putpixel((0, k), bar_hi)
+    # corner bolts
     for cx, cy in [(0, 0), (15, 0), (0, 15), (15, 15)]:
-        put(img, cx, cy, lo)
-    jitter(img, rng, 4)
+        img.putpixel((cx, cy), plate_lo)
+    jitter(img, rng, 3)
     return img
 
 
@@ -492,45 +492,55 @@ def make_firing_slot():
 
 
 def make_trench_lantern():
-    """Black iron lantern frame with warm glow at center."""
+    """Plain dark iron texture for the lantern frame parts."""
     rng = random.Random(114)
-    frame = (45, 42, 38, 255)
-    frame_hi = (80, 74, 68, 255)
-    glass = (255, 215, 110, 255)
-    glow_hi = (255, 240, 180, 255)
-    glow_lo = (210, 150, 50, 255)
-    img = new_img(frame)
-    # glass area
-    fill_rect(img, 3, 4, 12, 12, glass)
-    # diagonal glow
-    for y in range(4, 13):
-        for x in range(3, 13):
-            dx = x - 7.5
-            dy = y - 8.5
-            d = (dx * dx + dy * dy) ** 0.5
-            if d < 2.0:
-                img.putpixel((x, y), glow_hi)
-            elif d > 4.0:
-                img.putpixel((x, y), glow_lo)
-    # iron frame bars
+    iron = (38, 36, 32, 255)
+    iron_hi = (78, 74, 68, 255)
+    iron_lo = (18, 16, 14, 255)
+    img = new_img(iron)
+    # vertical grain
+    for y in range(SIZE):
+        for x in range(SIZE):
+            d = rng.randint(-6, 6)
+            img.putpixel((x, y), shade(iron, d))
+    # bevel highlights on top/left
     for x in range(SIZE):
-        put(img, x, 3, frame)
-        put(img, x, 13, frame)
-    for y in range(3, 14):
-        put(img, 2, y, frame)
-        put(img, 13, y, frame)
-    # vertical struts
-    for y in range(4, 13):
-        put(img, 7, y, frame)
-        put(img, 8, y, frame)
-    # roof / base
+        put(img, x, 0, iron_hi)
+    for y in range(SIZE):
+        put(img, 0, y, iron_hi)
     for x in range(SIZE):
-        put(img, x, 2, frame_hi)
-        put(img, x, 14, frame_hi)
-    put(img, 7, 0, frame)
-    put(img, 8, 0, frame)
-    put(img, 7, 1, frame_hi)
-    put(img, 8, 1, frame_hi)
+        put(img, x, 15, iron_lo)
+    for y in range(SIZE):
+        put(img, 15, y, iron_lo)
+    # rivets
+    for cx, cy in [(2, 2), (13, 2), (2, 13), (13, 13), (7, 7), (8, 8)]:
+        put(img, cx, cy, iron_lo)
+    return img
+
+
+def make_trench_lantern_glass():
+    """Glowing yellow glass core for the lantern."""
+    rng = random.Random(115)
+    glow_core = (255, 245, 195, 255)
+    glow_mid = (255, 215, 110, 255)
+    glow_rim = (210, 155, 50, 255)
+    glow_dark = (155, 100, 30, 255)
+    img = new_img(glow_mid)
+    # radial gradient: bright center, dimmer at edges
+    for y in range(SIZE):
+        for x in range(SIZE):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 2.5:
+                img.putpixel((x, y), glow_core)
+            elif d < 5.0:
+                img.putpixel((x, y), glow_mid)
+            elif d < 7.0:
+                img.putpixel((x, y), glow_rim)
+            else:
+                img.putpixel((x, y), glow_dark)
+    # subtle flame flicker dots
+    sprinkle(img, rng, glow_core, 4)
+    sprinkle(img, rng, glow_dark, 3)
     return img
 
 
@@ -1264,26 +1274,43 @@ def item_metal_gate():
 
 
 def item_tank_hedgehog():
-    """3-bar X hedgehog icon."""
+    """Iconic Czech hedgehog silhouette: 3 perpendicular beams crossing."""
     img = new_img((0, 0, 0, 0))
-    base = (110, 113, 120, 255)
+    base = (118, 122, 130, 255)
     hi = (180, 185, 195, 255)
-    lo = (50, 53, 60, 255)
-    # 3 crossing bars
+    lo = (60, 65, 75, 255)
+    deep = (35, 38, 45, 255)
+    # diagonal beam (top-left to bottom-right)
     for k in range(SIZE):
-        put(img, k, k, base)
-        if 0 < k < 15:
+        for off in (-1, 0, 1):
+            x = k + off
+            y = k
+            if 0 <= x < SIZE:
+                put(img, x, y, base)
+        if 0 <= k - 1 < SIZE:
             put(img, k - 1, k, lo)
-            put(img, k, k - 1, hi)
-        put(img, k, 15 - k, base)
-        if 0 < k < 15:
-            put(img, k, 14 - k, hi)
-            put(img, k - 1, 15 - k, lo)
+        if 0 <= k + 1 < SIZE:
+            put(img, k + 1, k, hi)
+    # anti-diagonal beam (top-right to bottom-left)
+    for k in range(SIZE):
+        for off in (-1, 0, 1):
+            x = (15 - k) + off
+            y = k
+            if 0 <= x < SIZE:
+                put(img, x, y, base)
+        if 0 <= (15 - k) - 1 < SIZE:
+            put(img, (15 - k) - 1, k, lo)
+        if 0 <= (15 - k) + 1 < SIZE:
+            put(img, (15 - k) + 1, k, hi)
+    # vertical beam
     for y in range(SIZE):
-        put(img, 7, y, base)
-        put(img, 8, y, hi)
-    # center bolt
-    fill_rect(img, 7, 7, 8, 8, (35, 38, 45, 255))
+        put(img, 7, y, lo)
+        put(img, 8, y, base)
+        put(img, 9, y, hi)
+    # central rivet plate
+    fill_rect(img, 6, 6, 9, 9, deep)
+    put(img, 7, 7, hi)
+    put(img, 8, 8, hi)
     return img
 
 
@@ -1383,6 +1410,7 @@ BLOCK_TEXTURES = {
     "firing_slot": make_firing_slot,
     "trench_stairs": make_trench_stairs,
     "trench_lantern": make_trench_lantern,
+    "trench_lantern_glass": make_trench_lantern_glass,
     "supply_crate": make_supply_crate,
     "supply_crate_top": make_supply_crate_top,
     # POLEVOY

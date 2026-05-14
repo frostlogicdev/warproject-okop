@@ -18,9 +18,4 @@ public class CamoNetBlock extends Block {
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
         return SHAPE;
     }
-
-    @Override
-    protected boolean useShapeForLightOcclusion(BlockState state) {
-        return true;
-    }
 }

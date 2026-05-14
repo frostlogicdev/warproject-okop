@@ -1,6 +1,3 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "warproject:item/tank_hedgehog"
-  }
+  "parent": "warproject:block/tank_hedgehog"
 }

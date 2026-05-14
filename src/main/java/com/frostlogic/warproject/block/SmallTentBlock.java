@@ -36,7 +36,8 @@ public class SmallTentBlock extends Block {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                 Player player, BlockHitResult hit) {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.setRespawnPosition(level.dimension(), pos, 0, false, true);
+            // forced=true: skip vanilla respawn-block validation (tent isn't a BedBlock/RespawnAnchor)
+            serverPlayer.setRespawnPosition(level.dimension(), pos, 0, true, true);
         }
         return InteractionResult.SUCCESS;
     }

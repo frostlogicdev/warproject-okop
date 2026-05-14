@@ -35,10 +35,10 @@ public class ModBlocks {
                     .strength(2.5f, 8.0f).sound(SoundType.SAND)));
     public static final DeferredBlock<Block> WOODEN_HORIZONTAL_COVER = BLOCKS.register("wooden_horizontal_cover",
             () -> new HorizontalCoverBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD)
-                    .strength(2.0f).sound(SoundType.WOOD)));
+                    .strength(2.0f).sound(SoundType.WOOD).noOcclusion()));
     public static final DeferredBlock<Block> LOG_HORIZONTAL_COVER = BLOCKS.register("log_horizontal_cover",
             () -> new HorizontalCoverBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD)
-                    .strength(2.5f).sound(SoundType.WOOD)));
+                    .strength(2.5f).sound(SoundType.WOOD).noOcclusion()));
     public static final DeferredBlock<Block> BARBED_WIRE = BLOCKS.register("barbed_wire",
             () -> new BarbedWireBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
                     .strength(1.0f).sound(SoundType.CHAIN).noOcclusion().noCollission()));

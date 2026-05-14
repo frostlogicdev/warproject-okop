@@ -29,6 +29,9 @@ public class FirstAidKitBlock extends Block {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                 Player player, BlockHitResult hit) {
         if (!level.isClientSide) {
+            if (player.getHealth() >= player.getMaxHealth()) {
+                return InteractionResult.PASS;
+            }
             player.heal(8.0f);
             level.playSound(null, pos, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 1.0f, 1.0f);
             level.removeBlock(pos, false);
