@@ -45,9 +45,6 @@ A unified military mod for Minecraft (NeoForge 1.21.1) — realistic trench fort
 ## Building
 
 ```bash
-# First time setup - copy gradle wrapper or generate it:
-gradle wrapper --gradle-version 8.8
-
 # Build the mod
 ./gradlew build
 
@@ -57,7 +54,8 @@ gradle wrapper --gradle-version 8.8
 
 ## Texture Generation
 
-Placeholder textures can be generated with:
+Placeholder block textures are committed under src/main/resources/assets/warproject/textures/block/.
+To regenerate them (requires pillow):
 ```bash
 python tools/generate_textures.py
 ```
