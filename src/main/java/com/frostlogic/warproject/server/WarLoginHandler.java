@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class WarLoginHandler {
     /** Minimum length we'll accept for a brand-new password. */
-    public static final int MIN_PASSWORD_LENGTH = 6;
+    public static final int MIN_PASSWORD_LENGTH = 8;
     /** Wrong-password attempts before we kick the connection. */
     public static final int MAX_LOGIN_ATTEMPTS = 5;
 
@@ -105,6 +105,8 @@ public final class WarLoginHandler {
 
         profile.setLoggedIn(true);
         ATTEMPTS.remove(player.getUUID());
+        // Persist successful login side effects, including automatic legacy SHA-256 -> BCrypt migration.
+        WarPlayerDataStore.get().save();
         sendResult(player, true, "Вход выполнен.");
         player.sendSystemMessage(Component.translatable("wp.login.success").withStyle(ChatFormatting.GREEN));
         continueOnboarding(player, profile);
