@@ -1,9 +1,10 @@
 @echo off
-setlocal
+setlocal EnableExtensions EnableDelayedExpansion
 
 REM WarProject local Windows server launcher.
-REM NeoForge creates libraries/net/neoforged/neoforge/<version>/win_args.txt only after
-REM running the NeoForge installer with --install-server in this folder.
+REM NeoForge 1.21.1 is compiled for Java 21 (class file major 65).
+REM If this script uses Java 17/18/etc. the server fails with:
+REM Unsupported major.minor version 65.0
 
 set "NEOFORGE_VERSION=21.1.229"
 set "NEOFORGE_DIR=libraries\net\neoforged\neoforge\%NEOFORGE_VERSION%"
@@ -11,23 +12,19 @@ set "WIN_ARGS=%NEOFORGE_DIR%\win_args.txt"
 set "INSTALLER=neoforge-%NEOFORGE_VERSION%-installer.jar"
 set "INSTALLER_URL=https://maven.neoforged.net/releases/net/neoforged/neoforge/%NEOFORGE_VERSION%/%INSTALLER%"
 
-REM Prefer JAVA_HOME_21, then JAVA_HOME, then java from PATH.
-if defined JAVA_HOME_21 (
-    set "JAVA_EXE=%JAVA_HOME_21%\bin\java.exe"
-) else if defined JAVA_HOME (
-    set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
-) else (
-    set "JAVA_EXE=java"
-)
-
-if not "%JAVA_EXE%"=="java" if not exist "%JAVA_EXE%" (
-    echo [WarProject] Java executable not found: "%JAVA_EXE%"
-    echo Install Java 21 and set JAVA_HOME_21 or JAVA_HOME.
+call :resolve_java21
+if errorlevel 1 (
+    echo.
+    echo [WarProject] Java 21 is required.
+    echo Install Temurin/Microsoft/Oracle JDK 21 and set JAVA_HOME_21 to its folder.
+    echo Example:
+    echo   setx JAVA_HOME_21 "C:\Program Files\Eclipse Adoptium\jdk-21"
+    echo.
     pause
     exit /b 1
 )
 
-echo [WarProject] Using Java: %JAVA_EXE%
+echo [WarProject] Using Java 21: %JAVA_EXE%
 "%JAVA_EXE%" -version
 
 if not exist "%WIN_ARGS%" (
@@ -63,3 +60,58 @@ if not exist "%WIN_ARGS%" (
 echo [WarProject] Starting server...
 "%JAVA_EXE%" @user_jvm_args.txt @"%WIN_ARGS%" %*
 pause
+exit /b %ERRORLEVEL%
+
+:resolve_java21
+set "JAVA_EXE="
+
+REM 1) Explicit override wins.
+if defined JAVA_HOME_21 (
+    if exist "%JAVA_HOME_21%\bin\java.exe" (
+        call :check_java "%JAVA_HOME_21%\bin\java.exe"
+        if not errorlevel 1 exit /b 0
+    )
+)
+
+REM 2) JAVA_HOME only if it is actually Java 21.
+if defined JAVA_HOME (
+    if exist "%JAVA_HOME%\bin\java.exe" (
+        call :check_java "%JAVA_HOME%\bin\java.exe"
+        if not errorlevel 1 exit /b 0
+    )
+)
+
+REM 3) Common Windows install locations.
+for %%D in (
+    "C:\Program Files\Eclipse Adoptium\jdk-21*"
+    "C:\Program Files\Microsoft\jdk-21*"
+    "C:\Program Files\Java\jdk-21*"
+    "C:\Program Files\BellSoft\LibericaJDK-21*"
+    "C:\Program Files\Zulu\zulu-21*"
+) do (
+    for /d %%J in (%%~D) do (
+        if exist "%%~J\bin\java.exe" (
+            call :check_java "%%~J\bin\java.exe"
+            if not errorlevel 1 exit /b 0
+        )
+    )
+)
+
+REM 4) PATH only if java is Java 21.
+call :check_java java
+if not errorlevel 1 exit /b 0
+
+exit /b 1
+
+:check_java
+set "CANDIDATE=%~1"
+set "JAVA_MAJOR="
+for /f "tokens=2 delims=\"" %%V in ('"%CANDIDATE%" -version 2^>^&1 ^| findstr /i "version"') do (
+    set "JAVA_VERSION=%%V"
+)
+for /f "tokens=1 delims=." %%M in ("!JAVA_VERSION!") do set "JAVA_MAJOR=%%M"
+if "!JAVA_MAJOR!"=="21" (
+    set "JAVA_EXE=%CANDIDATE%"
+    exit /b 0
+)
+exit /b 1
