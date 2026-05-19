@@ -1,14 +1,16 @@
 # War Project
 
-Военный мод для Minecraft 1.21.1 (NeoForge): окопная фортификация, полевые лагеря, военные базы, античит **WGuard**, живой лаунчер и сайт в единой военной эстетике.
+Военный мод для Minecraft 1.21.1 (NeoForge): окопная фортификация, полевые лагеря, военные базы и серверная RP-логика для военного Minecraft-проекта.
+
+> Текущий репозиторий содержит **NeoForge-мод**, серверные конфиги, Docker/Pterodactyl-заготовки и документацию. Лаунчер и сайт/API пока не входят в это дерево репозитория и должны поставляться отдельно либо быть добавлены позже.
 
 ## Components
 
 - `src/` — NeoForge-мод (Java 21).
-- `launcher/` — Electron + React + Vite лаунчер с WGuard splash.
-- `site/` — Node/Express сайт и API.
+- `server/` — шаблон dedicated-server конфигов.
 - `docker/` — self-hosted server (Dockerfile + compose).
-- `docs/` — production-ready чек-лист и CI template.
+- `docs/` — production-ready чек-лист, deploy-гайд, Pterodactyl egg и CI template.
+- `tools/` — вспомогательные скрипты.
 
 ## Features
 
@@ -27,35 +29,29 @@
 - Tank Hedgehog, Razor Wire Fence
 
 ### Field camp + extras
-Полевая кухня, радио, аптечки и другие вспомогательные блоки. Суммарно — **31 уникальный блок** (сверьте с `mod_blocks_count=31` в `gradle.properties`).
+Полевая кухня, радио, аптечки и другие вспомогательные блоки. Суммарно — **31 уникальный блок**.
 
-### Инфраструктура
-- **JourneyMap** — soft-интеграция (в `client/jmplugin/`), мод работает и без.
-- **WGuard** — античит с проверками на сервере (сплеш с пазл-значком в сайте и лаунчере).
-- **Персистенс** — SQLite (jarJar-embed `sqlite-jdbc`), хеши паролей — bcrypt.
+### Инфраструктура мода
+- **JourneyMap** — soft-интеграция (в `client/jmplugin/`), мод работает и без JourneyMap.
+- **WGuard** — серверная авторизация, капча и базовые guard-проверки. Это не полноценный combat/fly/killaura античит.
+- **Персистенс** — SQLite (jarJar-embed `sqlite-jdbc`), новые пароли — bcrypt cost 12; legacy JSON-профили мигрируются на bcrypt после успешного входа.
 
 ## Requirements
 
 - Minecraft 1.21.1
 - NeoForge 21.1.229+ (см. `gradle.properties`)
 - Java 21
-- Node 20+ (для launcher и site)
 
 ## Quickstart
 
 ```bash
 # 1. Мод
-./gradlew build           # сборка (jarJar)
-./gradlew test            # JUnit5 / jqwik / AssertJ / Mockito / H2
-./gradlew runClient       # локальный клиент
+./gradlew clean build    # сборка (jarJar)
+./gradlew test           # JUnit5 / jqwik / AssertJ / Mockito / H2
+./gradlew runClient      # локальный клиент
+./gradlew runServer      # локальный сервер
 
-# 2. Сайт
-cd site && npm install && npm start        # дефолт :4000
-
-# 3. Лаунчер
-cd launcher && npm install && npm run dev  # vite dev на :3000
-
-# 4. Сервер (Docker)
+# 2. Сервер (Docker)
 cd docker && EULA=true docker compose up -d
 ```
 
@@ -89,14 +85,17 @@ repo-root/
 │       ├── persistence/              # SQLite
 │       ├── server/                   # серверная логика
 │       └── env/                      # prepareServerEnvironment
-├── launcher/                         # Electron + React + Vite
-├── site/                             # Express + static
+├── server/                           # dedicated-server configs
 ├── docker/                           # self-hosted server
-├── docs/                             # PRODUCTION_READY.md, ci-template.yml
+├── docs/                             # deploy / launch / production docs
 ├── tools/                            # вспомогательные скрипты
 ├── build.gradle / settings.gradle / gradle.properties
 └── LICENSE / CHANGELOG.md / README.md
 ```
+
+## Production note
+
+Для публичного открытия обязательно выполните `docs/LAUNCH_CHECKLIST.md`: реальные координаты баз/спавнов, companion-моды, backup/restore, стресс-тест и мониторинг.
 
 ## License
 
