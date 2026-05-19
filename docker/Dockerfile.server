@@ -1,0 +1,24 @@
+# Self-hosted War Project server image.
+# Mount NeoForge server.jar + warproject-*.jar under /opt/server/.
+
+FROM eclipse-temurin:21-jre
+
+LABEL org.opencontainers.image.title="War Project Server"
+LABEL org.opencontainers.image.source="https://github.com/frostlogicdev/warproject-okop"
+LABEL org.opencontainers.image.licenses="MIT"
+
+ENV EULA=false
+ENV JVM_OPTS=""
+
+WORKDIR /opt/server
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 25565
+VOLUME ["/opt/server/world", "/opt/server/config", "/opt/server/logs", "/opt/server/mods"]
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
+    CMD nc -z localhost 25565 || exit 1
+
+ENTRYPOINT ["/entrypoint.sh"]
