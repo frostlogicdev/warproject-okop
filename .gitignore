@@ -26,12 +26,19 @@ server/config/*.toml.bak
 
 # ===== Gradle / Java =====
 .gradle/
+.gradle-cache/
 build/
 out/
 bin/
 *.class
 hs_err_pid*.log
+replay_pid*.log
+*.hprof
 .jqwik-database
+
+# ===== Dev runs (gradlew runServer / runClient / prepareServerEnvironment) =====
+runs/
+.warproject-write-probe
 
 # ===== IDE =====
 .idea/
