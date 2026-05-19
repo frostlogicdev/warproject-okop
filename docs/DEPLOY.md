@@ -13,24 +13,24 @@
 
 ## 1. Критические TODO перед публикой онлайна
 
-### 1.1. bcrypt вместо SHA-256 (BLOCKER)
+### 1.1. Авторизация / BCrypt
 
-`src/main/java/com/frostlogic/warproject/server/PasswordHasher.java` сейчас хранит пароль как `SHA-256(salt || password)` с 16-байтной солью. Это НЕДОСТАТОЧНО для cracked-сервера: SHA-256 брутится на GPU на порядки быстрее bcrypt.
+Статус:
 
-Библиотека `org.mindrot:jbcrypt:0.4` уже подключена в `build.gradle` (`jarJar.implementation`), но не используется.
+- новая DB-auth использует BCrypt cost 12;
+- legacy JSON-профили после успешного входа автоматически мигрируются с SHA-256+salt на BCrypt cost 12;
+- legacy registration policy поднята до minimum password length 8;
+- `server/server.properties` теперь держит RCON выключенным по умолчанию.
 
-План миграции:
+Перед публичным онлайном всё равно нужно выполнить:
 
-1. Переписать `PasswordHasher.hash(plain)` на `BCrypt.hashpw(plain, BCrypt.gensalt(12))`.
-2. `PasswordHasher.verify(plain, stored)` должен разбирать `stored`:
-   - если начинается с `$2a$`/`$2b$`/`$2y$` → `BCrypt.checkpw(plain, stored)`.
-   - иначе (legacy salt\u0001sha256) → сверить по старому алгоритму, и при успехе — перехэшировать в bcrypt и обновить в PlayerStore.
-3. Обновить юнит-тесты под оба формата.
-4. Проверить, что bcrypt cost=12 влезает в SLA логина (≈70–120 мс на современном CPU). Если высокое RPS — снизить до 11.
+1. `./gradlew clean build`
+2. `./gradlew test`
+3. ручной тест входа legacy-профиля, чтобы убедиться, что миграция SHA-256 → BCrypt сохраняется в `players.json`.
 
 ### 1.2. Координаты баз и спавнов (BLOCKER)
 
-В `server/config/warproject-server.toml` все координаты сейчас «0,64,0» и `regions.bases = []`. Без реальных значений игроки будут спавниться на (0,64,0) и фракционные регионы не будут работать.
+В `server/config/warproject-server.toml` все координаты сейчас «0,64,0» и `regions.bases = []`. Без реальных значений игроки будут спавниться на (0,64,0), а фракционные регионы не будут работать.
 
 Что сделать:
 
@@ -39,12 +39,24 @@
 3. Для каждой базы добавить строку в `[regions].bases` в формате `'FACTION;dimension;minX,minY,minZ;maxX,maxY,maxZ'`.
 4. Совместить с claim'ами OpenPaC для физической защиты блоков.
 
-### 1.3. Audit notifier (желательно)
+### 1.3. RCON / секреты
+
+`server/server.properties` хранится безопасным шаблоном: `enable-rcon=false`.
+
+Если RCON нужен для backups/админки:
+
+1. включайте его только в runtime-конфиге панели/сервера;
+2. пароль задавайте через Pterodactyl variable/secret, не через git;
+3. пароль ≥16 символов;
+4. порт 25575 открывать только localhost / WireGuard / private network.
+
+### 1.4. Audit notifier (желательно)
 
 `[audit].notifier = "NONE"`. Для Discord-вебхука:
 
 1. Создать приватный audit-канал в вашем Discord, скопировать webhook URL.
-2. В моде сейчас `notifier` читается как enum (`NONE` или `DISCORD`). URL нужно зашить либо в `WpConfig`, либо читать из переменной окружения `WP_DISCORD_AUDIT_WEBHOOK` — рекомендуется второе.
+2. URL хранить только в env/panel secret, например `WP_DISCORD_AUDIT_WEBHOOK`.
+3. Не коммитить webhook в git.
 
 ## 2. Развёртывание на Pterodactyl
 
@@ -52,7 +64,7 @@
 
 1. **Wings**: убедиться что Docker-образ `ghcr.io/pterodactyl/yolks:java_21` доступен.
 2. **Egg**: в панели Admin → Nests → Import Egg, загрузить `docs/pterodactyl/egg-warproject.json`.
-3. **Server**: Create Server → Egg = WarProject NeoForge 1.21.1. Ресурсы: 14 GB RAM (из них всё равно з3.5 на OS/JM/overhead), 4–6 vCPU, 20 GB disk, Swap = 0 (или з2 GB), CPU Limit = 0 (без лимита), Block I/O = 500.
+3. **Server**: Create Server → Egg = WarProject NeoForge 1.21.1. Ресурсы: 14 GB RAM (из них всё равно запас на OS/JM/overhead), 4–6 vCPU, 20 GB disk, Swap = 0 (или 2 GB), CPU Limit = 0 (без лимита), Block I/O = 500.
 4. **Variables** (заполняете в панели):
    - `NEOFORGE_VERSION = 21.1.229`
    - `WP_VERSION = 3.0.0`
@@ -61,11 +73,11 @@
    - `MAX_PLAYERS = 150`
    - `SERVER_MOTD = §c§lWar Project §8| §fMilitary RP`
    - `WHITELIST = true`
-   - `RCON_PORT = 25575`
-   - `RCON_PASSWORD = <сгенерируйте ≥16 символов>`
+   - `RCON_PORT = 25575` если RCON используется
+   - `RCON_PASSWORD = <сгенерируйте ≥16 символов>` если RCON используется
 5. **Первый запуск**: egg в install-фазе сам скачает NeoForge installer, выполнит `--install-server`, сформирует `libraries/`, `user_jvm_args.txt`, и скачает мод `warproject-3.0.0.jar` из GitHub Releases.
 6. **Моды поддержки**: вручную залейте в `/home/container/mods/` все моды из `docs/MODS.md` (Canary, FerriteCore, ScalableLux, Spark, OpenPaC, Ledger, FastBack, Simple Voice Chat). Через SFTP-реквизиты панели.
-7. **server.properties / config**: при первом запуске файлы сгенерируются внутри volume. Залейте поверх версии из репо (`server/server.properties`, `server/user_jvm_args.txt`, `server/config/*`).
+7. **server.properties / config**: при первом запуске файлы сгенерируются внутри volume. Залейте поверх версии из репо (`server/server.properties`, `server/user_jvm_args.txt`, `server/config/*`) и затем внесите реальные координаты мира.
 
 ## 3. Firewall / DNS / SRV
 
@@ -73,7 +85,7 @@
 |---|---|---|---|
 | 25565 | TCP | Minecraft | всем |
 | 24454 | UDP | Simple Voice Chat | всем (если включён) |
-| 25575 | TCP | RCON | только localhost / wg |
+| 25575 | TCP | RCON | только localhost / WireGuard / private network |
 | 8443 | TCP | Pterodactyl panel | ваши IP |
 | 22 | TCP | SSH | ваши IP |
 
@@ -102,19 +114,20 @@ Cron пример:
 
 - **/spark tps / /spark health** — всегда.
 - **panel → Resource graph** — RAM/CPU/Disk.
-- **Ledger** — лог всех действий + `/co rollback` в случае рейда.
-- **Audit notifier** WarProject — после настройки из § 1.3 все register/login/promote/captivity/ransom будут прилетать в Discord.
+- **Ledger** — лог всех действий + rollback в случае рейда.
+- **Audit notifier** WarProject — после настройки все register/login/promote/captivity/ransom будут прилетать в audit-канал.
 
 ## 6. CI
 
-`docs/ci-template.yml` — готовый workflow (Gradle build + JUnit). Скопируйте вручную в `.github/workflows/ci.yml` (GitHub App бота не может писать в `.github/workflows/`, см. `docs/PRODUCTION_READY.md`).
+`docs/ci-template.yml` — готовый workflow под текущий scope репозитория (Gradle build + JUnit). Скопируйте вручную в `.github/workflows/ci.yml`: GitHub App не может писать в `.github/workflows/`, потому что нет `workflows` permission.
 
 ## 7. Когда открывать регистрацию
 
 НЕ открывайте публично пока:
 
-- НЕ выполнены TODO из § 1 (bcrypt, координаты).
-- НЕ пройдён внутренний стресс-тест (`docs/LAUNCH_CHECKLIST.md` T−1).
+- НЕ заполнены реальные координаты мира и регионы.
+- НЕ пройдены `./gradlew clean build` и `./gradlew test`.
+- НЕ пройден внутренний стресс-тест (`docs/LAUNCH_CHECKLIST.md` T−1).
 - НЕТ рабочего бэкапа и проверенного restore.
 - НЕТ резервного админа на связи.
 
