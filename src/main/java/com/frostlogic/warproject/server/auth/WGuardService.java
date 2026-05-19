@@ -34,7 +34,11 @@ import java.util.regex.Pattern;
 public final class WGuardService {
 
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final int BCRYPT_COST = 10;
+    /**
+     * Production BCrypt work factor for cracked-server passwords.
+     * Keep this aligned with docs/PRODUCTION_READY.md and docs/DEPLOY.md.
+     */
+    private static final int BCRYPT_COST = 12;
     private static final String COOLDOWN_TYPE_LOGIN = "LOGIN";
 
     private final Database database;
@@ -114,7 +118,7 @@ public final class WGuardService {
      * <p>
      * Effects:
      * <ul>
-     *   <li>Hashes password with BCrypt (cost &ge; 10)</li>
+     *   <li>Hashes password with BCrypt (cost &ge; 12)</li>
      *   <li>Inserts account record into {@code accounts} table</li>
      *   <li>Inserts player record into {@code players} table with status {@code REGISTERED_PENDING}</li>
      *   <li>Transitions player attachment to {@link PlayerState#REGISTERED_PENDING}</li>
