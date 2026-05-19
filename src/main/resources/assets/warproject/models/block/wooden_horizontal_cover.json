@@ -1,7 +1,35 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/wooden_horizontal_cover", "particle": "warproject:block/wooden_horizontal_cover"},
+  "ambientocclusion": false,
+  "textures": {
+    "planks": "warproject:block/wooden_horizontal_cover",
+    "beam": "warproject:block/wooden_support_beam",
+    "particle": "warproject:block/wooden_horizontal_cover"
+  },
   "elements": [
-    {"from": [0, 12, 0], "to": [16, 16, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {"from": [0, 12, 0], "to": [16, 16, 16], "faces": {
+      "up": {"texture": "#planks", "cullface": "up"},
+      "down": {"texture": "#planks"},
+      "north": {"texture": "#planks", "uv": [0, 0, 16, 4], "cullface": "north"},
+      "south": {"texture": "#planks", "uv": [0, 0, 16, 4], "cullface": "south"},
+      "east": {"texture": "#planks", "uv": [0, 0, 16, 4], "cullface": "east"},
+      "west": {"texture": "#planks", "uv": [0, 0, 16, 4], "cullface": "west"}
+    }},
+    {"from": [0, 9, 7], "to": [16, 12, 9], "faces": {
+      "up": {"texture": "#beam", "uv": [0, 7, 16, 9]},
+      "down": {"texture": "#beam", "uv": [0, 7, 16, 9]},
+      "north": {"texture": "#beam", "uv": [0, 4, 16, 7]},
+      "south": {"texture": "#beam", "uv": [0, 4, 16, 7]},
+      "east": {"texture": "#beam", "uv": [0, 4, 2, 7], "cullface": "east"},
+      "west": {"texture": "#beam", "uv": [14, 4, 16, 7], "cullface": "west"}
+    }},
+    {"from": [7, 9, 0], "to": [9, 12, 16], "faces": {
+      "up": {"texture": "#beam", "uv": [7, 0, 9, 16]},
+      "down": {"texture": "#beam", "uv": [7, 0, 9, 16]},
+      "north": {"texture": "#beam", "uv": [7, 4, 9, 7], "cullface": "north"},
+      "south": {"texture": "#beam", "uv": [7, 4, 9, 7], "cullface": "south"},
+      "east": {"texture": "#beam", "uv": [0, 4, 16, 7]},
+      "west": {"texture": "#beam", "uv": [0, 4, 16, 7]}
+    }}
   ]
 }

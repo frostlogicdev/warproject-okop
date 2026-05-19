@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": {"model": "warproject:block/mess_chandelier"},
+    "lit=true":  {"model": "warproject:block/mess_chandelier_on"}
+  }
+}

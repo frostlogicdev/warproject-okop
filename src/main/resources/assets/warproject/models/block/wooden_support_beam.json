@@ -1,7 +1,41 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/wooden_support_beam", "particle": "warproject:block/wooden_support_beam"},
+  "ambientocclusion": false,
+  "textures": {
+    "wood": "warproject:block/wooden_support_beam",
+    "end": "warproject:block/wooden_support_beam_end",
+    "particle": "warproject:block/wooden_support_beam"
+  },
   "elements": [
-    {"from": [4, 0, 4], "to": [12, 16, 12], "faces": {"north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}, "up": {"texture": "#0"}, "down": {"texture": "#0"}}}
+    {"from": [3, 0, 3], "to": [13, 2, 13], "faces": {
+      "up": {"texture": "#end"},
+      "down": {"texture": "#end", "cullface": "down"},
+      "north": {"texture": "#wood", "uv": [3, 14, 13, 16]},
+      "south": {"texture": "#wood", "uv": [3, 14, 13, 16]},
+      "east": {"texture": "#wood", "uv": [3, 14, 13, 16]},
+      "west": {"texture": "#wood", "uv": [3, 14, 13, 16]}
+    }},
+    {"from": [5, 2, 5], "to": [11, 14, 11], "faces": {
+      "north": {"texture": "#wood", "uv": [5, 2, 11, 14]},
+      "south": {"texture": "#wood", "uv": [5, 2, 11, 14]},
+      "east": {"texture": "#wood", "uv": [5, 2, 11, 14]},
+      "west": {"texture": "#wood", "uv": [5, 2, 11, 14]}
+    }},
+    {"from": [4, 7, 4], "to": [12, 9, 12], "faces": {
+      "up": {"texture": "#end", "uv": [4, 4, 12, 12]},
+      "down": {"texture": "#end", "uv": [4, 4, 12, 12]},
+      "north": {"texture": "#wood", "uv": [4, 7, 12, 9]},
+      "south": {"texture": "#wood", "uv": [4, 7, 12, 9]},
+      "east": {"texture": "#wood", "uv": [4, 7, 12, 9]},
+      "west": {"texture": "#wood", "uv": [4, 7, 12, 9]}
+    }},
+    {"from": [3, 14, 3], "to": [13, 16, 13], "faces": {
+      "up": {"texture": "#end", "cullface": "up"},
+      "down": {"texture": "#end"},
+      "north": {"texture": "#wood", "uv": [3, 0, 13, 2]},
+      "south": {"texture": "#wood", "uv": [3, 0, 13, 2]},
+      "east": {"texture": "#wood", "uv": [3, 0, 13, 2]},
+      "west": {"texture": "#wood", "uv": [3, 0, 13, 2]}
+    }}
   ]
 }

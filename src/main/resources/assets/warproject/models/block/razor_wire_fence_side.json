@@ -1,0 +1,16 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "wire": "warproject:block/razor_wire_fence",
+    "post": "warproject:block/iron_support_beam",
+    "particle": "warproject:block/razor_wire_fence"
+  },
+  "elements": [
+    {"from": [5.95, 8, 0], "to": [6.05, 13, 8], "faces": {"east": {"texture": "#wire", "uv": [0, 0, 16, 8]}, "west": {"texture": "#wire", "uv": [16, 0, 0, 8]}}},
+    {"from": [9.95, 8, 0], "to": [10.05, 13, 8], "faces": {"east": {"texture": "#wire", "uv": [0, 0, 16, 8]}, "west": {"texture": "#wire", "uv": [16, 0, 0, 8]}}},
+    {"from": [6, 10, 0], "to": [10, 14, 8], "faces": {"up": {"texture": "#wire", "uv": [0, 0, 16, 8]}, "down": {"texture": "#wire", "uv": [0, 0, 16, 8]}, "north": {"texture": "#wire", "uv": [0, 0, 8, 8]}, "south": {"texture": "#wire", "uv": [0, 0, 8, 8]}, "east": {"texture": "#wire", "uv": [0, 0, 16, 8]}, "west": {"texture": "#wire", "uv": [16, 0, 0, 8]}}},
+    {"from": [7, 0, 0], "to": [9, 8, 2], "faces": {"up": {"texture": "#post", "uv": [0, 0, 2, 2]}, "down": {"texture": "#post", "uv": [0, 0, 2, 2]}, "north": {"texture": "#post", "uv": [0, 0, 2, 8]}, "south": {"texture": "#post", "uv": [0, 0, 2, 8]}, "east": {"texture": "#post", "uv": [0, 0, 2, 8]}, "west": {"texture": "#post", "uv": [0, 0, 2, 8]}}}
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": {"model": "warproject:block/garage_chandelier"},
+    "lit=true":  {"model": "warproject:block/garage_chandelier_on"}
+  }
+}

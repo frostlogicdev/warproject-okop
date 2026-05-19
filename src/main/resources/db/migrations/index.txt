@@ -1,0 +1,4 @@
+# Migration index file for WarProject
+# List migration file names one per line (V{n}__{description}.sql)
+V1__init.sql
+V2__military_features.sql

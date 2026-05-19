@@ -1,1 +1,59 @@
-{"parent": "minecraft:block/cube_all", "textures": {"all": "warproject:block/hesco_barrier"}}
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "mesh": "warproject:block/hesco_barrier",
+    "earth": "warproject:block/hesco_barrier_top",
+    "particle": "warproject:block/hesco_barrier"
+  },
+  "elements": [
+    {"from": [1, 0, 1], "to": [15, 16, 15], "faces": {
+      "up": {"texture": "#earth", "uv": [1, 1, 15, 15]},
+      "down": {"texture": "#earth", "uv": [1, 1, 15, 15], "cullface": "down"}
+    }},
+    {"from": [0, 0, 0], "to": [1, 16, 1], "faces": {
+      "up": {"texture": "#mesh", "uv": [0, 0, 1, 1]},
+      "down": {"texture": "#mesh", "uv": [0, 0, 1, 1], "cullface": "down"},
+      "north": {"texture": "#mesh", "uv": [0, 0, 1, 16], "cullface": "north"},
+      "west": {"texture": "#mesh", "uv": [15, 0, 16, 16], "cullface": "west"}
+    }},
+    {"from": [15, 0, 0], "to": [16, 16, 1], "faces": {
+      "up": {"texture": "#mesh", "uv": [15, 0, 16, 1]},
+      "down": {"texture": "#mesh", "uv": [15, 0, 16, 1], "cullface": "down"},
+      "north": {"texture": "#mesh", "uv": [15, 0, 16, 16], "cullface": "north"},
+      "east": {"texture": "#mesh", "uv": [0, 0, 1, 16], "cullface": "east"}
+    }},
+    {"from": [0, 0, 15], "to": [1, 16, 16], "faces": {
+      "up": {"texture": "#mesh", "uv": [0, 15, 1, 16]},
+      "down": {"texture": "#mesh", "uv": [0, 15, 1, 16], "cullface": "down"},
+      "south": {"texture": "#mesh", "uv": [15, 0, 16, 16], "cullface": "south"},
+      "west": {"texture": "#mesh", "uv": [0, 0, 1, 16], "cullface": "west"}
+    }},
+    {"from": [15, 0, 15], "to": [16, 16, 16], "faces": {
+      "up": {"texture": "#mesh", "uv": [15, 15, 16, 16]},
+      "down": {"texture": "#mesh", "uv": [15, 15, 16, 16], "cullface": "down"},
+      "south": {"texture": "#mesh", "uv": [0, 0, 1, 16], "cullface": "south"},
+      "east": {"texture": "#mesh", "uv": [15, 0, 16, 16], "cullface": "east"}
+    }},
+    {"from": [1, 0, 0], "to": [15, 16, 1], "faces": {
+      "up": {"texture": "#mesh", "uv": [1, 0, 15, 1]},
+      "down": {"texture": "#mesh", "uv": [1, 0, 15, 1], "cullface": "down"},
+      "north": {"texture": "#mesh", "uv": [1, 0, 15, 16], "cullface": "north"}
+    }},
+    {"from": [1, 0, 15], "to": [15, 16, 16], "faces": {
+      "up": {"texture": "#mesh", "uv": [1, 15, 15, 16]},
+      "down": {"texture": "#mesh", "uv": [1, 15, 15, 16], "cullface": "down"},
+      "south": {"texture": "#mesh", "uv": [1, 0, 15, 16], "cullface": "south"}
+    }},
+    {"from": [0, 0, 1], "to": [1, 16, 15], "faces": {
+      "up": {"texture": "#mesh", "uv": [0, 1, 1, 15]},
+      "down": {"texture": "#mesh", "uv": [0, 1, 1, 15], "cullface": "down"},
+      "west": {"texture": "#mesh", "uv": [1, 0, 15, 16], "cullface": "west"}
+    }},
+    {"from": [15, 0, 1], "to": [16, 16, 15], "faces": {
+      "up": {"texture": "#mesh", "uv": [15, 1, 16, 15]},
+      "down": {"texture": "#mesh", "uv": [15, 1, 16, 15], "cullface": "down"},
+      "east": {"texture": "#mesh", "uv": [1, 0, 15, 16], "cullface": "east"}
+    }}
+  ]
+}

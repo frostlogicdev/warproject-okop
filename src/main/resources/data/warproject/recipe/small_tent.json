@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["WWW"," S ","PPP"],"key":{"W":{"item":"minecraft:white_wool"},"S":{"item":"minecraft:stick"},"P":{"item":"minecraft:oak_planks"}},"result":{"id":"warproject:small_tent","count":1}}

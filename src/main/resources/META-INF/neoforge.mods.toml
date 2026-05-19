@@ -22,3 +22,20 @@ type="required"
 versionRange="${minecraft_version_range}"
 ordering="NONE"
 side="BOTH"
+
+# Optional dependency on JourneyMap. If present, our plugin under
+# com.frostlogic.warproject.client.jmplugin draws faction-base polygons and
+# ally/enemy markers on the JM minimap and fullscreen map.
+# If absent, the mod loads normally and no map integration runs.
+#
+# We require the v2 client API (journeymap.api.v2.*), which is shipped only by
+# JM 6.0+. JM 1.21.1 versions are tagged "1.21.1-6.0.0-beta.NN" — NeoForge
+# compares those Maven-style and "1" < "6", so the naive range [6.0,) excludes
+# them. The range below matches every "1.21.1-6.0.0-beta.*" build.
+[[dependencies.${mod_id}]]
+modId="journeymap"
+type="optional"
+versionRange="[1.21.1-6.0.0-beta.1,)"
+ordering="NONE"
+side="CLIENT"
+

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GCG",
+    "GIG",
+    "ILI"
+  ],
+  "key": {
+    "C": {"item": "minecraft:chain"},
+    "G": {"item": "minecraft:gold_ingot"},
+    "I": {"item": "minecraft:iron_ingot"},
+    "L": {"item": "minecraft:lantern"}
+  },
+  "result": {"item": "warproject:mess_chandelier", "count": 1}
+}

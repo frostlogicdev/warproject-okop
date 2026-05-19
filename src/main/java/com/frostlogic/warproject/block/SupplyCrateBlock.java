@@ -24,6 +24,15 @@ public class SupplyCrateBlock extends BaseEntityBlock {
     public static final net.minecraft.world.level.block.state.properties.DirectionProperty FACING =
             HorizontalDirectionalBlock.FACING;
 
+    /**
+     * Visual + collision outline of the crate. Fills the full block in X/Z
+     * so the bottom face flushes against the supporting block (and the
+     * occlusion shape derived from this gives the floor proper shadow,
+     * fixing the see-through-floor bug).
+     */
+    private static final net.minecraft.world.phys.shapes.VoxelShape SHAPE =
+            Block.box(0, 0, 0, 16, 9, 16);
+
     public SupplyCrateBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
@@ -31,6 +40,36 @@ public class SupplyCrateBlock extends BaseEntityBlock {
 
     @Override
     protected MapCodec<SupplyCrateBlock> codec() { return CODEC; }
+
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state,
+                                                                  net.minecraft.world.level.BlockGetter level,
+                                                                  BlockPos pos,
+                                                                  net.minecraft.world.phys.shapes.CollisionContext ctx) {
+        return SHAPE;
+    }
+
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(BlockState state,
+                                                                            net.minecraft.world.level.BlockGetter level,
+                                                                            BlockPos pos,
+                                                                            net.minecraft.world.phys.shapes.CollisionContext ctx) {
+        return SHAPE;
+    }
+
+    /**
+     * Block bottom completely covers the supporting block, so the light
+     * engine should treat it as opaque from below. Without overriding this
+     * method, {@link BaseEntityBlock} falls through to the default
+     * implementation that effectively returns {@link Shapes#empty()},
+     * which is what made the floor "see-through" before.
+     */
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getOcclusionShape(BlockState state,
+                                                                            net.minecraft.world.level.BlockGetter level,
+                                                                            BlockPos pos) {
+        return SHAPE;
+    }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

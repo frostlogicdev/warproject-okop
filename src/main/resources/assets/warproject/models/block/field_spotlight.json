@@ -1,0 +1,89 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "metal": "warproject:block/field_spotlight",
+    "lens": "warproject:block/field_spotlight_lens",
+    "particle": "warproject:block/field_spotlight"
+  },
+  "elements": [
+    {"from": [6, 0, 6], "to": [10, 1, 10], "faces": {
+      "up": {"texture": "#metal", "uv": [6, 6, 10, 10]},
+      "down": {"texture": "#metal", "uv": [6, 6, 10, 10], "cullface": "down"},
+      "north": {"texture": "#metal", "uv": [6, 15, 10, 16]},
+      "south": {"texture": "#metal", "uv": [6, 15, 10, 16]},
+      "east": {"texture": "#metal", "uv": [6, 15, 10, 16]},
+      "west": {"texture": "#metal", "uv": [6, 15, 10, 16]}
+    }},
+    {"from": [1, 0, 7], "to": [7, 1, 9], "faces": {
+      "up": {"texture": "#metal", "uv": [1, 7, 7, 9]},
+      "down": {"texture": "#metal", "uv": [1, 7, 7, 9], "cullface": "down"},
+      "north": {"texture": "#metal", "uv": [1, 15, 7, 16]},
+      "south": {"texture": "#metal", "uv": [1, 15, 7, 16]},
+      "west": {"texture": "#metal", "uv": [7, 15, 9, 16], "cullface": "west"}
+    }},
+    {"from": [9, 0, 7], "to": [15, 1, 9], "faces": {
+      "up": {"texture": "#metal", "uv": [9, 7, 15, 9]},
+      "down": {"texture": "#metal", "uv": [9, 7, 15, 9], "cullface": "down"},
+      "north": {"texture": "#metal", "uv": [9, 15, 15, 16]},
+      "south": {"texture": "#metal", "uv": [9, 15, 15, 16]},
+      "east": {"texture": "#metal", "uv": [7, 15, 9, 16], "cullface": "east"}
+    }},
+    {"from": [7, 0, 1], "to": [9, 1, 7], "faces": {
+      "up": {"texture": "#metal", "uv": [7, 1, 9, 7]},
+      "down": {"texture": "#metal", "uv": [7, 1, 9, 7], "cullface": "down"},
+      "east": {"texture": "#metal", "uv": [1, 15, 7, 16]},
+      "west": {"texture": "#metal", "uv": [1, 15, 7, 16]},
+      "north": {"texture": "#metal", "uv": [7, 15, 9, 16], "cullface": "north"}
+    }},
+    {"from": [7, 0, 9], "to": [9, 1, 15], "faces": {
+      "up": {"texture": "#metal", "uv": [7, 9, 9, 15]},
+      "down": {"texture": "#metal", "uv": [7, 9, 9, 15], "cullface": "down"},
+      "east": {"texture": "#metal", "uv": [9, 15, 15, 16]},
+      "west": {"texture": "#metal", "uv": [9, 15, 15, 16]},
+      "south": {"texture": "#metal", "uv": [7, 15, 9, 16], "cullface": "south"}
+    }},
+    {"from": [7, 1, 7], "to": [9, 11, 9], "faces": {
+      "north": {"texture": "#metal", "uv": [7, 5, 9, 15]},
+      "south": {"texture": "#metal", "uv": [7, 5, 9, 15]},
+      "east": {"texture": "#metal", "uv": [7, 5, 9, 15]},
+      "west": {"texture": "#metal", "uv": [7, 5, 9, 15]}
+    }},
+    {"from": [4, 10, 6], "to": [12, 12, 10], "faces": {
+      "up": {"texture": "#metal", "uv": [4, 6, 12, 10]},
+      "down": {"texture": "#metal", "uv": [4, 6, 12, 10]},
+      "north": {"texture": "#metal", "uv": [4, 4, 12, 6]},
+      "south": {"texture": "#metal", "uv": [4, 4, 12, 6]},
+      "east": {"texture": "#metal", "uv": [6, 4, 10, 6]},
+      "west": {"texture": "#metal", "uv": [6, 4, 10, 6]}
+    }},
+    {"from": [3, 12, 4], "to": [13, 16, 12], "faces": {
+      "up": {"texture": "#metal", "uv": [3, 4, 13, 12]},
+      "down": {"texture": "#metal", "uv": [3, 4, 13, 12]},
+      "north": {"texture": "#lens", "uv": [3, 0, 13, 4]},
+      "south": {"texture": "#metal", "uv": [3, 0, 13, 4]},
+      "east": {"texture": "#metal", "uv": [4, 0, 12, 4]},
+      "west": {"texture": "#metal", "uv": [4, 0, 12, 4]}
+    }},
+    {"from": [4, 12, 3], "to": [12, 16, 4], "faces": {
+      "up": {"texture": "#metal", "uv": [4, 3, 12, 4]},
+      "down": {"texture": "#metal", "uv": [4, 3, 12, 4]},
+      "north": {"texture": "#lens", "uv": [4, 0, 12, 4]},
+      "east": {"texture": "#metal", "uv": [3, 0, 4, 4]},
+      "west": {"texture": "#metal", "uv": [12, 0, 13, 4]}
+    }},
+    {"from": [5, 13, 2], "to": [11, 15, 3], "faces": {
+      "up": {"texture": "#metal", "uv": [5, 2, 11, 3]},
+      "down": {"texture": "#metal", "uv": [5, 2, 11, 3]},
+      "north": {"texture": "#lens", "uv": [5, 1, 11, 3]},
+      "east": {"texture": "#metal", "uv": [2, 1, 3, 3]},
+      "west": {"texture": "#metal", "uv": [13, 1, 14, 3]}
+    }},
+    {"from": [4, 12, 12], "to": [12, 16, 13], "faces": {
+      "down": {"texture": "#metal", "uv": [4, 12, 12, 13]},
+      "south": {"texture": "#metal", "uv": [4, 0, 12, 4]},
+      "east": {"texture": "#metal", "uv": [12, 0, 13, 4]},
+      "west": {"texture": "#metal", "uv": [3, 0, 4, 4]}
+    }}
+  ]
+}

@@ -53,10 +53,74 @@ public class ModBlocks {
                     .strength(2.0f).sound(SoundType.WOOD)));
     public static final DeferredBlock<Block> TRENCH_LANTERN = BLOCKS.register("trench_lantern",
             () -> new TrenchLanternBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
-                    .strength(1.0f).sound(SoundType.LANTERN).noOcclusion().lightLevel(s -> 5)));
+                    .strength(1.0f).sound(SoundType.LANTERN).noOcclusion().lightLevel(s -> 14)));
     public static final DeferredBlock<Block> SUPPLY_CRATE = BLOCKS.register("supply_crate",
             () -> new SupplyCrateBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOD)
                     .strength(2.5f).sound(SoundType.WOOD)));
+
+    /**
+     * Garage chandelier — simple olive-drab metal pendant. Lit state pumps
+     * out the same brightness as a campfire (light=14) so a 5×5 garage is
+     * fully illuminated by a single ceiling light. Off → light=0.
+     */
+    public static final DeferredBlock<Block> GARAGE_CHANDELIER = BLOCKS.register("garage_chandelier",
+            () -> new CeilingLightBlock(
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.METAL)
+                            .strength(1.5f)
+                            .sound(SoundType.LANTERN)
+                            .noOcclusion()
+                            .lightLevel(s -> s.getValue(CeilingLightBlock.LIT) ? 14 : 0),
+                    // Outline matches the wide reflector dome (1..15) in the model.
+                    Block.box(1, 3, 1, 15, 16, 15)));
+
+    /**
+     * Mess-hall chandelier — brass cross-frame with four candle cups. Lit
+     * state outputs full daylight (light=15) so a 7×7 dining hall is bright
+     * even at night. Off → light=0.
+     * <p>
+     * The visual model extends BEYOND the placed block (cross arms reach to
+     * x=-4..20 and z=-4..20) so the chandelier appears to span 3 blocks
+     * wide. The hitbox itself stays inside the placed block — the geometry
+     * sticking out into neighbours is purely cosmetic and won't block
+     * placement of adjacent blocks.
+     */
+    public static final DeferredBlock<Block> MESS_CHANDELIER = BLOCKS.register("mess_chandelier",
+            () -> new CeilingLightBlock(
+                    BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.GOLD)
+                            .strength(2.0f)
+                            .sound(SoundType.LANTERN)
+                            .noOcclusion()
+                            .lightLevel(s -> s.getValue(CeilingLightBlock.LIT) ? 15 : 0),
+                    Block.box(4, 4, 4, 12, 16, 12)));
+
+    // ==================== POLEVOY (Field Camp) ====================
+    public static final DeferredBlock<Block> SMALL_TENT = BLOCKS.register("small_tent",
+            () -> new SmallTentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOL)
+                    .strength(1.0f).sound(SoundType.WOOL).noOcclusion()));
+    public static final DeferredBlock<Block> MEDICAL_TENT = BLOCKS.register("medical_tent",
+            () -> new MedicalTentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.WOOL)
+                    .strength(1.0f).sound(SoundType.WOOL).noOcclusion()));
+    public static final DeferredBlock<Block> FIELD_KITCHEN = BLOCKS.register("field_kitchen",
+            () -> new FieldEquipmentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
+                    .strength(2.5f).sound(SoundType.METAL).noOcclusion(),
+                    Block.box(1, 0, 1, 15, 13, 15)));
+    public static final DeferredBlock<Block> FIELD_RADIO = BLOCKS.register("field_radio",
+            () -> new FieldEquipmentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
+                    .strength(1.5f).sound(SoundType.METAL).noOcclusion(),
+                    Block.box(3, 0, 3, 13, 10, 13)));
+    public static final DeferredBlock<Block> FIELD_SPOTLIGHT = BLOCKS.register("field_spotlight",
+            () -> new FieldEquipmentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
+                    .strength(2.0f).sound(SoundType.METAL).noOcclusion().lightLevel(s -> 10),
+                    Block.box(3, 0, 3, 13, 14, 13)));
+    public static final DeferredBlock<Block> FIRST_AID_KIT = BLOCKS.register("first_aid_kit",
+            () -> new FirstAidKitBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED)
+                    .strength(0.5f).sound(SoundType.WOOL).noOcclusion()));
+    public static final DeferredBlock<Block> GENERATOR = BLOCKS.register("generator",
+            () -> new FieldEquipmentBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL)
+                    .strength(3.0f, 6.0f).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops(),
+                    Block.box(1, 0, 1, 15, 12, 15)));
 
     // ==================== BAZA (Military Base) ====================
     public static final DeferredBlock<Block> MILITARY_CONCRETE = BLOCKS.register("military_concrete",

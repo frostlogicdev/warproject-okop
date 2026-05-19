@@ -1,12 +1,30 @@
 {
-  "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/barbed_wire", "particle": "warproject:block/barbed_wire"},
+  "render_type": "cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "wire": "warproject:block/barbed_wire",
+    "particle": "warproject:block/barbed_wire"
+  },
   "elements": [
-    {"from": [0, 0, 7], "to": [16, 4, 9], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [7, 0, 0], "to": [9, 4, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [1, 4, 6], "to": [15, 8, 10], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [6, 4, 1], "to": [10, 8, 15], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [2, 8, 5], "to": [14, 12, 11], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [5, 8, 2], "to": [11, 12, 14], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {
+      "from": [0.8, 0, 8],
+      "to": [15.2, 8, 8],
+      "rotation": {"origin": [8, 0, 8], "axis": "y", "angle": 45, "rescale": true},
+      "shade": false,
+      "faces": {
+        "north": {"uv": [0, 8, 16, 16], "texture": "#wire"},
+        "south": {"uv": [16, 8, 0, 16], "texture": "#wire"}
+      }
+    },
+    {
+      "from": [8, 0, 0.8],
+      "to": [8, 8, 15.2],
+      "rotation": {"origin": [8, 0, 8], "axis": "y", "angle": 45, "rescale": true},
+      "shade": false,
+      "faces": {
+        "west": {"uv": [0, 8, 16, 16], "texture": "#wire"},
+        "east": {"uv": [16, 8, 0, 16], "texture": "#wire"}
+      }
+    }
   ]
 }

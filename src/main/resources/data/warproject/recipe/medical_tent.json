@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["RWR"," S ","PPP"],"key":{"R":{"item":"minecraft:red_wool"},"W":{"item":"minecraft:white_wool"},"S":{"item":"minecraft:stick"},"P":{"item":"minecraft:oak_planks"}},"result":{"id":"warproject:medical_tent","count":1}}

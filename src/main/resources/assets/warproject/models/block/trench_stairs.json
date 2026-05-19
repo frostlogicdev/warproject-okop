@@ -1,8 +1,65 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/trench_stairs", "particle": "warproject:block/trench_stairs"},
+  "ambientocclusion": false,
+  "textures": {
+    "wood": "warproject:block/trench_stairs",
+    "side": "warproject:block/trench_stairs",
+    "particle": "warproject:block/trench_stairs"
+  },
   "elements": [
-    {"from": [0, 0, 8], "to": [16, 8, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [0, 8, 0], "to": [16, 16, 8], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {"from": [0, 0, 0], "to": [16, 5, 16], "faces": {
+      "up": {"texture": "#wood"},
+      "down": {"texture": "#side", "cullface": "down"},
+      "north": {"texture": "#side", "uv": [0, 11, 16, 16], "cullface": "north"},
+      "south": {"texture": "#side", "uv": [0, 11, 16, 16], "cullface": "south"},
+      "east": {"texture": "#side", "uv": [0, 11, 16, 16], "cullface": "east"},
+      "west": {"texture": "#side", "uv": [0, 11, 16, 16], "cullface": "west"}
+    }},
+    {"from": [0, 5, 0], "to": [16, 11, 11], "faces": {
+      "up": {"texture": "#wood"},
+      "north": {"texture": "#side", "uv": [0, 5, 16, 11], "cullface": "north"},
+      "south": {"texture": "#side", "uv": [0, 5, 16, 11]},
+      "east": {"texture": "#side", "uv": [0, 5, 11, 11], "cullface": "east"},
+      "west": {"texture": "#side", "uv": [5, 5, 16, 11], "cullface": "west"}
+    }},
+    {"from": [0, 11, 0], "to": [16, 16, 5], "faces": {
+      "up": {"texture": "#wood", "cullface": "up"},
+      "north": {"texture": "#side", "uv": [0, 0, 16, 5], "cullface": "north"},
+      "south": {"texture": "#side", "uv": [0, 0, 16, 5]},
+      "east": {"texture": "#side", "uv": [0, 0, 5, 5], "cullface": "east"},
+      "west": {"texture": "#side", "uv": [11, 0, 16, 5], "cullface": "west"}
+    }},
+    {"from": [0, 5, 11], "to": [1, 9, 16], "faces": {
+      "up": {"texture": "#wood", "uv": [0, 11, 1, 16]},
+      "down": {"texture": "#wood", "uv": [0, 11, 1, 16]},
+      "north": {"texture": "#side", "uv": [0, 7, 1, 11]},
+      "south": {"texture": "#side", "uv": [15, 7, 16, 11]},
+      "east": {"texture": "#side", "uv": [0, 7, 5, 11]},
+      "west": {"texture": "#side", "uv": [11, 7, 16, 11], "cullface": "west"}
+    }},
+    {"from": [15, 5, 11], "to": [16, 9, 16], "faces": {
+      "up": {"texture": "#wood", "uv": [15, 11, 16, 16]},
+      "down": {"texture": "#wood", "uv": [15, 11, 16, 16]},
+      "north": {"texture": "#side", "uv": [15, 7, 16, 11]},
+      "south": {"texture": "#side", "uv": [0, 7, 1, 11]},
+      "east": {"texture": "#side", "uv": [11, 7, 16, 11], "cullface": "east"},
+      "west": {"texture": "#side", "uv": [0, 7, 5, 11]}
+    }},
+    {"from": [0, 11, 5], "to": [1, 15, 11], "faces": {
+      "up": {"texture": "#wood", "uv": [0, 5, 1, 11]},
+      "down": {"texture": "#wood", "uv": [0, 5, 1, 11]},
+      "north": {"texture": "#side", "uv": [0, 1, 1, 5]},
+      "south": {"texture": "#side", "uv": [15, 1, 16, 5]},
+      "east": {"texture": "#side", "uv": [5, 1, 11, 5]},
+      "west": {"texture": "#side", "uv": [5, 1, 11, 5], "cullface": "west"}
+    }},
+    {"from": [15, 11, 5], "to": [16, 15, 11], "faces": {
+      "up": {"texture": "#wood", "uv": [15, 5, 16, 11]},
+      "down": {"texture": "#wood", "uv": [15, 5, 16, 11]},
+      "north": {"texture": "#side", "uv": [15, 1, 16, 5]},
+      "south": {"texture": "#side", "uv": [0, 1, 1, 5]},
+      "east": {"texture": "#side", "uv": [5, 1, 11, 5], "cullface": "east"},
+      "west": {"texture": "#side", "uv": [5, 1, 11, 5]}
+    }}
   ]
 }

@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.163'
+    id 'net.neoforged.gradle.userdev' version '7.1.9'
 }
 
 version = project.mod_version
@@ -15,6 +15,11 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:deprecation']
+}
+
 runs {
     configureEach {
         systemProperty 'forge.logging.markers', 'REGISTRIES'
@@ -24,12 +29,69 @@ runs {
     client {
     }
     server {
-        programArgument '--nogui'
+        argument '--nogui'
     }
+}
+
+repositories {
+    mavenCentral()
+    // JourneyMap API (soft dependency). Bundles classes for compile-time use only;
+    // we never ship JM classes in our jar — at runtime JM (or a stub) must be present
+    // for the optional integration to activate. See jmplugin/WpJourneymapPlugin.java.
+    maven {
+        name = "JourneyMap (Public)"
+        url = "https://jm.gserv.me/repository/maven-public/"
+    }
+}
+
+configurations.all {
+    // The JM API is a SNAPSHOT; refresh aggressively so we don't pin to a stale
+    // resolved snapshot in Gradle's cache.
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 dependencies {
     implementation "net.neoforged:neoforge:${project.neo_version}"
+
+    // JourneyMap API: compile-time only. The plugin under
+    // com.frostlogic.warproject.client.jmplugin is discovered at runtime by JM
+    // via the @JourneyMapPlugin annotation, so we do NOT need a runtime dep.
+    // If JM is absent at runtime, the plugin class is never classloaded.
+    compileOnly("info.journeymap:journeymap-api-neoforge:2.0.0-1.21.1-SNAPSHOT") {
+        changing = true
+    }
+
+    // Runtime libraries shipped inside the mod jar via NeoForge jarJar (§14.1).
+    jarJar(implementation('org.xerial:sqlite-jdbc')) {
+        jarJar.ranged(it, '[3.46.0,4.0)')
+        version {
+            prefer '3.46.0.1'
+        }
+    }
+    jarJar(implementation('org.mindrot:jbcrypt')) {
+        jarJar.ranged(it, '[0.4,)')
+        version {
+            prefer '0.4'
+        }
+    }
+
+    // Test stack (§14.1, §15).
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'net.jqwik:jqwik:1.8.4'
+    testImplementation 'org.assertj:assertj-core:3.26.0'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
+    testImplementation 'com.h2database:h2:2.3.232'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter', 'jqwik'
+    }
+}
+
+tasks.named('test') {
+    systemProperty 'jqwik.tries.default', '100'
 }
 
 tasks.withType(ProcessResources).configureEach {
@@ -63,4 +125,36 @@ jar {
             'Implementation-Vendor'   : 'FrostLogicDev',
         ])
     }
+    // The plain jar task does not embed the jarJar dependencies (sqlite-jdbc,
+    // jbcrypt). Tag it so people don't ship it accidentally; the real
+    // distributable is the jarJar output below.
+    archiveClassifier = 'slim'
+}
+
+// Make the JarJar task own the canonical no-classifier artifact and run as
+// part of `gradlew build`. Without this you get two confusing files —
+// `warproject-X.Y.Z.jar` (no embedded libs, server crashes with
+// ClassNotFoundException: org.sqlite.JDBC) and `warproject-X.Y.Z-all.jar`
+// (the one that should actually be installed). With this override:
+//   gradlew build → warproject-X.Y.Z.jar (with sqlite-jdbc + jbcrypt embedded)
+//   gradlew jar   → warproject-X.Y.Z-slim.jar (no libs; not for distribution)
+tasks.named('jarJar').configure {
+    archiveClassifier = ''
+}
+tasks.named('build').configure {
+    dependsOn tasks.named('jarJar')
+}
+
+// Task 8.2: Prepare server environment by running WorldRelocationTask via JavaExec.
+// Usage: ./gradlew prepareServerEnvironment -PserverDir=/path/to/server
+tasks.register('prepareServerEnvironment', JavaExec) {
+    description = 'Relocates the world from runs/server/world to <serverDir>/world with backup.'
+    group = 'warproject'
+
+    dependsOn classes
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.frostlogic.warproject.env.PrepareEnvironmentMain'
+
+    def dir = project.findProperty('serverDir') ?: project.projectDir.absolutePath
+    args dir
 }

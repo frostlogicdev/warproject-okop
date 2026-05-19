@@ -1,31 +1,61 @@
-# Gradle
+# ===== Minecraft Server Runtime =====
+server/world/
+server/world_nether/
+server/world_the_end/
+server/backups/
+server/crash-reports/
+server/logs/
+server/libraries/
+server/journeymap/
+server/.cache/
+server/cache/
+
+# Server runtime files
+server/usercache.json
+server/usernamecache.json
+server/ops.json
+server/whitelist.json
+server/banned-ips.json
+server/banned-players.json
+server/session.lock
+server/warproject.db
+server/warproject.db-journal
+server/*.log
+server/*.log.gz
+server/config/*.toml.bak
+
+# ===== Gradle / Java =====
 .gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
+out/
+bin/
+*.class
+hs_err_pid*.log
 
-# NeoForge runtime
-runs/
-run/
-logs/
-generated/
-
-# IDE
+# ===== IDE =====
 .idea/
 *.iml
 .vscode/
-*.code-workspace
-.project
-.classpath
-.settings/
-out/
+.kiro/.cache/
 
-# Java
-*.class
-*.jar
-!gradle/wrapper/gradle-wrapper.jar
-hs_err_pid*
-replay_pid*
+# ===== Node =====
+node_modules/
+dist/
+.env
+.env.local
+*.log
 
-# OS
+# ===== Python =====
+__pycache__/
+*.pyc
+*.pyo
+
+# ===== Logs (root) =====
+logs/
+
+# ===== Misc =====
+.gitignore.bak
+
+# ===== OS =====
 .DS_Store
 Thumbs.db

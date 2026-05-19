@@ -1,7 +1,58 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/supply_crate", "top": "warproject:block/supply_crate_top", "particle": "warproject:block/supply_crate"},
+  "textures": {
+    "side": "warproject:block/supply_crate",
+    "top": "warproject:block/supply_crate_top",
+    "particle": "warproject:block/supply_crate"
+  },
   "elements": [
-    {"from": [1, 0, 1], "to": [15, 14, 15], "faces": {"up": {"texture": "#top"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {
+      "_comment": "Main body — full footprint, half block tall. Filling x/z 0..16 stops the see-through-floor bug because the block now occludes the surface below.",
+      "from": [0, 0, 0],
+      "to": [16, 8, 16],
+      "faces": {
+        "down": {"uv": [0, 0, 16, 16], "texture": "#side", "cullface": "down"},
+        "up":   {"uv": [0, 0, 16, 16], "texture": "#top"},
+        "north":{"uv": [0, 8, 16, 16], "texture": "#side"},
+        "south":{"uv": [0, 8, 16, 16], "texture": "#side"},
+        "east": {"uv": [0, 8, 16, 16], "texture": "#side"},
+        "west": {"uv": [0, 8, 16, 16], "texture": "#side"}
+      }
+    },
+    {
+      "_comment": "Raised iron straps — two skinny ridges sitting on top of the lid. Purely decorative.",
+      "from": [3, 8, 0],
+      "to": [5, 9, 16],
+      "faces": {
+        "up":   {"uv": [3, 0, 5, 16], "texture": "#side"},
+        "north":{"uv": [3, 7, 5, 8],  "texture": "#side"},
+        "south":{"uv": [3, 7, 5, 8],  "texture": "#side"},
+        "east": {"uv": [0, 7, 16, 8], "texture": "#side"},
+        "west": {"uv": [0, 7, 16, 8], "texture": "#side"}
+      }
+    },
+    {
+      "from": [11, 8, 0],
+      "to": [13, 9, 16],
+      "faces": {
+        "up":   {"uv": [11, 0, 13, 16], "texture": "#side"},
+        "north":{"uv": [11, 7, 13, 8],  "texture": "#side"},
+        "south":{"uv": [11, 7, 13, 8],  "texture": "#side"},
+        "east": {"uv": [0, 7, 16, 8],   "texture": "#side"},
+        "west": {"uv": [0, 7, 16, 8],   "texture": "#side"}
+      }
+    },
+    {
+      "_comment": "Centre handle — small bump between the two straps.",
+      "from": [7, 8, 5],
+      "to": [9, 9, 11],
+      "faces": {
+        "up":   {"uv": [7, 5, 9, 11],  "texture": "#top"},
+        "north":{"uv": [7, 7, 9, 8],   "texture": "#side"},
+        "south":{"uv": [7, 7, 9, 8],   "texture": "#side"},
+        "east": {"uv": [5, 7, 11, 8],  "texture": "#side"},
+        "west": {"uv": [5, 7, 11, 8],  "texture": "#side"}
+      }
+    }
   ]
 }

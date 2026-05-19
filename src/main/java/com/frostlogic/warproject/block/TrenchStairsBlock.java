@@ -16,14 +16,19 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class TrenchStairsBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<TrenchStairsBlock> CODEC = simpleCodec(TrenchStairsBlock::new);
 
-    private static final VoxelShape SHAPE_NORTH = Shapes.or(
-            Block.box(0, 0, 8, 16, 8, 16), Block.box(0, 8, 0, 16, 16, 8));
-    private static final VoxelShape SHAPE_SOUTH = Shapes.or(
-            Block.box(0, 0, 0, 16, 8, 8), Block.box(0, 8, 8, 16, 16, 16));
-    private static final VoxelShape SHAPE_EAST = Shapes.or(
-            Block.box(0, 0, 0, 8, 8, 16), Block.box(8, 8, 0, 16, 16, 16));
-    private static final VoxelShape SHAPE_WEST = Shapes.or(
-            Block.box(8, 0, 0, 16, 8, 16), Block.box(0, 8, 0, 8, 16, 16));
+    private static final VoxelShape BASE = Block.box(0, 0, 0, 16, 5, 16);
+    private static final VoxelShape SHAPE_NORTH = Shapes.or(BASE,
+            Block.box(0, 5, 0, 16, 11, 11),
+            Block.box(0, 11, 0, 16, 16, 5));
+    private static final VoxelShape SHAPE_SOUTH = Shapes.or(BASE,
+            Block.box(0, 5, 5, 16, 11, 16),
+            Block.box(0, 11, 11, 16, 16, 16));
+    private static final VoxelShape SHAPE_EAST = Shapes.or(BASE,
+            Block.box(5, 5, 0, 16, 11, 16),
+            Block.box(11, 11, 0, 16, 16, 16));
+    private static final VoxelShape SHAPE_WEST = Shapes.or(BASE,
+            Block.box(0, 5, 0, 11, 11, 16),
+            Block.box(0, 11, 0, 5, 16, 16));
 
     public TrenchStairsBlock(Properties properties) {
         super(properties);

@@ -1,0 +1,155 @@
+	[auth.password]
+		#Minimum password length
+		# Default: 6
+		# Range: 1 ~ 128
+		minLen = 6
+		#Maximum password length
+		# Default: 32
+		# Range: 1 ~ 128
+		maxLen = 32
+		#Regex character class for allowed password characters
+		allowedChars = "[A-Za-z0-9!@#$%^&*()_\\-+=]"
+
+	[auth.login]
+		#Maximum consecutive failed login attempts before cooldown + kick (default: 5)
+		# Default: 5
+		# Range: 1 ~ 50
+		attempts = 5
+
+[captcha]
+	#X coordinate of captcha spawn point
+	# Default: 0
+	# Range: > -2147483648
+	spawnX = 0
+	#Y coordinate of captcha spawn point (default: 320, sky)
+	# Default: 320
+	# Range: -64 ~ 1024
+	spawnY = 320
+	#Z coordinate of captcha spawn point
+	# Default: 0
+	# Range: > -2147483648
+	spawnZ = 0
+	#Length of captcha code
+	# Default: 6
+	# Range: 3 ~ 16
+	codeLen = 6
+	#Characters used to generate captcha code
+	alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	#Whether captcha verification is case-sensitive
+	caseSensitive = false
+	#Maximum captcha attempts before kick
+	# Default: 3
+	# Range: 1 ~ 10
+	attempts = 3
+	#Captcha timeout in seconds
+	# Default: 180
+	# Range: 30 ~ 600
+	timeoutSeconds = 180
+	#Cooldown in seconds after failed captcha before player can reconnect
+	# Default: 90
+	# Range: 10 ~ 600
+	loginCooldownSeconds = 90
+
+[candidate]
+	#Candidate timeout in seconds of active session (default: 24h = 86400)
+	# Default: 86400
+	# Range: 3600 ~ 604800
+	timeoutSeconds = 86400
+	#Interval in ticks between actionbar reminders for candidates (default: 600 = ~30s)
+	# Default: 600
+	# Range: 20 ~ 6000
+	actionbarIntervalTicks = 600
+	#Additional deny rules for candidates (list of tag/action identifiers)
+	extraDenies = []
+
+[regions]
+	#List of base region definitions.
+	#Format: 'faction;dimension;minX,minY,minZ;maxX,maxY,maxZ'
+	#Example: 'ZARNAVIA;minecraft:overworld;100,60,100;200,120,200'
+	bases = []
+	#Interval in ticks between region cache updates on PlayerTickEvent (default: 10)
+	# Default: 10
+	# Range: 1 ~ 200
+	tickIntervalTicks = 10
+
+[factions]
+	#Spawn coordinates [x, y, z] for Zarnavia base
+	zarnaviaSpawn = [0, 64, 0]
+	#Spawn coordinates [x, y, z] for Chernogryad base
+	chernogryadSpawn = [0, 64, 0]
+	#Spawn coordinates [x, y, z] for the faction choice hall
+	choiceHallSpawn = [0, 64, 0]
+
+[ranks]
+	#Ordered list of ranks for Zarnavia faction (lowest to highest).
+	#Format: 'role:rankName' where role is SOLDIER, COMMANDER, or GENERAL
+	zarnavia = ["SOLDIER:рядовой", "SOLDIER:ефрейтор", "SOLDIER:мл. сержант", "SOLDIER:сержант", "SOLDIER:ст. сержант", "SOLDIER:старшина", "COMMANDER:лейтенант", "COMMANDER:ст. лейтенант", "COMMANDER:капитан", "COMMANDER:майор", "COMMANDER:подполковник", "COMMANDER:полковник", "GENERAL:генерал-майор", "GENERAL:генерал-лейтенант", "GENERAL:генерал"]
+	#Ordered list of ranks for Chernogryad faction (lowest to highest).
+	#Format: 'role:rankName' where role is SOLDIER, COMMANDER, or GENERAL
+	chernogryad = ["SOLDIER:рядовой", "SOLDIER:ефрейтор", "SOLDIER:мл. сержант", "SOLDIER:сержант", "SOLDIER:ст. сержант", "SOLDIER:старшина", "COMMANDER:лейтенант", "COMMANDER:ст. лейтенант", "COMMANDER:капитан", "COMMANDER:майор", "COMMANDER:подполковник", "COMMANDER:полковник", "GENERAL:генерал-майор", "GENERAL:генерал-лейтенант", "GENERAL:генерал"]
+
+[captivity]
+	#Vulnerability predicate for passport capture.
+	#Predicate name or expression. Default: HP_BELOW_HALF
+	vulnerability = "HP_BELOW_HALF"
+
+[ransom]
+	#Economy integration for ransom. Options: NONE, NUMISMATIC, WP_INTERNAL
+	economy = "NONE"
+	#Ransom mode. Options: MANUAL, AUTOMATIC
+	mode = "MANUAL"
+
+[roles]
+	#Role provider. Options: INTERNAL, LUCKPERMS_FALLBACK
+	provider = "INTERNAL"
+
+[radial]
+	#Enabled radial menu items.
+	#Options: ACCEPT, CAPTURE_PASSPORT, PROMOTE, DEMOTE, COLLAB_MARK, COLLAB_UNMARK,
+	#         RANSOM_OPEN, SUBDIV_INVITE, SUBDIV_KICK
+	menuItems = ["ACCEPT", "CAPTURE_PASSPORT", "PROMOTE", "DEMOTE", "COLLAB_MARK", "COLLAB_UNMARK"]
+
+[db]
+	#Database driver. Options: sqlite, mysql
+	driver = "sqlite"
+	#JDBC connection URL
+	jdbcUrl = "jdbc:sqlite:warproject.db"
+	#Database username (used for MySQL)
+	username = ""
+	#Database password (used for MySQL)
+	password = ""
+
+[audit]
+	#Audit notifier implementation. Options: NONE, DISCORD
+	notifier = "NONE"
+
+[collaborator]
+	#Ticks of continuous presence in enemy region before auto-collaborator mark (default: 72000 = 1 hour at 20tps)
+	# Default: 72000
+	# Range: 1200 ~ 1728000
+	thresholdTicks = 72000
+
+[events]
+	# Default: 10
+	# Range: 1 ~ 50
+	maxConcurrent = 10
+	# Default: 64
+	# Range: 8 ~ 128
+	maxNameLength = 64
+
+[diplomacy]
+	# Default: 86400
+	# Range: 3600 ~ 604800
+	maxTruceDuration = 86400
+	# Default: 300
+	# Range: 60 ~ 3600
+	minTruceDuration = 300
+	# Default: 43200
+	# Range: 0 ~ 604800
+	truceCooldown = 43200
+
+[awards]
+	autoTriggers = []
+	# Default: 100
+	# Range: 1 ~ 1000
+	maxPerPlayer = 100

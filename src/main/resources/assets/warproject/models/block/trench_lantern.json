@@ -1,9 +1,16 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/trench_lantern", "particle": "warproject:block/trench_lantern"},
+  "ambientocclusion": false,
+  "textures": {"metal": "warproject:block/trench_lantern", "glass": "warproject:block/trench_lantern_glass", "glow": "warproject:block/trench_lantern_glow", "particle": "warproject:block/trench_lantern"},
   "elements": [
-    {"from": [5, 0, 5], "to": [11, 2, 11], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [6, 2, 6], "to": [10, 9, 10], "faces": {"up": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}},
-    {"from": [5, 9, 5], "to": [11, 10, 11], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {"from": [4, 0, 4], "to": [12, 1, 12], "faces": {"up": {"texture": "#metal"}, "down": {"texture": "#metal"}, "north": {"texture": "#metal"}, "south": {"texture": "#metal"}, "east": {"texture": "#metal"}, "west": {"texture": "#metal"}}},
+    {"from": [5, 1, 5], "to": [11, 3, 11], "faces": {"up": {"texture": "#metal"}, "down": {"texture": "#metal"}, "north": {"texture": "#metal"}, "south": {"texture": "#metal"}, "east": {"texture": "#metal"}, "west": {"texture": "#metal"}}},
+    {"from": [6, 3, 6], "to": [10, 8, 10], "faces": {"north": {"texture": "#glass"}, "south": {"texture": "#glass"}, "east": {"texture": "#glass"}, "west": {"texture": "#glass"}, "up": {"texture": "#glow"}}},
+    {"from": [7, 3, 7], "to": [9, 7, 9], "faces": {"north": {"texture": "#glow"}, "south": {"texture": "#glow"}, "east": {"texture": "#glow"}, "west": {"texture": "#glow"}, "up": {"texture": "#glow"}}},
+    {"from": [5, 8, 5], "to": [11, 10, 11], "faces": {"up": {"texture": "#metal"}, "down": {"texture": "#metal"}, "north": {"texture": "#metal"}, "south": {"texture": "#metal"}, "east": {"texture": "#metal"}, "west": {"texture": "#metal"}}},
+    {"from": [4, 10, 7], "to": [12, 11, 9], "faces": {"up": {"texture": "#metal"}, "down": {"texture": "#metal"}, "north": {"texture": "#metal"}, "south": {"texture": "#metal"}, "east": {"texture": "#metal"}, "west": {"texture": "#metal"}}},
+    {"from": [3, 11, 7], "to": [5, 13, 9], "faces": {"north": {"texture": "#metal"}, "south": {"texture": "#metal"}, "east": {"texture": "#metal"}, "west": {"texture": "#metal"}, "up": {"texture": "#metal"}}},
+    {"from": [11, 11, 7], "to": [13, 13, 9], "faces": {"north": {"texture": "#metal"}, "south": {"texture": "#metal"}, "east": {"texture": "#metal"}, "west": {"texture": "#metal"}, "up": {"texture": "#metal"}}},
+    {"from": [5, 12, 7], "to": [11, 14, 9], "faces": {"up": {"texture": "#metal"}, "down": {"texture": "#metal"}, "north": {"texture": "#metal"}, "south": {"texture": "#metal"}, "east": {"texture": "#metal"}, "west": {"texture": "#metal"}}}
   ]
 }

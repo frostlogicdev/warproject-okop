@@ -1,7 +1,50 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/desert_camo_net", "particle": "warproject:block/desert_camo_net"},
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "net": "warproject:block/desert_camo_net",
+    "particle": "warproject:block/desert_camo_net"
+  },
   "elements": [
-    {"from": [0, 14, 0], "to": [16, 16, 16], "faces": {"up": {"texture": "#0"}, "down": {"texture": "#0"}, "north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}}}
+    {"from": [0, 15, 0], "to": [16, 16, 16], "faces": {
+      "up": {"texture": "#net", "cullface": "up"},
+      "down": {"texture": "#net"},
+      "north": {"texture": "#net", "uv": [0, 0, 16, 1]},
+      "south": {"texture": "#net", "uv": [0, 0, 16, 1]},
+      "east": {"texture": "#net", "uv": [0, 0, 16, 1]},
+      "west": {"texture": "#net", "uv": [0, 0, 16, 1]}
+    }},
+    {"from": [0, 11, 0], "to": [16, 15, 1], "faces": {
+      "north": {"texture": "#net", "uv": [0, 1, 16, 5], "cullface": "north"},
+      "south": {"texture": "#net", "uv": [0, 1, 16, 5]},
+      "east": {"texture": "#net", "uv": [0, 1, 1, 5]},
+      "west": {"texture": "#net", "uv": [15, 1, 16, 5]}
+    }},
+    {"from": [0, 11, 15], "to": [16, 15, 16], "faces": {
+      "north": {"texture": "#net", "uv": [0, 1, 16, 5]},
+      "south": {"texture": "#net", "uv": [0, 1, 16, 5], "cullface": "south"},
+      "east": {"texture": "#net", "uv": [15, 1, 16, 5]},
+      "west": {"texture": "#net", "uv": [0, 1, 1, 5]}
+    }},
+    {"from": [0, 11, 1], "to": [1, 15, 15], "faces": {
+      "north": {"texture": "#net", "uv": [15, 1, 16, 5]},
+      "south": {"texture": "#net", "uv": [0, 1, 1, 5]},
+      "east": {"texture": "#net", "uv": [1, 1, 15, 5]},
+      "west": {"texture": "#net", "uv": [1, 1, 15, 5], "cullface": "west"}
+    }},
+    {"from": [15, 11, 1], "to": [16, 15, 15], "faces": {
+      "north": {"texture": "#net", "uv": [0, 1, 1, 5]},
+      "south": {"texture": "#net", "uv": [15, 1, 16, 5]},
+      "east": {"texture": "#net", "uv": [1, 1, 15, 5], "cullface": "east"},
+      "west": {"texture": "#net", "uv": [1, 1, 15, 5]}
+    }},
+    {"from": [5, 8, 5], "to": [11, 15, 11], "faces": {
+      "down": {"texture": "#net", "uv": [5, 5, 11, 11]},
+      "north": {"texture": "#net", "uv": [5, 1, 11, 8]},
+      "south": {"texture": "#net", "uv": [5, 1, 11, 8]},
+      "east": {"texture": "#net", "uv": [5, 1, 11, 8]},
+      "west": {"texture": "#net", "uv": [5, 1, 11, 8]}
+    }}
   ]
 }

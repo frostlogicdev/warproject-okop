@@ -14,11 +14,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TankHedgehogBlock extends Block {
     private static final VoxelShape SHAPE = Shapes.or(
-            Block.box(6, 0, 0, 10, 3, 16),
-            Block.box(0, 0, 6, 16, 3, 10),
-            Block.box(4, 3, 2, 12, 8, 14),
-            Block.box(2, 3, 4, 14, 8, 12),
-            Block.box(5, 8, 5, 11, 14, 11));
+            Block.box(-3, 0, -3, 19, 20, 19),
+            Block.box(5, 0, 5, 11, 20, 11));
 
     public TankHedgehogBlock(Properties properties) {
         super(properties);

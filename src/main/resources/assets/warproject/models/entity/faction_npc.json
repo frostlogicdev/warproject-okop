@@ -1,0 +1,8 @@
+{
+  "_comment": "Placeholder entity model for FactionNpcEntity (warproject:faction_npc). The actual rendering uses Minecraft's built-in HumanoidModel via a vanilla-style EntityRenderer; this file documents the resource pack slot reserved for a future custom GeckoLib/JSON model. Texture variants are resolved per-entity from FactionId NBT (zarnavia/chernogryad) — see textures/entity/.",
+  "texture_size": [64, 64],
+  "textures": {
+    "default": "warproject:entity/faction_npc"
+  },
+  "elements": []
+}

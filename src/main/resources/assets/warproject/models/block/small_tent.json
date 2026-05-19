@@ -1,0 +1,10 @@
+{
+  "parent": "warproject:block/template_large_tent",
+  "textures": {
+    "canvas": "warproject:block/small_tent",
+    "floor": "warproject:block/tent_floor",
+    "frame": "warproject:block/tent_frame",
+    "door": "warproject:block/tent_door",
+    "emblem": "warproject:block/small_tent"
+  }
+}

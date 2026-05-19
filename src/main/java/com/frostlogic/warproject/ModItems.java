@@ -1,5 +1,7 @@
 package com.frostlogic.warproject;
 
+import com.frostlogic.warproject.item.FirstAidKitItem;
+import com.frostlogic.warproject.item.PassportItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -40,6 +42,26 @@ public class ModItems {
             () -> new BlockItem(ModBlocks.TRENCH_LANTERN.get(), new Item.Properties()));
     public static final DeferredItem<Item> SUPPLY_CRATE = ITEMS.register("supply_crate",
             () -> new BlockItem(ModBlocks.SUPPLY_CRATE.get(), new Item.Properties()));
+    public static final DeferredItem<Item> GARAGE_CHANDELIER = ITEMS.register("garage_chandelier",
+            () -> new BlockItem(ModBlocks.GARAGE_CHANDELIER.get(), new Item.Properties()));
+    public static final DeferredItem<Item> MESS_CHANDELIER = ITEMS.register("mess_chandelier",
+            () -> new BlockItem(ModBlocks.MESS_CHANDELIER.get(), new Item.Properties()));
+
+    // === POLEVOY ===
+    public static final DeferredItem<Item> SMALL_TENT = ITEMS.register("small_tent",
+            () -> new BlockItem(ModBlocks.SMALL_TENT.get(), new Item.Properties()));
+    public static final DeferredItem<Item> MEDICAL_TENT = ITEMS.register("medical_tent",
+            () -> new BlockItem(ModBlocks.MEDICAL_TENT.get(), new Item.Properties()));
+    public static final DeferredItem<Item> FIELD_KITCHEN = ITEMS.register("field_kitchen",
+            () -> new BlockItem(ModBlocks.FIELD_KITCHEN.get(), new Item.Properties()));
+    public static final DeferredItem<Item> FIELD_RADIO = ITEMS.register("field_radio",
+            () -> new BlockItem(ModBlocks.FIELD_RADIO.get(), new Item.Properties()));
+    public static final DeferredItem<Item> FIELD_SPOTLIGHT = ITEMS.register("field_spotlight",
+            () -> new BlockItem(ModBlocks.FIELD_SPOTLIGHT.get(), new Item.Properties()));
+    public static final DeferredItem<Item> FIRST_AID_KIT = ITEMS.register("first_aid_kit",
+            () -> new FirstAidKitItem(new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<Item> GENERATOR = ITEMS.register("generator",
+            () -> new BlockItem(ModBlocks.GENERATOR.get(), new Item.Properties()));
 
     // === BAZA ===
     public static final DeferredItem<Item> MILITARY_CONCRETE = ITEMS.register("military_concrete",
@@ -58,6 +80,10 @@ public class ModItems {
             () -> new BlockItem(ModBlocks.TANK_HEDGEHOG.get(), new Item.Properties()));
     public static final DeferredItem<Item> RAZOR_WIRE_FENCE = ITEMS.register("razor_wire_fence",
             () -> new BlockItem(ModBlocks.RAZOR_WIRE_FENCE.get(), new Item.Properties()));
+
+    // === WarProject server items ===
+    public static final DeferredItem<Item> PASSPORT = ITEMS.register("passport",
+            () -> new PassportItem(new Item.Properties()));
 
     public static void register(IEventBus bus) {
         ITEMS.register(bus);

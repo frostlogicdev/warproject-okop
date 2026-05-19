@@ -1,1 +1,9 @@
-{"variants":{"":{"model":"warproject:block/razor_wire_fence"}}}
+{
+  "multipart": [
+    {"apply": {"model": "warproject:block/razor_wire_fence"}},
+    {"when": {"north": "true"}, "apply": {"model": "warproject:block/razor_wire_fence_side"}},
+    {"when": {"east": "true"}, "apply": {"model": "warproject:block/razor_wire_fence_side", "y": 90}},
+    {"when": {"south": "true"}, "apply": {"model": "warproject:block/razor_wire_fence_side", "y": 180}},
+    {"when": {"west": "true"}, "apply": {"model": "warproject:block/razor_wire_fence_side", "y": 270}}
+  ]
+}

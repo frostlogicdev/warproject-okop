@@ -25,9 +25,15 @@ public class CheckpointBarrierBlock extends HorizontalDirectionalBlock {
     public static final MapCodec<CheckpointBarrierBlock> CODEC = simpleCodec(CheckpointBarrierBlock::new);
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
 
-    private static final VoxelShape POST = Block.box(0, 0, 6, 4, 14, 10);
-    private static final VoxelShape BAR_NS = Shapes.or(POST, Block.box(0, 11, 7, 16, 13, 9));
-    private static final VoxelShape BAR_EW = Shapes.or(POST, Block.box(7, 11, 0, 9, 13, 16));
+    private static final VoxelShape POST = Shapes.or(
+            Block.box(-1, 0, 4, 9, 3, 12),
+            Block.box(2, 3, 6, 6, 24, 10));
+    private static final VoxelShape BAR_NS = Shapes.or(POST,
+            Block.box(-9, 13, 5, -5, 21, 11),
+            Block.box(-6, 16, 7, 32, 20, 9));
+    private static final VoxelShape BAR_EW = Shapes.or(POST,
+            Block.box(5, 13, -9, 11, 21, -5),
+            Block.box(7, 16, -6, 9, 20, 32));
 
     public CheckpointBarrierBlock(Properties properties) {
         super(properties);

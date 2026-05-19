@@ -1,0 +1,94 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "side": "warproject:block/field_kitchen",
+    "top": "warproject:block/field_kitchen_top",
+    "pipe": "warproject:block/field_kitchen_pipe",
+    "particle": "warproject:block/field_kitchen"
+  },
+  "elements": [
+    {"from": [1, 0, 2], "to": [15, 9, 14], "faces": {
+      "up": {"texture": "#top"},
+      "down": {"texture": "#side", "cullface": "down"},
+      "north": {"texture": "#side", "uv": [1, 7, 15, 16], "cullface": "north"},
+      "south": {"texture": "#side", "uv": [1, 7, 15, 16]},
+      "east": {"texture": "#side", "uv": [2, 7, 14, 16]},
+      "west": {"texture": "#side", "uv": [2, 7, 14, 16]}
+    }},
+    {"from": [2, 9, 3], "to": [14, 11, 13], "faces": {
+      "up": {"texture": "#top"},
+      "down": {"texture": "#side"},
+      "north": {"texture": "#side", "uv": [2, 5, 14, 7]},
+      "south": {"texture": "#side", "uv": [2, 5, 14, 7]},
+      "east": {"texture": "#side", "uv": [3, 5, 13, 7]},
+      "west": {"texture": "#side", "uv": [3, 5, 13, 7]}
+    }},
+    {"from": [3, 1, 14], "to": [13, 7, 15], "faces": {
+      "up": {"texture": "#side", "uv": [3, 14, 13, 15]},
+      "down": {"texture": "#side", "uv": [3, 14, 13, 15]},
+      "north": {"texture": "#side", "uv": [3, 9, 13, 15]},
+      "south": {"texture": "#side", "uv": [3, 9, 13, 15]},
+      "east": {"texture": "#side", "uv": [14, 9, 15, 15]},
+      "west": {"texture": "#side", "uv": [14, 9, 15, 15]}
+    }},
+    {"from": [7, 3, 15], "to": [9, 5, 16], "faces": {
+      "up": {"texture": "#pipe", "uv": [7, 15, 9, 16]},
+      "down": {"texture": "#pipe", "uv": [7, 15, 9, 16]},
+      "south": {"texture": "#pipe", "uv": [7, 11, 9, 13]},
+      "east": {"texture": "#pipe", "uv": [15, 11, 16, 13]},
+      "west": {"texture": "#pipe", "uv": [15, 11, 16, 13]}
+    }},
+    {"from": [4, 11, 4], "to": [11, 14, 10], "faces": {
+      "down": {"texture": "#pipe", "uv": [4, 4, 11, 10]},
+      "north": {"texture": "#pipe", "uv": [4, 2, 11, 5]},
+      "south": {"texture": "#pipe", "uv": [4, 2, 11, 5]},
+      "east": {"texture": "#pipe", "uv": [4, 2, 10, 5]},
+      "west": {"texture": "#pipe", "uv": [4, 2, 10, 5]}
+    }},
+    {"from": [5, 14, 5], "to": [10, 15, 9], "faces": {
+      "up": {"texture": "#pipe", "uv": [5, 5, 10, 9]},
+      "down": {"texture": "#pipe", "uv": [5, 5, 10, 9]},
+      "north": {"texture": "#pipe", "uv": [5, 1, 10, 2]},
+      "south": {"texture": "#pipe", "uv": [5, 1, 10, 2]},
+      "east": {"texture": "#pipe", "uv": [5, 1, 9, 2]},
+      "west": {"texture": "#pipe", "uv": [5, 1, 9, 2]}
+    }},
+    {"from": [7, 15, 6], "to": [9, 16, 8], "faces": {
+      "up": {"texture": "#pipe", "uv": [7, 6, 9, 8]},
+      "north": {"texture": "#pipe", "uv": [7, 0, 9, 1]},
+      "south": {"texture": "#pipe", "uv": [7, 0, 9, 1]},
+      "east": {"texture": "#pipe", "uv": [6, 0, 8, 1]},
+      "west": {"texture": "#pipe", "uv": [6, 0, 8, 1]}
+    }},
+    {"from": [4, 11, 11], "to": [9, 13, 13], "faces": {
+      "up": {"texture": "#pipe", "uv": [4, 11, 9, 13]},
+      "down": {"texture": "#pipe", "uv": [4, 11, 9, 13]},
+      "north": {"texture": "#pipe", "uv": [4, 3, 9, 5]},
+      "south": {"texture": "#pipe", "uv": [4, 3, 9, 5]},
+      "east": {"texture": "#pipe", "uv": [11, 3, 13, 5]},
+      "west": {"texture": "#pipe", "uv": [11, 3, 13, 5]}
+    }},
+    {"from": [12, 11, 10], "to": [14, 15, 12], "faces": {
+      "north": {"texture": "#pipe", "uv": [12, 1, 14, 5]},
+      "south": {"texture": "#pipe", "uv": [12, 1, 14, 5]},
+      "east": {"texture": "#pipe", "uv": [10, 1, 12, 5]},
+      "west": {"texture": "#pipe", "uv": [10, 1, 12, 5]}
+    }},
+    {"from": [11, 15, 9], "to": [15, 16, 13], "faces": {
+      "up": {"texture": "#pipe", "uv": [11, 9, 15, 13]},
+      "down": {"texture": "#pipe", "uv": [11, 9, 15, 13]},
+      "north": {"texture": "#pipe", "uv": [11, 0, 15, 1]},
+      "south": {"texture": "#pipe", "uv": [11, 0, 15, 1]},
+      "east": {"texture": "#pipe", "uv": [9, 0, 13, 1]},
+      "west": {"texture": "#pipe", "uv": [9, 0, 13, 1]}
+    }},
+    {"from": [0, 5, 4], "to": [1, 6, 12], "faces": {
+      "up": {"texture": "#pipe", "uv": [0, 4, 1, 12]},
+      "down": {"texture": "#pipe", "uv": [0, 4, 1, 12]},
+      "north": {"texture": "#pipe", "uv": [0, 10, 1, 11]},
+      "south": {"texture": "#pipe", "uv": [15, 10, 16, 11]},
+      "west": {"texture": "#pipe", "uv": [4, 10, 12, 11], "cullface": "west"}
+    }}
+  ]
+}

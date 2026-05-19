@@ -1,7 +1,48 @@
 {
   "parent": "minecraft:block/block",
-  "textures": {"0": "warproject:block/reinforced_support_beam", "particle": "warproject:block/reinforced_support_beam"},
+  "ambientocclusion": false,
+  "textures": {
+    "metal": "warproject:block/reinforced_support_beam",
+    "particle": "warproject:block/reinforced_support_beam"
+  },
   "elements": [
-    {"from": [4, 0, 4], "to": [12, 16, 12], "faces": {"north": {"texture": "#0"}, "south": {"texture": "#0"}, "east": {"texture": "#0"}, "west": {"texture": "#0"}, "up": {"texture": "#0"}, "down": {"texture": "#0"}}}
+    {"from": [2, 0, 2], "to": [14, 2, 14], "faces": {
+      "up": {"texture": "#metal"},
+      "down": {"texture": "#metal", "cullface": "down"},
+      "north": {"texture": "#metal", "uv": [2, 14, 14, 16]},
+      "south": {"texture": "#metal", "uv": [2, 14, 14, 16]},
+      "east": {"texture": "#metal", "uv": [2, 14, 14, 16]},
+      "west": {"texture": "#metal", "uv": [2, 14, 14, 16]}
+    }},
+    {"from": [4, 2, 4], "to": [12, 14, 12], "faces": {
+      "north": {"texture": "#metal", "uv": [4, 2, 12, 14]},
+      "south": {"texture": "#metal", "uv": [4, 2, 12, 14]},
+      "east": {"texture": "#metal", "uv": [4, 2, 12, 14]},
+      "west": {"texture": "#metal", "uv": [4, 2, 12, 14]}
+    }},
+    {"from": [3, 4, 3], "to": [13, 6, 13], "faces": {
+      "up": {"texture": "#metal", "uv": [3, 3, 13, 13]},
+      "down": {"texture": "#metal", "uv": [3, 3, 13, 13]},
+      "north": {"texture": "#metal", "uv": [3, 4, 13, 6]},
+      "south": {"texture": "#metal", "uv": [3, 4, 13, 6]},
+      "east": {"texture": "#metal", "uv": [3, 4, 13, 6]},
+      "west": {"texture": "#metal", "uv": [3, 4, 13, 6]}
+    }},
+    {"from": [3, 10, 3], "to": [13, 12, 13], "faces": {
+      "up": {"texture": "#metal", "uv": [3, 3, 13, 13]},
+      "down": {"texture": "#metal", "uv": [3, 3, 13, 13]},
+      "north": {"texture": "#metal", "uv": [3, 10, 13, 12]},
+      "south": {"texture": "#metal", "uv": [3, 10, 13, 12]},
+      "east": {"texture": "#metal", "uv": [3, 10, 13, 12]},
+      "west": {"texture": "#metal", "uv": [3, 10, 13, 12]}
+    }},
+    {"from": [2, 14, 2], "to": [14, 16, 14], "faces": {
+      "up": {"texture": "#metal", "cullface": "up"},
+      "down": {"texture": "#metal"},
+      "north": {"texture": "#metal", "uv": [2, 0, 14, 2]},
+      "south": {"texture": "#metal", "uv": [2, 0, 14, 2]},
+      "east": {"texture": "#metal", "uv": [2, 0, 14, 2]},
+      "west": {"texture": "#metal", "uv": [2, 0, 14, 2]}
+    }}
   ]
 }
