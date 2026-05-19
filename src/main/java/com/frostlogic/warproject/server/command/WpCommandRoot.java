@@ -33,6 +33,9 @@ import com.frostlogic.warproject.server.diplomacy.DiplomacyPvPHandler;
 import com.frostlogic.warproject.server.diplomacy.DiplomacyTickHandler;
 import com.frostlogic.warproject.server.event.EventService;
 import com.frostlogic.warproject.server.lifecycle.PlayerLifecycleService;
+import com.frostlogic.warproject.server.wguard.WGuardService;
+import com.frostlogic.warproject.server.wguard.WGuardCommands;
+import com.frostlogic.warproject.server.wguard.WGuardEventHandler;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
@@ -143,7 +146,12 @@ public final class WpCommandRoot {
                 new com.frostlogic.warproject.server.militaryid.MilitaryIdService(database, passportsDao);
         awardsService.setMilitaryIdService(militaryIdService);
 
-        WarProject.LOGGER.debug("[WP Cmd] WpCommandRoot wired: CaptchaService + PlayerLifecycleService + ModerationCommands + FactionCommands + SubdivisionCommands + GeneralChatService + CollaboratorService + EventCommands + DiplomacyCommands + AwardCommands ready.");
+        // WGuard anti-cheat
+        WGuardService wguardService = new WGuardService(database, auditLogDao);
+        WGuardEventHandler.init(wguardService);
+        WGuardCommands.init(wguardService);
+
+        WarProject.LOGGER.debug("[WP Cmd] WpCommandRoot wired: CaptchaService + PlayerLifecycleService + ModerationCommands + FactionCommands + SubdivisionCommands + GeneralChatService + CollaboratorService + EventCommands + DiplomacyCommands + AwardCommands + WGuard ready.");
     }
 
     /**
@@ -177,6 +185,7 @@ public final class WpCommandRoot {
         AwardCommands.register(wpRoot);
         BioCommands.register(wpRoot);
         DiaryCommands.register(wpRoot);
+        WGuardCommands.register(event);
 
         // /wp mapfill <radius> — admin command to preload map tiles
         wpRoot.then(Commands.literal("mapfill")

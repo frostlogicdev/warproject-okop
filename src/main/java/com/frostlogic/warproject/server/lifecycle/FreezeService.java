@@ -98,6 +98,12 @@ public final class FreezeService {
 
     /**
      * Blocks movement for frozen players by zeroing delta movement every tick.
+     * <p>
+     * Exception: CAPTCHA-state players managed by the new CaptchaService are
+     * suspended in a sky-cage with NoGravity + flight. Zeroing their delta
+     * movement would conflict with the NoGravity suspension, so we skip
+     * movement zeroing for them — all other freeze effects (chat, damage,
+     * interaction blocks) still apply.
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerTick(PlayerTickEvent.Pre event) {
@@ -105,8 +111,13 @@ public final class FreezeService {
             return;
         }
         if (isFrozen(player)) {
-            player.setDeltaMovement(0.0, 0.0, 0.0);
-            player.hurtMarked = true;
+            // Skip movement zeroing for CAPTCHA players in the sky-cage
+            // (CaptchaService manages their position via NoGravity + flight).
+            PlayerState state = player.getData(WpAttachmentTypes.PLAYER_STATE.get());
+            if (state != PlayerState.CAPTCHA || !player.isNoGravity()) {
+                player.setDeltaMovement(0.0, 0.0, 0.0);
+                player.hurtMarked = true;
+            }
             player.fallDistance = 0.0F;
         }
     }

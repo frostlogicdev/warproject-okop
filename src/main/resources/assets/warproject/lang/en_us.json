@@ -230,5 +230,19 @@
   "wp.diary.read_header": "Entry #%s from %s",
   "wp.diary.deleted": "Entry #%s deleted",
   "wp.death.respawn_countdown": "Respawning in %s sec...",
-  "wp.death.respawning": "Respawning..."
+  "wp.death.respawning": "Respawning...",
+  "wp.chat.local": "<%s> %s",
+  "wp.chat.faction": "[%s] <%s> %s",
+  "wp.chat.commander": "[Cmd %s] <%s> %s",
+  "wp.chat.no_faction": "You have no faction for this channel",
+  "wp.wguard.speed": "WGuard: speed hack detected",
+  "wp.wguard.fly": "WGuard: unauthorized flight detected",
+  "wp.wguard.reach": "WGuard: attack reach exceeded",
+  "wp.wguard.killaura": "WGuard: KillAura suspected",
+  "wp.wguard.fastbreak": "WGuard: block break speed exceeded",
+  "wp.wguard.nuker": "WGuard: mass block destruction detected",
+  "wp.wguard.nofall": "WGuard: NoFall — missing fall damage",
+  "wp.wguard.kick": "WGuard: kicked for excessive violations",
+  "wp.wguard.ban": "WGuard: banned for persistent violations",
+  "wp.wguard.notify": "WGuard: %s — %s (VL: %s)"
 }

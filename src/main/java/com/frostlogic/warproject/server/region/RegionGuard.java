@@ -2,6 +2,7 @@ package com.frostlogic.warproject.server.region;
 
 import com.frostlogic.warproject.WarProject;
 import com.frostlogic.warproject.attachment.FactionId;
+import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import com.frostlogic.warproject.server.Faction;
 import com.frostlogic.warproject.server.WarPlayerDataStore;
 import com.frostlogic.warproject.server.WarPlayerProfile;
@@ -110,12 +111,27 @@ public final class RegionGuard {
         BaseRegion region = RegionCacheHandler.regionService().regionAt(player.level().dimension(), at);
         if (region == null) return false; // Outside any base region — fine.
         FactionId regionFaction = region.faction();
-        Faction playerFaction = WarPlayerDataStore.get().getOrCreate(player).getFaction();
-        // Map legacy Faction enum to new FactionId using the matching id string;
-        // both enums share the lower-case id.
-        FactionId playerFactionId = mapFaction(playerFaction);
+
+        // Resolve player faction: prefer attachment (new DB pipeline), fall back to legacy profile.
+        FactionId playerFactionId = resolveFactionId(player);
         if (playerFactionId == null) return true; // Factionless can't act inside any base region.
         return playerFactionId != regionFaction;
+    }
+
+    /**
+     * Resolves the player's faction from attachments (new pipeline) first,
+     * then falls back to the legacy WarPlayerProfile. Returns null if the
+     * player has no playable faction.
+     */
+    private static FactionId resolveFactionId(ServerPlayer player) {
+        // Try new-pipeline attachment first
+        java.util.Optional<FactionId> attachmentFaction = player.getData(WpAttachmentTypes.FACTION.get());
+        if (attachmentFaction != null && attachmentFaction.isPresent()) {
+            return attachmentFaction.get();
+        }
+        // Fall back to legacy profile
+        Faction legacyFaction = WarPlayerDataStore.get().getOrCreate(player).getFaction();
+        return mapFaction(legacyFaction);
     }
 
     private static FactionId mapFaction(Faction f) {

@@ -230,5 +230,19 @@
   "wp.diary.read_header": "Запись #%s от %s",
   "wp.diary.deleted": "Запись #%s удалена",
   "wp.death.respawn_countdown": "Возрождение через %s сек...",
-  "wp.death.respawning": "Возрождение..."
+  "wp.death.respawning": "Возрождение...",
+  "wp.chat.local": "<%s> %s",
+  "wp.chat.faction": "[%s] <%s> %s",
+  "wp.chat.commander": "[Ком. %s] <%s> %s",
+  "wp.chat.no_faction": "У вас нет фракции для этого канала",
+  "wp.wguard.speed": "WGuard: превышение скорости движения",
+  "wp.wguard.fly": "WGuard: полёт без разрешения",
+  "wp.wguard.reach": "WGuard: превышение дальности атаки",
+  "wp.wguard.killaura": "WGuard: подозрение на KillAura",
+  "wp.wguard.fastbreak": "WGuard: слишком быстрое разрушение блоков",
+  "wp.wguard.nuker": "WGuard: массовое разрушение блоков",
+  "wp.wguard.nofall": "WGuard: NoFall — отсутствие урона от падения",
+  "wp.wguard.kick": "WGuard: кик за превышение нарушений",
+  "wp.wguard.ban": "WGuard: бан за систематические нарушения",
+  "wp.wguard.notify": "WGuard: %s — %s (VL: %s)"
 }

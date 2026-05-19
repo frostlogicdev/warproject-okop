@@ -92,6 +92,25 @@ public final class WpConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> AWARDS_AUTO_TRIGGERS;
     public static final ModConfigSpec.IntValue AWARDS_MAX_PER_PLAYER;
 
+    // --- chat ---
+    public static final ModConfigSpec.IntValue CHAT_LOCAL_RADIUS;
+
+    // --- wguard (anti-cheat) ---
+    public static final ModConfigSpec.BooleanValue WGUARD_ENABLED;
+    public static final ModConfigSpec.IntValue WGUARD_SPEED_MAX_BLOCKS_PER_TICK;
+    public static final ModConfigSpec.IntValue WGUARD_FLY_VIOLATION_THRESHOLD;
+    public static final ModConfigSpec.IntValue WGUARD_REACH_MAX_DISTANCE;
+    public static final ModConfigSpec.IntValue WGUARD_KILLAURA_MAX_ATTACKS_PER_SECOND;
+    public static final ModConfigSpec.IntValue WGUARD_KILLAURA_MAX_ROTATION_DEGREES_PER_TICK;
+    public static final ModConfigSpec.IntValue WGUARD_FASTBREAK_MIN_TICKS;
+    public static final ModConfigSpec.IntValue WGUARD_VIOLATION_KICK_THRESHOLD;
+    public static final ModConfigSpec.IntValue WGUARD_VIOLATION_BAN_THRESHOLD;
+    public static final ModConfigSpec.IntValue WGUARD_VIOLATION_DECAY_TICKS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> WGUARD_VEHICLE_MOD_NAMESPACES;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> WGUARD_WEAPON_MOD_NAMESPACES;
+    public static final ModConfigSpec.IntValue WGUARD_VEHICLE_SPEED_MULTIPLIER;
+    public static final ModConfigSpec.BooleanValue WGUARD_SKIP_RIDING_PLAYERS;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
@@ -360,6 +379,92 @@ public final class WpConfig {
                 .defineInRange("maxPerPlayer", 100, 1, 1000);
 
         builder.pop(); // awards
+
+        // ========== chat ==========
+        builder.push("chat");
+
+        CHAT_LOCAL_RADIUS = builder
+                .comment("Radius in blocks for local (proximity) chat. Players outside this radius cannot hear the message.")
+                .defineInRange("localRadius", 50, 10, 1000);
+
+        builder.pop(); // chat
+
+        // ========== wguard (anti-cheat) ==========
+        builder.push("wguard");
+
+        WGUARD_ENABLED = builder
+                .comment("Enable WGuard anti-cheat system")
+                .define("enabled", true);
+
+        WGUARD_SPEED_MAX_BLOCKS_PER_TICK = builder
+                .comment("Maximum allowed horizontal movement per tick in blocks. Vanilla max: ~10 (sprinting + jumping). Default: 12 to allow some latency tolerance.")
+                .defineInRange("speedMaxBlocksPerTick", 12, 5, 50);
+
+        WGUARD_FLY_VIOLATION_THRESHOLD = builder
+                .comment("Number of consecutive fly violations before action. Each violation = 1 tick of airborne movement without flight permission.")
+                .defineInRange("flyViolationThreshold", 5, 1, 50);
+
+        WGUARD_REACH_MAX_DISTANCE = builder
+                .comment("Maximum allowed attack/interact distance in blocks. Vanilla: ~6.0 for creative, ~4.5 for survival. Default: 5.5 to allow some latency tolerance.")
+                .defineInRange("reachMaxDistance", 55, 30, 100);
+
+        WGUARD_KILLAURA_MAX_ATTACKS_PER_SECOND = builder
+                .comment("Maximum attacks per second before KillAura flag. Vanilla max for auto-clicker: ~16 (game tick rate). Default: 12.")
+                .defineInRange("killAuraMaxAttacksPerSecond", 12, 4, 30);
+
+        WGUARD_KILLAURA_MAX_ROTATION_DEGREES_PER_TICK = builder
+                .comment("Maximum head rotation degrees per tick before KillAura flag. Normal play: ~180°/sec = 9°/tick. Default: 90 to allow fast flicks.")
+                .defineInRange("killAuraMaxRotationPerTick", 90, 20, 360);
+
+        WGUARD_FASTBREAK_MIN_TICKS = builder
+                .comment("Minimum ticks between breaking two different blocks. Vanilla: instant for some tools. Default: 2 to catch nuker patterns.")
+                .defineInRange("fastBreakMinTicks", 2, 1, 20);
+
+        WGUARD_VIOLATION_KICK_THRESHOLD = builder
+                .comment("Total violation level at which the player is kicked. Violations decay over time.")
+                .defineInRange("violationKickThreshold", 50, 10, 500);
+
+        WGUARD_VIOLATION_BAN_THRESHOLD = builder
+                .comment("Total violation level at which the player is banned. Violations decay over time.")
+                .defineInRange("violationBanThreshold", 150, 20, 1000);
+
+        WGUARD_VIOLATION_DECAY_TICKS = builder
+                .comment("Ticks between violation level decay steps. Each step reduces total VL by 1.")
+                .defineInRange("violationDecayTicks", 100, 20, 6000);
+
+        WGUARD_VEHICLE_MOD_NAMESPACES = builder
+                .comment(
+                        "Mod namespace prefixes for vehicle mods (planes, cars, tanks, etc.).",
+                        "Players riding entities from these mods are exempt from SPEED/FLY/NO_FALL checks.",
+                        "Examples: immersive_aircraft, vs_eureka, flan, create, valkyrieskies, mcwplanes"
+                )
+                .defineListAllowEmpty("vehicleModNamespaces", List.of(
+                        "immersive_aircraft", "vs_eureka", "flan", "create",
+                        "valkyrieskies", "mcwplanes", "mcheli", "simpleplanes",
+                        "aircraft", "vcraft", "vz"
+                ), WpConfig::validateString);
+
+        WGUARD_WEAPON_MOD_NAMESPACES = builder
+                .comment(
+                        "Mod namespace prefixes for weapon mods (guns, rifles, turrets, etc.).",
+                        "Players holding items from these mods get relaxed KILL_AURA checks",
+                        "(automatic weapons fire faster than melee).",
+                        "Examples: tacz, vic3, cmg, timeless_and_classics, flan, gun"
+                )
+                .defineListAllowEmpty("weaponModNamespaces", List.of(
+                        "tacz", "vic3", "cmg", "timeless_and_classics",
+                        "flan", "gun", "cgm", "scorched_guns", "dtt"
+                ), WpConfig::validateString);
+
+        WGUARD_VEHICLE_SPEED_MULTIPLIER = builder
+                .comment("Speed limit multiplier when riding a vehicle from a known mod. Default: 10 (allows planes/cars).")
+                .defineInRange("vehicleSpeedMultiplier", 10, 1, 100);
+
+        WGUARD_SKIP_RIDING_PLAYERS = builder
+                .comment("If true, completely skip SPEED/FLY/NO_FALL checks for players riding any entity (not just whitelisted mods). Recommended true for servers with vehicle mods.")
+                .define("skipRidingPlayers", true);
+
+        builder.pop(); // wguard
 
         SPEC = builder.build();
     }

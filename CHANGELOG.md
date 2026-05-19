@@ -6,10 +6,20 @@ The current release scope is **mod + server for Pterodactyl**. Launcher and site
 
 ## [Unreleased]
 
+### Fixed
+- `server.properties`: `allow-flight=true` (captcha sky-cage requires flight).
+- `server.properties`: `enforce-whitelist=false` / `white-list=false` for open beta.
+- `server.properties`: `player-idle-timeout=0` (prevent idle kick during captcha).
+- `RegionGuard` now resolves faction from attachments (new DB pipeline) before falling back to legacy profile.
+- `FactionRespawnHandler` now resolves faction from attachments before legacy profile.
+- `AcceptCommandHandler` now syncs legacy `WarPlayerProfile` after acceptance (new→legacy bridge).
+- `/wp captcha` now routes new-pipeline (DB) players to `CaptchaService` instead of legacy `CaptchaManager`.
+- `FreezeService` no longer zeroes delta movement for CAPTCHA players in sky-cage (NoGravity conflict).
+
 ### Added
 - Pterodactyl deployment docs and egg for WarProject NeoForge 1.21.1.
 - Server launch checklist for cracked NeoForge + Pterodactyl.
-- Companion mod list for the current server pack.
+- Companion mod list for the current server modpack.
 - Multiverse added to the documented server modpack plan.
 
 ### Changed
@@ -26,7 +36,7 @@ The current release scope is **mod + server for Pterodactyl**. Launcher and site
 - Outdated production checklist document that referenced components outside the current release scope.
 - Local `.jqwik-database` cache from the repository.
 
-## [3.0.0] - 2026-XX-XX
+## [3.0.0] - 2025-07
 
 ### Added
 - 31 blocks: trench fortification (Okop), field camp, military base (Baza).

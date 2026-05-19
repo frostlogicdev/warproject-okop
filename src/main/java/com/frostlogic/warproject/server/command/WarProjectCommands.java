@@ -78,6 +78,9 @@ public final class WarProjectCommands {
                 .then(Commands.literal("chat")
                         .then(Commands.argument("message", StringArgumentType.greedyString())
                                 .executes(context -> commanderChat(context.getSource(), StringArgumentType.getString(context, "message")))))
+                .then(Commands.literal("fchat")
+                        .then(Commands.argument("message", StringArgumentType.greedyString())
+                                .executes(context -> factionChat(context.getSource(), StringArgumentType.getString(context, "message")))))
                 .then(Commands.literal("ao")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.argument("message", StringArgumentType.greedyString())
@@ -226,7 +229,8 @@ public final class WarProjectCommands {
             sendHelpLine(source, "/wp uninvite <player> <reason>", "уволить игрока со стороны");
             sendHelpLine(source, "/wp setrank <player> <rank>", "изменить звание игрока");
             sendHelpLine(source, "/wp collab <player> [faction]", "объявить коллаборационистом");
-            sendHelpLine(source, "/wp chat <message>", "сообщение в командирский чат стороны");
+            sendHelpLine(source, "/wp chat <message>", "командирский чат (только командиры вашей стороны)");
+            sendHelpLine(source, "/wp fchat <message>", "фракционный чат (все члены вашей стороны)");
             sendHelpLine(source, "/wp subdiv create <name>", "создать подразделение");
             sendHelpLine(source, "/wp subdiv disband <name>", "расформировать подразделение");
             sendHelpLine(source, "/wp subdiv invite <player> <name>", "зачислить бойца в подразделение");
@@ -464,44 +468,52 @@ public final class WarProjectCommands {
 
     private static int commanderChat(CommandSourceStack source, String message) {
         boolean admin = isAdmin(source);
-        WarPlayerProfile senderProfile = null;
-        Faction senderFaction = Faction.NONE;
-
-        if (source.isPlayer()) {
-            ServerPlayer player = requirePlayer(source);
-            if (player == null) {
-                return 0;
-            }
-            senderProfile = WarPlayerDataStore.get().getOrCreate(player);
-            senderFaction = senderProfile.getFaction();
-        }
-
-        if (!admin && (senderProfile == null || !senderProfile.canUseCommanderTools())) {
-            source.sendFailure(Component.literal("[WP] Командирский чат доступен только командирам и администрации."));
+        ServerPlayer player = requirePlayer(source);
+        if (player == null && !admin) {
             return 0;
         }
 
-        long now = System.currentTimeMillis();
-        if (!admin && senderProfile != null) {
-            long remainingMs = COMMANDER_CHAT_COOLDOWN_MS - (now - senderProfile.getLastCommanderChatAt());
-            if (remainingMs > 0) {
-                source.sendFailure(Component.literal("[WP] Подожди " + Math.ceil(remainingMs / 1000.0D) + " сек. перед следующим сообщением."));
+        // Route through ProximityChatService for faction-scoped commander chat
+        if (player != null) {
+            WarPlayerProfile senderProfile = WarPlayerDataStore.get().getOrCreate(player);
+
+            if (!admin && !senderProfile.canUseCommanderTools()) {
+                source.sendFailure(Component.literal("[WP] Командирский чат доступен только командирам и администрации."));
                 return 0;
             }
-            senderProfile.setLastCommanderChatAt(now);
-        }
 
-        String prefix = senderFaction.isPlayable() ? senderFaction.displayName() : "Админ";
-        Component formatted = Component.literal("[WP Командиры] [" + prefix + "] " + actorName(source) + ": " + normalizeSpaces(message)).withStyle(ChatFormatting.AQUA);
-        for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
-            WarPlayerProfile recipient = WarPlayerDataStore.get().getOrCreate(player);
-            if (player.hasPermissions(2) || recipient.canUseCommanderTools()) {
-                player.sendSystemMessage(formatted);
+            long now = System.currentTimeMillis();
+            if (!admin) {
+                long remainingMs = COMMANDER_CHAT_COOLDOWN_MS - (now - senderProfile.getLastCommanderChatAt());
+                if (remainingMs > 0) {
+                    source.sendFailure(Component.literal("[WP] Подожди " + Math.ceil(remainingMs / 1000.0D) + " сек. перед следующим сообщением."));
+                    return 0;
+                }
+                senderProfile.setLastCommanderChatAt(now);
+            }
+
+            com.frostlogic.warproject.server.chat.ProximityChatService.deliverCommander(player, normalizeSpaces(message));
+        } else {
+            // Console/admin without player — broadcast to all commanders
+            Component formatted = Component.literal("[WP Командиры] [Админ] " + actorName(source) + ": " + normalizeSpaces(message)).withStyle(ChatFormatting.AQUA);
+            for (ServerPlayer p : source.getServer().getPlayerList().getPlayers()) {
+                if (p.hasPermissions(2) || com.frostlogic.warproject.server.chat.ChatScopeFilter.isGeneralChatRecipient(p)) {
+                    p.sendSystemMessage(formatted);
+                }
             }
         }
 
         WarPlayerDataStore.get().appendAuditLog(source.getServer(), actorName(source) + " commander chat: " + normalizeSpaces(message));
         WarPlayerDataStore.get().save();
+        return 1;
+    }
+
+    private static int factionChat(CommandSourceStack source, String message) {
+        ServerPlayer player = requirePlayer(source);
+        if (player == null) {
+            return 0;
+        }
+        com.frostlogic.warproject.server.chat.ProximityChatService.deliverFaction(player, normalizeSpaces(message));
         return 1;
     }
 
@@ -730,6 +742,23 @@ public final class WarProjectCommands {
         if (player == null) {
             return 0;
         }
+
+        // ── New-pipeline path (DB-backed auth) ──
+        // If the player's attachment state is CAPTCHA and the CaptchaService has
+        // an active session for them, route to the new service. This prevents
+        // new-pipeline players from hitting the legacy CaptchaManager which has
+        // no session for them (returning NOT_PENDING).
+        com.frostlogic.warproject.attachment.PlayerState attachmentState =
+                player.getData(com.frostlogic.warproject.attachment.WpAttachmentTypes.PLAYER_STATE.get());
+        com.frostlogic.warproject.server.auth.CaptchaService captchaService =
+                com.frostlogic.warproject.network.ServiceRegistry.captcha();
+        if (attachmentState == com.frostlogic.warproject.attachment.PlayerState.CAPTCHA
+                && captchaService != null
+                && captchaService.hasSession(player.getUUID())) {
+            return verifyCaptchaNewPipeline(source, player, String.valueOf(code), captchaService);
+        }
+
+        // ── Legacy path (JSON-backed auth) ──
         WarPlayerProfile profile = WarPlayerDataStore.get().getOrCreate(player);
         if (profile.isCaptchaPassed()) {
             source.sendFailure(Component.translatable("wp.captcha.passed_already"));
@@ -767,6 +796,45 @@ public final class WarProjectCommands {
             }
         }
         return 0;
+    }
+
+    /**
+     * Handles captcha verification for new-pipeline (DB-backed) players.
+     * Routes the submitted code through {@link com.frostlogic.warproject.server.auth.CaptchaService}
+     * and advances the player lifecycle on success.
+     */
+    private static int verifyCaptchaNewPipeline(CommandSourceStack source, ServerPlayer player,
+                                                 String code,
+                                                 com.frostlogic.warproject.server.auth.CaptchaService captchaService) {
+        com.frostlogic.warproject.server.auth.CaptchaService.SubmitResult result = captchaService.submit(player, code);
+
+        if (result instanceof com.frostlogic.warproject.server.auth.CaptchaService.SubmitResult.Success) {
+            // CaptchaService already updated the attachment to RPNAME_REQUIRED and restored abilities.
+            // Advance the lifecycle through PlayerLifecycleService.
+            com.frostlogic.warproject.server.lifecycle.PlayerLifecycleService lifecycle =
+                    com.frostlogic.warproject.network.ServiceRegistry.lifecycle();
+            if (lifecycle != null) {
+                try {
+                    lifecycle.advance(player, com.frostlogic.warproject.attachment.PlayerState.RPNAME_REQUIRED);
+                } catch (IllegalStateException e) {
+                    // State already advanced by CaptchaService — that's fine.
+                }
+            }
+            player.sendSystemMessage(Component.translatable("wp.captcha.success")
+                    .withStyle(ChatFormatting.GREEN));
+            return 1;
+        } else if (result instanceof com.frostlogic.warproject.server.auth.CaptchaService.SubmitResult.WrongRetry retry) {
+            source.sendFailure(Component.translatable("wp.captcha.wrong_code", retry.attemptsLeft())
+                    .withStyle(ChatFormatting.RED));
+            return 0;
+        } else if (result instanceof com.frostlogic.warproject.server.auth.CaptchaService.SubmitResult.FailedKick) {
+            // CaptchaService already kicked the player and wrote cooldown.
+            return 0;
+        } else {
+            // NOT_PENDING — shouldn't happen since we checked hasSession, but handle gracefully.
+            source.sendFailure(Component.translatable("wp.captcha.not_in_captcha"));
+            return 0;
+        }
     }
 
     /**

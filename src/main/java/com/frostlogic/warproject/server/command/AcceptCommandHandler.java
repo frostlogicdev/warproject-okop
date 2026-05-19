@@ -9,7 +9,11 @@ import com.frostlogic.warproject.persistence.Database;
 import com.frostlogic.warproject.persistence.dao.AuditLogDao;
 import com.frostlogic.warproject.persistence.dao.PassportsDao;
 import com.frostlogic.warproject.persistence.dao.PlayersDao;
+import com.frostlogic.warproject.server.Faction;
+import com.frostlogic.warproject.server.LegacyAttachmentBridge;
 import com.frostlogic.warproject.server.ServerEvents;
+import com.frostlogic.warproject.server.WarPlayerDataStore;
+import com.frostlogic.warproject.server.WarPlayerProfile;
 import com.frostlogic.warproject.server.passport.PassportComponentTypes;
 import com.frostlogic.warproject.server.passport.PassportData;
 import net.minecraft.network.chat.Component;
@@ -266,6 +270,39 @@ public final class AcceptCommandHandler {
 
         // Send the new public view to the target so HUD/TAB updates immediately.
         sendPublicView(target);
+
+        // Sync the legacy WarPlayerProfile so that OnboardingGuard, RegionGuard
+        // (legacy path), and other legacy systems see the accepted state.
+        syncLegacyProfile(target, factionOpt.orElse(null));
+    }
+
+    /**
+     * Updates the legacy {@link WarPlayerProfile} to reflect the new-pipeline
+     * acceptance. This ensures that code paths still reading from the JSON
+     * profile (e.g. OnboardingGuard, legacy NpcHandler) see the correct state.
+     * <p>
+     * Failures are logged but do not roll back the acceptance.
+     */
+    private static void syncLegacyProfile(ServerPlayer target, @org.jetbrains.annotations.Nullable FactionId factionId) {
+        try {
+            WarPlayerProfile profile = WarPlayerDataStore.get().getOrCreate(target);
+            profile.setLoggedIn(true);
+            profile.setCaptchaPassed(true);
+            if (factionId != null) {
+                Faction legacyFaction = switch (factionId) {
+                    case ZARNAVIA -> Faction.ZARNAVIA;
+                    case CHERNOGRYAD -> Faction.CHERNOGRYAD;
+                };
+                profile.setFaction(legacyFaction);
+                profile.setCandidateFaction(legacyFaction);
+            }
+            WarPlayerDataStore.get().save();
+            // Re-sync attachments from the now-updated legacy profile
+            LegacyAttachmentBridge.sync(target);
+        } catch (Exception e) {
+            WarProject.LOGGER.warn("[WP Accept] Failed to sync legacy profile for {}: {}",
+                    target.getGameProfile().getName(), e.getMessage());
+        }
     }
 
     /**

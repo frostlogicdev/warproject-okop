@@ -1,6 +1,8 @@
 package com.frostlogic.warproject.server;
 
 import com.frostlogic.warproject.WarProject;
+import com.frostlogic.warproject.attachment.FactionId;
+import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -43,13 +45,22 @@ public final class FactionRespawnHandler {
             return;
         }
 
-        WarPlayerProfile profile = WarPlayerDataStore.get().getOrCreate(player);
-        Faction faction = profile.getFaction();
-        Faction candidate = profile.getCandidateFaction();
+        // Resolve faction: prefer attachment (new DB pipeline), fall back to legacy profile.
+        FactionId factionId = resolveFactionId(player);
+        Faction faction = Faction.NONE;
+        Faction candidate = Faction.NONE;
+        if (factionId != null) {
+            faction = mapFactionId(factionId);
+        } else {
+            WarPlayerProfile profile = WarPlayerDataStore.get().getOrCreate(player);
+            faction = profile.getFaction();
+            candidate = profile.getCandidateFaction();
+        }
 
         // Collaborator → spawn at general spawn instead of own faction base —
         // they lost the privilege of base respawn.
-        if (profile.isCollaborator()) {
+        boolean collaborator = player.getData(WpAttachmentTypes.COLLABORATOR.get());
+        if (collaborator) {
             SpawnTeleporter.toSpawn(player);
             return;
         }
@@ -65,6 +76,29 @@ public final class FactionRespawnHandler {
         }
         // Faction has no configured base → fall through to global spawn.
         SpawnTeleporter.toSpawn(player);
+    }
+
+    /**
+     * Resolves the player's faction from attachments (new pipeline) first,
+     * then returns null if no playable faction found via attachments.
+     */
+    private static FactionId resolveFactionId(ServerPlayer player) {
+        java.util.Optional<FactionId> attachmentFaction = player.getData(WpAttachmentTypes.FACTION.get());
+        if (attachmentFaction != null && attachmentFaction.isPresent()) {
+            return attachmentFaction.get();
+        }
+        return null;
+    }
+
+    /**
+     * Maps a new-pipeline FactionId back to the legacy Faction enum
+     * for use with WarServerSettings.getBasePoint().
+     */
+    private static Faction mapFactionId(FactionId id) {
+        return switch (id) {
+            case ZARNAVIA -> Faction.ZARNAVIA;
+            case CHERNOGRYAD -> Faction.CHERNOGRYAD;
+        };
     }
 
     /**
