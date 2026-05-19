@@ -1,8 +1,8 @@
 import React from 'react';
 
 /**
- * Title bar (drag-region) с брендом, именем пользователя и оконными кнопками.
- * Стили в launcher/src/styles/global.css (префикс .titlebar).
+ * Title bar (drag-region).
+ * Стили — в launcher/src/styles/global.css.
  */
 export default function TitleBar({ user, onLogout }) {
   const win = (action) => {
@@ -18,7 +18,7 @@ export default function TitleBar({ user, onLogout }) {
         {user ? (
           <>
             <span>OPERATOR: {user.username}</span>
-            <button className="btn ghost" style= padding: '4px 10px', fontSize: 11  onClick={onLogout}>EXIT</button>
+            <button className="btn ghost btn-xs" onClick={onLogout}>EXIT</button>
           </>
         ) : (
           <span>OPERATOR: —</span>
