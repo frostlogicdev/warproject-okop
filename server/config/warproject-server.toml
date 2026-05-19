@@ -2,7 +2,7 @@
 		#Minimum password length
 		# Default: 6
 		# Range: 1 ~ 128
-		minLen = 6
+		minLen = 8
 		#Maximum password length
 		# Default: 32
 		# Range: 1 ~ 128
