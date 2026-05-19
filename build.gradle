@@ -17,7 +17,18 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.compilerArgs += ['-Xlint:deprecation']
+    // -Xlint:all surfaces unchecked casts, raw types, fall-through, divisor=0,
+    // missing override hints etc. Two categories are suppressed because they
+    // produce 100% noise on this codebase:
+    //   - serial: every Throwable / Component subclass triggers it but we
+    //     never use ObjectOutputStream on them.
+    //   - processing: NeoForge's annotation processors emit warnings we
+    //     cannot fix from here.
+    options.compilerArgs += [
+        '-Xlint:all',
+        '-Xlint:-serial',
+        '-Xlint:-processing'
+    ]
 }
 
 runs {
