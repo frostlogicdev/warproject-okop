@@ -7,6 +7,7 @@ import com.mojang.logging.LogUtils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -23,6 +24,9 @@ import java.util.function.Function;
 public final class Database {
 
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    /** busy_timeout for SQLite connections, in milliseconds. */
+    private static final int SQLITE_BUSY_TIMEOUT_MS = 5_000;
 
     private final String driver;
     private final String jdbcUrl;
@@ -51,13 +55,37 @@ public final class Database {
     }
 
     /**
-     * Initializes the database: loads the JDBC driver and runs migrations.
+     * Initializes the database: loads the JDBC driver, applies file-level
+     * pragmas (SQLite only) and runs migrations.
      */
     public void initialize() {
         loadDriver();
+        if (isSqlite()) {
+            applyPersistentSqlitePragmas();
+        }
         Migrations.run(this);
         initialized = true;
         LOGGER.info("WarProject database initialized (driver={}, url={})", driver, jdbcUrl);
+    }
+
+    /**
+     * Flips SQLite to WAL journaling once at boot. WAL is a file-level
+     * persistent setting — once enabled it sticks across restarts, but we
+     * re-apply it unconditionally so a manually rolled-back database is
+     * upgraded again on the next start. synchronous=NORMAL is paired with
+     * WAL because the default (FULL) gives no extra durability on top of
+     * WAL's own fsync at checkpoint time and slows down small writes.
+     */
+    private void applyPersistentSqlitePragmas() {
+        try (Connection conn = DriverManager.getConnection(jdbcUrl);
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA journal_mode=WAL");
+            stmt.execute("PRAGMA synchronous=NORMAL");
+            LOGGER.info("[WarProject] SQLite WAL journaling enabled (synchronous=NORMAL).");
+        } catch (SQLException e) {
+            LOGGER.warn("[WarProject] Failed to enable SQLite WAL mode, continuing in default journal mode: {}",
+                    e.getMessage());
+        }
     }
 
     /**
@@ -76,12 +104,30 @@ public final class Database {
 
     /**
      * Opens a new JDBC connection. Caller is responsible for closing it.
+     * <p>
+     * For SQLite, session-local pragmas (busy_timeout, foreign_keys) are
+     * applied to every fresh connection because they do not persist across
+     * connection boundaries the way WAL does.
      */
     public Connection getConnection() throws SQLException {
         if (isMysql()) {
             return DriverManager.getConnection(jdbcUrl, username, password);
         }
-        return DriverManager.getConnection(jdbcUrl);
+        Connection conn = DriverManager.getConnection(jdbcUrl);
+        try {
+            applySessionSqlitePragmas(conn);
+        } catch (SQLException e) {
+            try { conn.close(); } catch (SQLException ignored) {}
+            throw e;
+        }
+        return conn;
+    }
+
+    private static void applySessionSqlitePragmas(Connection conn) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA busy_timeout=" + SQLITE_BUSY_TIMEOUT_MS);
+            stmt.execute("PRAGMA foreign_keys=ON");
+        }
     }
 
     /**
@@ -128,7 +174,7 @@ public final class Database {
             boolean sqlite = isSqlite();
             if (sqlite) {
                 // Keep autoCommit=true; drive transaction boundaries explicitly.
-                try (java.sql.Statement stmt = conn.createStatement()) {
+                try (Statement stmt = conn.createStatement()) {
                     stmt.execute("BEGIN IMMEDIATE");
                 }
             } else {
@@ -137,7 +183,7 @@ public final class Database {
             try {
                 T result = function.apply(conn);
                 if (sqlite) {
-                    try (java.sql.Statement stmt = conn.createStatement()) {
+                    try (Statement stmt = conn.createStatement()) {
                         stmt.execute("COMMIT");
                     }
                 } else {
@@ -146,7 +192,7 @@ public final class Database {
                 return result;
             } catch (Exception e) {
                 if (sqlite) {
-                    try (java.sql.Statement stmt = conn.createStatement()) {
+                    try (Statement stmt = conn.createStatement()) {
                         stmt.execute("ROLLBACK");
                     } catch (SQLException rollbackFailure) {
                         // Suppress rollback failure if the original exception
