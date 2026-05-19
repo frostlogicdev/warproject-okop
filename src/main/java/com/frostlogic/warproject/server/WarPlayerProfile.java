@@ -16,6 +16,9 @@ public final class WarPlayerProfile {
     /** Hard cap on diary length; oldest entry is dropped (FIFO) when exceeded. */
     public static final int DIARY_MAX_ENTRIES = 50;
 
+    private static final String BCRYPT_SALT_MARKER = "bcrypt";
+    private static final int BCRYPT_COST = 12;
+
     /**
      * Single diary entry. Persisted as JSON object {@code {"ts":<long>,"text":"…"}}
      * inside the profile's {@code diary} array.
@@ -186,18 +189,42 @@ public final class WarPlayerProfile {
     }
 
     /**
-     * Generates a fresh salt and stores hash(password, salt). Marks the profile as
-     * registered. Does NOT log the player in — caller must {@link #setLoggedIn(boolean)}.
+     * Stores a production BCrypt hash for legacy JSON profiles.
+     * <p>
+     * Older profiles used SHA-256(salt || password). Those are still accepted by
+     * {@link #verifyPassword(String)} once, then automatically re-hashed to BCrypt
+     * in-memory and persisted by the normal profile save path.
      */
     public void setPassword(String rawPassword) {
-        String salt = PasswordHasher.newSalt();
-        this.passwordSalt = salt;
-        this.passwordHash = PasswordHasher.hash(rawPassword, salt);
+        if (rawPassword == null) {
+            rawPassword = "";
+        }
+        this.passwordSalt = BCRYPT_SALT_MARKER;
+        this.passwordHash = com.frostlogic.warproject.server.auth.PasswordHasher.hash(rawPassword.toCharArray(), BCRYPT_COST);
         touch();
     }
 
     public boolean verifyPassword(String rawPassword) {
-        return isRegistered() && PasswordHasher.verify(rawPassword, passwordSalt, passwordHash);
+        if (!isRegistered()) {
+            return false;
+        }
+        if (rawPassword == null) {
+            rawPassword = "";
+        }
+
+        if (BCRYPT_SALT_MARKER.equals(passwordSalt)) {
+            try {
+                return com.frostlogic.warproject.server.auth.PasswordHasher.verify(rawPassword.toCharArray(), passwordHash);
+            } catch (IllegalArgumentException ex) {
+                return false;
+            }
+        }
+
+        boolean legacyMatches = PasswordHasher.verify(rawPassword, passwordSalt, passwordHash);
+        if (legacyMatches) {
+            setPassword(rawPassword);
+        }
+        return legacyMatches;
     }
 
     /** Transient session flag, NOT persisted to disk. */
