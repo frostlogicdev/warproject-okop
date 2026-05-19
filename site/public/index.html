@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>War Project — военный мод, лаунчер, сервер</title>
-  <meta name="description" content="Военный мод для Minecraft 1.21.1 (NeoForge) — окопи, базы, античит WGuard, собственный лаунчер" />
+  <title>War Project</title>
+  <meta name="description" content="Военный мод для Minecraft 1.21.1 (NeoForge): окопы, базы, античит WGuard, лаунчер." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/main.css" />
 </head>
 <body>
 
-  <!-- WGuard splash (первым) -->
+  <!-- WGuard splash -->
   <div id="wg-splash" class="wg-splash">
     <div class="wg-stack">
       <svg class="wg-ring" viewBox="0 0 200 200" aria-hidden="true">
         <circle cx="100" cy="100" r="92" stroke-dasharray="578" stroke-dashoffset="578">
-          <animate attributeName="stroke-dashoffset" from="578" to="0" dur="2.2s" fill="freeze" />
+          <animate attributeName="stroke-dashoffset" from="578" to="0" dur="1.6s" fill="freeze" />
         </circle>
       </svg>
       <div class="wg-puzzle" aria-hidden="true">
@@ -26,87 +26,64 @@
           <path d="M40 30h10v10h6v6h-6v6H40" />
         </svg>
       </div>
-      <div class="wg-scan"></div>
     </div>
     <div class="wg-caption">W<span>Guard</span> Protected</div>
-    <div class="wg-sub">SECURE BOOT · ANTI-CHEAT · SIGNED CLIENT</div>
+    <div class="wg-sub">Secure boot · Signed client</div>
   </div>
 
   <!-- Nav -->
   <header class="nav">
     <div class="container nav__inner">
       <a href="#top" class="nav__brand">
-        <span class="nav__mark">W</span>
+        <span class="nav__dot"></span>
         War Project
       </a>
       <nav class="nav__links">
-        <a class="nav__link" href="#features">Содержимое</a>
         <a class="nav__link" href="#server">Сервер</a>
+        <a class="nav__link" href="#features">Содержимое</a>
         <a class="nav__link" href="#wguard">WGuard</a>
         <a class="nav__link" href="#download">Скачать</a>
       </nav>
-      <a class="btn nav__cta" href="#download">Запустить лаунчер</a>
+      <a class="btn nav__cta" href="#download">Лаунчер</a>
     </div>
   </header>
 
-  <!-- Hero -->
   <main id="top">
+
+    <!-- Hero -->
     <section class="hero">
-      <div class="hero__bg" aria-hidden="true"></div>
-      <svg class="hero__crosshair" viewBox="0 0 400 400" aria-hidden="true" fill="none" stroke="#e9b949" stroke-width="1">
-        <circle cx="200" cy="200" r="180" />
-        <circle cx="200" cy="200" r="120" />
-        <circle cx="200" cy="200" r="60" />
-        <line x1="0" y1="200" x2="400" y2="200" />
-        <line x1="200" y1="0" x2="200" y2="400" />
-        <circle cx="200" cy="200" r="3" fill="#e9b949" />
-      </svg>
-      <div class="container hero__inner">
-        <span class="eyebrow">Minecraft 1.21.1 · NeoForge 21.1.229+</span>
-        <h1>Окоп. База. <em>Контроль.</em></h1>
-        <p class="hero__lead">
-          Военный мод с полевыми фортификациями, боевыми базами и живым сервером.
-          Собственный лаунчер, античит <strong>WGuard</strong> и подписанный клиент — без колхозных лаунчеров и читеров.
+      <div class="container">
+        <span class="label label--accent">Minecraft 1.21.1 · NeoForge 21.1.229+</span>
+        <h1>Окоп. База.<br/><em>Контроль.</em></h1>
+        <p class="lead">
+          Военный мод с полевыми фортификациями, боевыми базами, собственным лаунчером и античитом WGuard.
         </p>
         <div class="hero__cta">
-          <a class="btn btn--lg" href="#download">Скачать лаунчер</a>
-          <a class="btn btn--ghost btn--lg" href="https://github.com/frostlogicdev/warproject-okop" target="_blank" rel="noreferrer">Код на GitHub</a>
-        </div>
-        <div class="hero__meta">
-          <div class="hero__meta-item"><div class="k">Блоки</div><div class="v">31</div></div>
-          <div class="hero__meta-item"><div class="k">Сборка</div><div class="v">3.0.0</div></div>
-          <div class="hero__meta-item"><div class="k">Java</div><div class="v">21</div></div>
-          <div class="hero__meta-item"><div class="k">Лицензия</div><div class="v">MIT</div></div>
+          <a class="btn btn--lg" href="#download">Скачать</a>
+          <a class="btn btn--ghost btn--lg" href="https://github.com/frostlogicdev/warproject-okop" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </div>
     </section>
 
-    <!-- Server dashboard -->
-    <section class="section" id="server">
+    <!-- Stats -->
+    <section id="server">
       <div class="container">
-        <div class="section__head">
-          <div>
-            <span class="eyebrow">Live Operations</span>
-            <h2>Сводка сервера</h2>
+        <div class="stats reveal">
+          <div class="stat">
+            <span class="label">Сервер</span>
+            <div class="value" id="srv-status"><span class="status-dot warn"></span>ждём</div>
           </div>
-          <p>Опрос бэкенда War Project каждые 10 секунд. Данные обновляются в реальном времени.</p>
-        </div>
-        <div class="dashboard">
-          <div class="card">
-            <div class="card__corner"></div>
-            <div class="card__label">Status</div>
-            <div class="card__value" id="srv-status"><span class="status-dot warn"></span>Проверяю…</div>
-            <div class="card__sub" id="srv-host">api: http://localhost:4000</div>
+          <div class="stat">
+            <span class="label">Онлайн</span>
+            <div class="value" id="srv-online">—</div>
           </div>
-          <div class="card">
-            <div class="card__label">Online</div>
-            <div class="card__value" id="srv-online">—</div>
-            <div class="card__sub" id="srv-cap">из — слотов</div>
+          <div class="stat">
+            <span class="label">TPS</span>
+            <div class="value" id="srv-tps">—</div>
           </div>
-          <div class="card">
-            <div class="card__label">TPS</div>
-            <div class="card__value" id="srv-tps">—</div>
-            <div class="card__sub" id="srv-uptime">uptime —</div>
+          <div class="stat">
+            <span class="label">Uptime</span>
+            <div class="value" id="srv-uptime">—</div>
           </div>
         </div>
       </div>
@@ -116,42 +93,40 @@
     <section class="section" id="features">
       <div class="container">
         <div class="section__head">
-          <div>
-            <span class="eyebrow">Loadout</span>
-            <h2>Что внутри мода</h2>
-          </div>
-          <p>31 уникальный блок, полевые лагеря, кастомная логика окопов и soft-интеграция с JourneyMap.</p>
+          <span class="label">Loadout</span>
+          <h2>Что внутри</h2>
+          <p>31 уникальный блок, полевые лагеря, лаунчер и полный набор тестов.</p>
         </div>
         <div class="features">
           <div class="feature reveal">
-            <div class="feature__icon">OK</div>
+            <span class="num">01</span>
             <h3>Окоп — 15 блоков</h3>
-            <p>Балки, камуфляжные сетки, мешки с песком (1–4 слоя), колючая проволока, крышки, слив воды, бойницы, лестницы, лампы, ящик снабжения на 27 слотов.</p>
+            <p>Балки, камуфляжные сетки, мешки с песком, колючая проволока, крышки, слив, бойницы, лестницы, лампа, ящик снабжения.</p>
           </div>
           <div class="feature reveal">
-            <div class="feature__icon">BZ</div>
+            <span class="num">02</span>
             <h3>База — 8 блоков</h3>
-            <p>Военный бетон, HESCO-барьер, металлические ворота, чекпойнты, противотанковые ежи, спиральная колючка.</p>
+            <p>Военный бетон, HESCO-барьер, металлические ворота, чекпойнты, ежи, спиральная колючка.</p>
           </div>
           <div class="feature reveal">
-            <div class="feature__icon">FC</div>
+            <span class="num">03</span>
             <h3>Полевой лагерь</h3>
-            <p>Полевая кухня, радио, аптечки и вспомогательные элементы для развёртывания временных баз.</p>
+            <p>Полевая кухня, радио, аптечки и вспомогательные элементы для временных баз.</p>
           </div>
           <div class="feature reveal">
-            <div class="feature__icon">JM</div>
-            <h3>JourneyMap soft-интеграция</h3>
-            <p>Плагин отмечает военные объекты на карте. Мод работает и без неё — зависимость опциональная.</p>
+            <span class="num">04</span>
+            <h3>JourneyMap</h3>
+            <p>Soft-интеграция: объекты мода отмечаются на карте при наличии JM, иначе мод работает без.</p>
           </div>
           <div class="feature reveal">
-            <div class="feature__icon">DB</div>
+            <span class="num">05</span>
             <h3>SQLite внутри</h3>
-            <p>jarJar-эмбед sqlite-jdbc и bcrypt. Локальные данные не требуют внешней БД в dev-режиме.</p>
+            <p>jarJar-эмбед sqlite-jdbc и bcrypt. Без внешней БД в dev-режиме.</p>
           </div>
           <div class="feature reveal">
-            <div class="feature__icon">TS</div>
-            <h3>Покрыто тестами</h3>
-            <p>JUnit 5, jqwik (property-based), AssertJ, Mockito, H2. Сборка через <span class="mono">./gradlew test</span>.</p>
+            <span class="num">06</span>
+            <h3>Тесты</h3>
+            <p>JUnit 5, jqwik, AssertJ, Mockito, H2. Сборка через <span class="mono">./gradlew test</span>.</p>
           </div>
         </div>
       </div>
@@ -159,77 +134,59 @@
 
     <!-- WGuard -->
     <section class="section" id="wguard">
-      <div class="container wguard">
-        <div>
-          <span class="eyebrow">Anti-Cheat</span>
-          <h2>WGuard — проверяем каждого</h2>
-          <p>Собственный античит. Серверные проверки, подписанный клиент, сплеш-экран верификации в сайте и лаунчере до открытия UI.</p>
-          <ul class="wguard__list">
-            <li><span class="num">01</span><div><strong>Integrity check.</strong> Проверяем хеши клиентских jar-файлов при старте.</div></li>
-            <li><span class="num">02</span><div><strong>Heartbeat.</strong> Каждые 30 секунд клиент отправляет подписанный пакет.</div></li>
-            <li><span class="num">03</span><div><strong>Server-side rules.</strong> Любые подозрительные движения / взаимодействия валидируются на сервере.</div></li>
-            <li><span class="num">04</span><div><strong>Audit log.</strong> Все инциденты пишутся в SQLite + Discord webhook (опционально).</div></li>
-          </ul>
+      <div class="container">
+        <div class="section__head">
+          <span class="label">Anti-cheat</span>
+          <h2>WGuard</h2>
+          <p>Собственный античит. Подписанный клиент, серверные проверки, audit-log.</p>
         </div>
-        <div class="wguard__viz" aria-hidden="true">
-          <svg viewBox="0 0 240 240" fill="none" stroke="#e9b949" stroke-width="2" stroke-linejoin="round">
-            <circle cx="120" cy="120" r="110" opacity=".3" />
-            <circle cx="120" cy="120" r="86"  opacity=".55" />
-            <circle cx="120" cy="120" r="62"  opacity=".9" />
-            <path d="M82 56h36a12 12 0 0 1 0 24 12 12 0 0 0 0 24h36v32a12 12 0 0 1-24 0 12 12 0 0 0-24 0v32H70a12 12 0 0 0 0-24 12 12 0 0 1-24 0V112h24a12 12 0 0 0 0-24 12 12 0 0 1 12-32z" fill="rgba(233,185,73,0.10)" />
-          </svg>
-        </div>
+        <ol class="steps reveal">
+          <li>
+            <div class="num">01</div>
+            <div><strong>Integrity check</strong><span>Хеши клиентских jar-файлов верифицируются при старте.</span></div>
+          </li>
+          <li>
+            <div class="num">02</div>
+            <div><strong>Heartbeat</strong><span>Каждые 30 секунд клиент отправляет подписанный пакет.</span></div>
+          </li>
+          <li>
+            <div class="num">03</div>
+            <div><strong>Server rules</strong><span>Подозрительные движения валидируются на сервере, без доверия клиенту.</span></div>
+          </li>
+          <li>
+            <div class="num">04</div>
+            <div><strong>Audit log</strong><span>Инциденты пишутся в SQLite + опциональный Discord webhook.</span></div>
+          </li>
+        </ol>
       </div>
     </section>
 
     <!-- Download -->
-    <section class="section download" id="download">
+    <section class="download" id="download">
       <div class="container">
-        <span class="eyebrow">Deploy</span>
+        <span class="label">Deploy</span>
         <h2>Скачать лаунчер</h2>
-        <p>Инсталлер сам выкачает клиент, следит за версиями и подписывает билд. WGuard включён по умолчанию.</p>
+        <p>Инсталлер сам выкачает клиент и следит за версиями. WGuard включён по умолчанию.</p>
         <div class="download__row">
-          <a class="btn btn--lg" href="#">Windows x64</a>
-          <a class="btn btn--ghost btn--lg" href="#">Linux AppImage</a>
-          <a class="btn btn--ghost btn--lg" href="https://github.com/frostlogicdev/warproject-okop/releases" target="_blank" rel="noreferrer">Все релизы</a>
+          <a class="btn btn--lg" href="#">Windows</a>
+          <a class="btn btn--ghost btn--lg" href="#">Linux</a>
+          <a class="btn btn--ghost btn--lg" href="https://github.com/frostlogicdev/warproject-okop/releases" target="_blank" rel="noreferrer">Releases</a>
         </div>
       </div>
     </section>
+
   </main>
 
   <!-- Footer -->
   <footer class="footer">
     <div class="container">
-      <div class="footer__grid">
-        <div class="footer__col">
-          <div class="nav__brand" style="margin-bottom:12px">
-            <span class="nav__mark">W</span> War Project
-          </div>
-          <p class="muted">Военный мод для Minecraft 1.21.1. Окопы, базы, античит WGuard, живой лаунчер.</p>
-        </div>
-        <div class="footer__col">
-          <h4>Проект</h4>
-          <a href="#features">Содержимое</a>
-          <a href="#server">Сводка</a>
-          <a href="#wguard">WGuard</a>
-          <a href="#download">Скачать</a>
-        </div>
-        <div class="footer__col">
-          <h4>Код</h4>
+      <div class="footer__row">
+        <div>© War Project · MIT · Build 3.0.0</div>
+        <div class="footer__links">
           <a href="https://github.com/frostlogicdev/warproject-okop" target="_blank" rel="noreferrer">GitHub</a>
           <a href="https://github.com/frostlogicdev/warproject-okop/releases" target="_blank" rel="noreferrer">Releases</a>
-          <a href="https://github.com/frostlogicdev/warproject-okop/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a>
+          <a href="https://github.com/frostlogicdev/warproject-okop/blob/main/LICENSE" target="_blank" rel="noreferrer">License</a>
         </div>
-        <div class="footer__col">
-          <h4>Контакт</h4>
-          <a href="#">Discord</a>
-          <a href="#">Telegram</a>
-          <a href="mailto:hello@warproject.local">Email</a>
-        </div>
-      </div>
-      <div class="footer__bottom">
-        <div>© War Project · MIT</div>
-        <div>NeoForge 21.1.229+ · Java 21 · Build 3.0.0</div>
       </div>
     </div>
   </footer>
