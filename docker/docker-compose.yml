@@ -13,11 +13,15 @@ services:
     ports:
       - "25565:25565"
     environment:
-      EULA: "false"
-      JVM_OPTS: "-Xmx6G -Xms6G -XX:+UseG1GC"
+      EULA: "true"
+      # JVM_OPTS only matters in the entrypoint's server.jar fallback path.
+      # In NeoForge mode (run.sh) the actual flags come from server/user_jvm_args.txt.
+      JVM_OPTS: ""
     volumes:
       - ./data/world:/opt/server/world
       - ./data/config:/opt/server/config
       - ./data/logs:/opt/server/logs
       - ./data/mods:/opt/server/mods
+      - ./data/libraries:/opt/server/libraries
+      - ./data/user_jvm_args.txt:/opt/server/user_jvm_args.txt
       - ./data/server.jar:/opt/server/server.jar:ro
