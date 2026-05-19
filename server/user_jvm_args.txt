@@ -1,18 +1,18 @@
-# WarProject — Aikar's optimized G1GC flags (target ~150 players).
-# Match -Xms == -Xmx. Reserve ~4G on the host for OS, JourneyMap web, RCON and JVM overhead.
+# WarProject — JVM flags for 6 GB Pterodactyl hosting.
+# Hosting limit: 6144 MB RAM. Keep heap below the full limit so NeoForge,
+# native memory, metaspace, thread stacks, SQLite/JourneyMap and the OS have room.
 
--Xms10G
--Xmx10G
+-Xms3G
+-Xmx4G
 
 -XX:+UseG1GC
 -XX:+ParallelRefProcEnabled
 -XX:MaxGCPauseMillis=200
 -XX:+UnlockExperimentalVMOptions
 -XX:+DisableExplicitGC
--XX:+AlwaysPreTouch
 -XX:G1NewSizePercent=30
 -XX:G1MaxNewSizePercent=40
--XX:G1HeapRegionSize=8M
+-XX:G1HeapRegionSize=4M
 -XX:G1ReservePercent=20
 -XX:G1HeapWastePercent=5
 -XX:G1MixedGCCountTarget=4
