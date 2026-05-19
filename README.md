@@ -1,102 +1,101 @@
 # War Project
 
-Военный мод для Minecraft 1.21.1 (NeoForge): окопная фортификация, полевые лагеря, военные базы и серверная RP-логика для военного Minecraft-проекта.
+Военный RP-мод для Minecraft 1.21.1 (NeoForge): окопная фортификация, полевые лагеря, военные базы и серверная логика для запуска Minecraft-сервера.
 
-> Текущий репозиторий содержит **NeoForge-мод**, серверные конфиги, Docker/Pterodactyl-заготовки и документацию. Лаунчер и сайт/API пока не входят в это дерево репозитория и должны поставляться отдельно либо быть добавлены позже.
+Текущий scope репозитория: **мод + сервер под Pterodactyl**. Лаунчер и сайт/API сейчас не входят в релизный scope.
 
 ## Components
 
 - `src/` — NeoForge-мод (Java 21).
-- `server/` — шаблон dedicated-server конфигов.
-- `docker/` — self-hosted server (Dockerfile + compose).
-- `docs/` — production-ready чек-лист, deploy-гайд, Pterodactyl egg и CI template.
+- `server/` — шаблон dedicated-server конфигов и локальная папка `mods/`.
+- `docs/DEPLOY.md` — развёртывание на Pterodactyl.
+- `docs/LAUNCH_CHECKLIST.md` — чек-лист перед открытием.
+- `docs/MODS.md` — список модов в сборке и рекомендации.
+- `docs/pterodactyl/` — egg и инструкция импорта.
+- `docs/ci-template.yml` — CI-шаблон, который нужно вручную скопировать в `.github/workflows/ci.yml`.
 - `tools/` — вспомогательные скрипты.
+
+## Уже лежит в `server/mods/`
+
+- `warproject-3.0.0.jar`
+- `journeymap-neoforge-1.21.1-6.0.0-beta.74.jar`
+- `worldedit-mod-7.3.5.jar`
+- `multiverse-1.21.1-4.3.1.jar`
 
 ## Features
 
-### Okop — 15 блоков окопной фортификации
+### Okop — окопная фортификация
+
 - Support Beams (Wooden / Iron / Reinforced)
 - Camo Nets (Forest / Desert / Winter)
 - Sandbags (1–4 layers)
 - Horizontal Covers (Wooden / Log)
 - Barbed Wire (slow + damage)
 - Drainage Grate (waterloggable)
-- Firing Slot, Trench Stairs, Trench Lantern, Supply Crate (27 slots)
+- Firing Slot, Trench Stairs, Trench Lantern, Supply Crate
 
-### Baza — 8 военных блоков
+### Baza — военные блоки
+
 - Military Concrete / Reinforced / Slab
-- HESCO Barrier, Metal Gate, Checkpoint Barrier
-- Tank Hedgehog, Razor Wire Fence
+- HESCO Barrier
+- Metal Gate
+- Checkpoint Barrier
+- Tank Hedgehog
+- Razor Wire Fence
 
-### Field camp + extras
-Полевая кухня, радио, аптечки и другие вспомогательные блоки. Суммарно — **31 уникальный блок**.
+### Серверная RP-логика
 
-### Инфраструктура мода
-- **JourneyMap** — soft-интеграция (в `client/jmplugin/`), мод работает и без JourneyMap.
-- **WGuard** — серверная авторизация, капча и базовые guard-проверки. Это не полноценный combat/fly/killaura античит.
-- **Персистенс** — SQLite (jarJar-embed `sqlite-jdbc`), новые пароли — bcrypt cost 12; legacy JSON-профили мигрируются на bcrypt после успешного входа.
+- WGuard: авторизация, регистрация, captcha-flow, базовые guard-проверки.
+- BCrypt cost 12 для новых паролей.
+- Legacy JSON-профили мигрируются с SHA-256+salt на BCrypt после успешного входа.
+- SQLite persistence через jarJar `sqlite-jdbc`.
+- Поддержка нескольких миров через Multiverse.
+- JourneyMap soft-интеграция.
+
+> WGuard сейчас **не заменяет полноценный combat/fly/killaura античит**. Собственный античит планируется позже.
 
 ## Requirements
 
 - Minecraft 1.21.1
-- NeoForge 21.1.229+ (см. `gradle.properties`)
+- NeoForge 21.1.229+
 - Java 21
+- Pterodactyl Panel + Wings для production-хостинга
 
-## Quickstart
-
-```bash
-# 1. Мод
-./gradlew clean build    # сборка (jarJar)
-./gradlew test           # JUnit5 / jqwik / AssertJ / Mockito / H2
-./gradlew runClient      # локальный клиент
-./gradlew runServer      # локальный сервер
-
-# 2. Сервер (Docker)
-cd docker && EULA=true docker compose up -d
-```
-
-## Tests
+## Quickstart для разработки
 
 ```bash
+./gradlew clean build
 ./gradlew test
+./gradlew runClient
+./gradlew runServer
 ```
 
-Stack: JUnit Jupiter 5, jqwik, AssertJ, Mockito, H2.
+## Production deploy
+
+Основные документы:
+
+1. `docs/DEPLOY.md` — как поднять сервер на Pterodactyl.
+2. `docs/LAUNCH_CHECKLIST.md` — что проверить перед открытием.
+3. `docs/MODS.md` — какие companion-моды уже есть и что желательно добавить.
+4. `docs/pterodactyl/README.md` — как импортировать egg.
+
+Перед открытием обязательно нужны:
+
+- реальные координаты миров/баз/спавнов в `server/config/warproject-server.toml`;
+- успешные `./gradlew clean build` и `./gradlew test`;
+- проверенный запуск на Pterodactyl;
+- RCON только через secret панели и без публичного доступа;
+- backup + restore test;
+- stress-test хотя бы на closed alpha.
 
 ## Texture generation
 
 Плейсхолдерские текстуры лежат в `src/main/resources/assets/warproject/textures/block/`.
-Перегенерация (требует pillow):
+
 ```bash
 python tools/generate_textures.py
 ```
 
-## Structure
-
-```
-repo-root/
-├── src/                              # NeoForge mod (Java 21)
-│   └── main/java/com/frostlogic/warproject/
-│       ├── WarProject.java           # entry
-│       ├── WpConfig.java             # весь конфиг
-│       ├── attachment/ block/ item/  # регистры и контент
-│       ├── client/                   # рендер + jmplugin/
-│       ├── network/                  # пакеты
-│       ├── persistence/              # SQLite
-│       ├── server/                   # серверная логика
-│       └── env/                      # prepareServerEnvironment
-├── server/                           # dedicated-server configs
-├── docker/                           # self-hosted server
-├── docs/                             # deploy / launch / production docs
-├── tools/                            # вспомогательные скрипты
-├── build.gradle / settings.gradle / gradle.properties
-└── LICENSE / CHANGELOG.md / README.md
-```
-
-## Production note
-
-Для публичного открытия обязательно выполните `docs/LAUNCH_CHECKLIST.md`: реальные координаты баз/спавнов, companion-моды, backup/restore, стресс-тест и мониторинг.
-
 ## License
 
-MIT — см. [LICENSE](./LICENSE). Совпадает с `mod_license=MIT` в `gradle.properties`.
+MIT — см. [LICENSE](./LICENSE).
