@@ -12,6 +12,13 @@ ENV JVM_OPTS=""
 
 WORKDIR /opt/server
 
+# netcat-openbsd is required by the HEALTHCHECK below. eclipse-temurin:21-jre
+# is Debian-based but ships without nc, so without this the healthcheck would
+# always report the container as unhealthy.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends netcat-openbsd \
+ && rm -rf /var/lib/apt/lists/*
+
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
