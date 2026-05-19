@@ -31,6 +31,7 @@ out/
 bin/
 *.class
 hs_err_pid*.log
+.jqwik-database
 
 # ===== IDE =====
 .idea/
