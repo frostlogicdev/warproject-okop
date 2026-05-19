@@ -1,90 +1,121 @@
-# Pterodactyl — импорт egg и создание сервера WarProject
+# Pterodactyl — WarProject server
 
-Эта папка содержит Pterodactyl egg для WarProject NeoForge 1.21.1 + инструкцию по развёртыванию в panel + Wings.
+Инструкция для текущего релизного scope: **мод + сервер** на Pterodactyl.
 
-## 0. Что вы должны иметь
+## 1. Что нужно заранее
 
-- Работающий Pterodactyl Panel + Wings (хотя бы один node).
-- Docker image `ghcr.io/pterodactyl/yolks:java_21` (Pterodactyl скачает сам при создании сервера).
-- DNS A-запись и открытый порт 25565.
+- Рабочий Pterodactyl Panel + Wings.
+- Docker image `ghcr.io/pterodactyl/yolks:java_21`.
+- Открытый игровой порт `25565/tcp`.
+- Закрытый от публичного интернета RCON-порт `25575/tcp`, если RCON используется.
+- Java 21 server environment.
 
-## 1. Импорт egg
+## 2. Импорт egg
 
-1. Откройте Pterodactyl Panel → **Admin** → **Nests**.
-2. Создайте новый nest **WarProject** (или выберите существующий).
-3. В нём нажмите **Import Egg** и загрузите файл `egg-warproject.json` из этой папки.
-4. После импорта проверьте, что в egg подхватились переменные NEOFORGE_VERSION, WP_VERSION, WP_REPO, WP_BRANCH, MAX_PLAYERS, SERVER_MOTD, WHITELIST, RCON_PORT, RCON_PASSWORD.
+1. Panel → Admin → Nests.
+2. Создать nest `WarProject` или выбрать существующий.
+3. Import Egg → загрузить `docs/pterodactyl/egg-warproject.json`.
+4. Проверить переменные:
 
-## 2. Создание сервера
+```text
+NEOFORGE_VERSION
+WP_VERSION
+WP_REPO
+WP_BRANCH
+MAX_PLAYERS
+SERVER_MOTD
+WHITELIST
+RCON_PORT
+RCON_PASSWORD
+```
 
-Admin → Servers → **Create New**.
+## 3. Рекомендуемые ресурсы
 
-### Ресурсы (для 100–150 онлайн)
+Для closed alpha можно стартовать скромнее, но под публичную beta/opening держите запас.
 
 | Параметр | Значение |
 |---|---|
-| RAM | 14 GB (`-Xms10G -Xmx10G` + 4 GB overhead) |
-| Swap | 0 (или з2 GB) |
-| Disk | 20 GB (мир + логи + bcakups) |
-| CPU Limit | 0 (без жёсткого лимита) |
-| CPU Pinning | 4–6 выделенных ядер |
-| Block I/O | 500 |
-| OOM Killer | enabled |
+| RAM | 12–16 GB |
+| CPU | 4–6 vCPU, желательно высокая частота |
+| Disk | 30–50 GB NVMe |
+| Swap | 0–2 GB |
+| Docker image | `ghcr.io/pterodactyl/yolks:java_21` |
 
-### Egg & docker image
-
-- **Nest**: WarProject
-- **Egg**: WarProject NeoForge 1.21.1
-- **Docker Image**: `ghcr.io/pterodactyl/yolks:java_21`
-- **Startup Command**: подставяется из egg автоматически.
-
-### Variables
+## 4. Variables
 
 | Переменная | Значение |
 |---|---|
-| NEOFORGE_VERSION | `21.1.229` |
-| WP_VERSION | `3.0.0` |
-| WP_REPO | `frostlogicdev/warproject-okop` |
-| WP_BRANCH | `01u16jspaspjgna` |
-| MAX_PLAYERS | `150` |
-| SERVER_MOTD | `§c§lWar Project §8\| §fMilitary RP` |
-| WHITELIST | `true` |
-| RCON_PORT | `25575` |
-| RCON_PASSWORD | сгенерируйте, ≥16 символов |
+| `NEOFORGE_VERSION` | `21.1.229` |
+| `WP_VERSION` | `3.0.0` |
+| `WP_REPO` | `frostlogicdev/warproject-okop` |
+| `WP_BRANCH` | `01u16jspaspjgna` |
+| `MAX_PLAYERS` | `150` или меньше для alpha |
+| `SERVER_MOTD` | `§c§lWar Project §8\| §fMilitary RP` |
+| `WHITELIST` | `true` для alpha/beta |
+| `RCON_PORT` | `25575` |
+| `RCON_PASSWORD` | secret, минимум 16 случайных символов |
 
-## 3. Инсталляция (install script egg)
+Не коммитьте RCON-пароль в git.
 
-Egg в install-фазе самостоятельно:
+## 5. Установка
 
-1. Скачивает `neoforge-${NEOFORGE_VERSION}-installer.jar` с Maven NeoForged.
-2. Запускает `java -jar ...installer.jar --install-server` → создаются `libraries/`, `user_jvm_args.txt`, `run.sh`, `unix_args.txt`.
-3. Скачивает из GitHub Releases (`${WP_REPO}/releases/download/v${WP_VERSION}/warproject-${WP_VERSION}.jar`) и кладёт в `mods/`.
-4. Кладёт `eula=true`.
+Egg install script:
 
-Дальше вы вручную:
+1. скачивает NeoForge installer;
+2. выполняет `--install-server`;
+3. создаёт `libraries/`, `run.sh`, `user_jvm_args.txt`;
+4. пытается скачать `warproject-${WP_VERSION}.jar` из GitHub Releases;
+5. принимает EULA.
 
-- Докидываете companion-моды в `mods/` через SFTP (`docs/MODS.md`).
-- Копируете поверх свои `server.properties`, `user_jvm_args.txt`, `config/*.toml` из репо (`server/...`).
+После установки вручную проверьте/докиньте в `mods/`:
 
-## 4. Запуск и обновления
+```text
+warproject-3.0.0.jar
+journeymap-neoforge-1.21.1-6.0.0-beta.74.jar
+worldedit-mod-7.3.5.jar
+multiverse-1.21.1-4.3.1.jar
+```
 
-- **Restart**: кнопка в панели или `Power → Restart` (отправляет SIGTERM → graceful save).
-- **Обновление мода**: в панели поменяйте `WP_VERSION`, выжмите **Reinstall** (при этом мир/db сохраняются — install трогает только mods/libraries).
-- **Обновление NeoForge**: поменяйте `NEOFORGE_VERSION`, Reinstall, проверьте совместимость модов.
+Остальные companion-моды — по `docs/MODS.md`.
 
-## 5. Бэкапы
+## 6. Конфиги
 
-Pterodactyl backups (`Backups` tab) сжимают весь volume — это простой, но не самый быстрый вариант. Для production я рекомендую дополнительно запускать `tools/backup.sh` с хоста в cron с RCON-flush (см. `docs/DEPLOY.md` § 4).
+После первого запуска проверьте:
 
-## 6. Частые проблемы
+- `server.properties`;
+- `config/warproject-server.toml`;
+- `user_jvm_args.txt`;
+- whitelist/ops;
+- RCON runtime-настройки.
 
-- **«Failed to download NeoForge installer»**: проверьте, что Wings имеет выход в интернет и `NEOFORGE_VERSION` правильная (`https://maven.neoforged.net/releases/net/neoforged/neoforge/<v>/`).
-- **OOMKill после 30 минут**: выделите серверу 16 GB RAM в панели. JVM в `user_jvm_args.txt` Д3ёржит ровно 10G, остальное — metaspace/direct/native.
-- **Нет прав на mods/ из панели**: перезапустите сервер — yolks восстановит chown.
-- **Pterodactyl обрывает подключения через 90 секунд**: увеличьте `stop_timeout` egg до 120, подпишите в panel proxy timeout.
+Координаты Multiverse-миров и регионов будут заполнены позже, когда будут готовы реальные локации.
 
-## 7. Как egg связан с репо
+## 7. Бэкапы
 
-`egg-warproject.json` в этой папке берёт мод всегда из GitHub Releases репо `WP_REPO` (по умолчанию `frostlogicdev/warproject-okop`). Если вы форкнули или переименовали — поменяйте `WP_REPO` на ваш slug.
+Минимум перед открытием:
 
-Для publish релиза: `gradlew build` → файл `build/libs/warproject-3.0.0.jar` → GitHub Releases → tag `v3.0.0` → залить jar (имя обязательно `warproject-3.0.0.jar`).
+- включить Pterodactyl backups;
+- проверить restore вручную;
+- если используется `tools/backup.sh`, RCON должен быть доступен только из private network/localhost.
+
+## 8. Перед opening
+
+Сверить `docs/LAUNCH_CHECKLIST.md`.
+
+Минимум:
+
+```bash
+./gradlew clean build
+./gradlew test
+```
+
+Затем проверить в панели:
+
+- server boot;
+- WarProject loaded;
+- JourneyMap loaded;
+- WorldEdit loaded and admin-only;
+- Multiverse loaded;
+- registration/login/captcha;
+- backup + restore;
+- RCON not public.
