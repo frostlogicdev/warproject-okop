@@ -1,11 +1,15 @@
 package com.frostlogic.warproject.server;
 
 import com.frostlogic.warproject.WarProject;
+import com.frostlogic.warproject.WpConfig;
 import com.frostlogic.warproject.network.payload.c2s.RegisterRequestPayload;
 import com.frostlogic.warproject.persistence.Database;
+import com.frostlogic.warproject.persistence.dao.AuditLogDao;
 import com.frostlogic.warproject.persistence.dao.BansDao;
 import com.frostlogic.warproject.persistence.dao.MutesDao;
 import com.frostlogic.warproject.server.collab.CollaboratorService;
+import com.frostlogic.warproject.server.wguard.WGuardEventHandler;
+import com.frostlogic.warproject.server.wguard.WGuardService;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
@@ -16,6 +20,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -35,12 +40,20 @@ import java.util.Optional;
 public final class ServerEvents {
 
     private static Database database;
+    private static WGuardService wguardService;
 
     /**
      * Returns the shared Database instance. May be null if the server has not started yet.
      */
     public static Database getDatabase() {
         return database;
+    }
+
+    /**
+     * Returns the shared WGuardService instance. May be null if the server has not started yet.
+     */
+    public static WGuardService getWGuardService() {
+        return wguardService;
     }
 
     private ServerEvents() {
@@ -62,7 +75,40 @@ public final class ServerEvents {
         database.initialize();
         com.frostlogic.warproject.server.map.MapBroadcastService.install();
         com.frostlogic.warproject.server.map.FactionMarkerService.install();
+
+        // WGuard anti-cheat: instantiate the service and hand it to the static
+        // event handler. Without this every check in WGuardEventHandler short-
+        // circuits because `service` stays null and the anti-cheat silently no-ops.
+        wguardService = new WGuardService(database, new AuditLogDao());
+        WGuardEventHandler.init(wguardService);
+        WarProject.LOGGER.info("[WarProject] WGuard anti-cheat initialised (enabled={}).",
+                WpConfig.WGUARD_ENABLED.get());
+
+        // Boot-time configuration sanity check: faction spawns must be set before
+        // the server is opened to the public. The [0,64,0] placeholder will drop
+        // newcomers in the void with no way to recover.
+        warnIfPlaceholderFactionSpawns();
+
         WarProject.LOGGER.debug("[WarProject] ServerEvents: database initialized, new subsystems ready.");
+    }
+
+    private static void warnIfPlaceholderFactionSpawns() {
+        if (isPlaceholderSpawn(WpConfig.FACTIONS_ZARNAVIA_SPAWN.get())
+                || isPlaceholderSpawn(WpConfig.FACTIONS_CHERNOGRYAD_SPAWN.get())
+                || isPlaceholderSpawn(WpConfig.FACTIONS_CHOICE_HALL_SPAWN.get())) {
+            WarProject.LOGGER.warn(
+                    "[WarProject] One or more faction spawn coordinates are still at the [0,64,0] placeholder. "
+                            + "Set factions.zarnaviaSpawn / factions.chernogryadSpawn / factions.choiceHallSpawn "
+                            + "in server/config/warproject-server.toml before opening the server to players.");
+        }
+    }
+
+    private static boolean isPlaceholderSpawn(List<? extends Integer> coords) {
+        return coords != null
+                && coords.size() == 3
+                && coords.get(0) == 0
+                && coords.get(1) == 64
+                && coords.get(2) == 0;
     }
 
     /**
@@ -80,6 +126,8 @@ public final class ServerEvents {
         safeRun("MapBroadcastService.uninstall", com.frostlogic.warproject.server.map.MapBroadcastService::uninstall);
         safeRun("FactionMarkerService.uninstall", com.frostlogic.warproject.server.map.FactionMarkerService::uninstall);
         safeRun("ServiceRegistry.clear", com.frostlogic.warproject.network.ServiceRegistry::clear);
+        safeRun("WGuardEventHandler.clear", () -> WGuardEventHandler.init(null));
+        wguardService = null;
         database = null;
     }
 
@@ -135,7 +183,7 @@ public final class ServerEvents {
             return;
         }
 
-        // ─── Ban enforcement ──────────────────────────────────────────────
+        // ─── Ban enforcement ────────────────────────────────────────────
         // Check if the player has an active ban in the database. If so,
         // disconnect them immediately before any auth/onboarding flow runs.
         if (database != null) {
@@ -158,7 +206,7 @@ public final class ServerEvents {
         }
     }
 
-    // ─── Mute enforcement ─────────────────────────────────────────────────────
+    // ─── Mute enforcement ───────────────────────────────────────────────────
     // Blocks chat messages from players who have an active mute in the database.
     // Runs at HIGH priority so it fires after FreezeService (HIGHEST) but before
     // normal chat processing.
@@ -235,7 +283,7 @@ public final class ServerEvents {
         // auth screens, breaking onboarding non-deterministically.
         // The new pipeline takes over only for genuinely fresh players (no JSON
         // profile, no DB account) or for players who already have a DB account.
-        // ─────────────────────────────────────────────────────────────────
+        // ─────────────────────────────────────────────────────────────────────────
         String uuid = player.getStringUUID();
         boolean accountExists = database.inTx(conn ->
                 new com.frostlogic.warproject.persistence.dao.AccountsDao().findByUuid(conn, uuid).isPresent()
