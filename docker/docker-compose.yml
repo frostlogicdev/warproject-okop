@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  warproject:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    image: warproject/server:local
+    container_name: warproject-server
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "false"
+      JVM_OPTS: "-Xmx6G -Xms6G -XX:+UseG1GC"
+    volumes:
+      - ./data/world:/opt/server/world
+      - ./data/config:/opt/server/config
+      - ./data/logs:/opt/server/logs
+      - ./data/mods:/opt/server/mods
+      - ./data/server.jar:/opt/server/server.jar:ro
