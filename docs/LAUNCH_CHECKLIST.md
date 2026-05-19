@@ -17,16 +17,18 @@
 - [x] BCrypt cost 12 для новой auth-системы.
 - [x] Legacy JSON-профили мигрируются на BCrypt после успешного входа.
 - [x] `auth.password.minLen ≥ 8`, `attempts ≤ 5`.
+- [x] Античит WGuard в `warproject-*.jar` и подключён в `ServerEvents.onServerAboutToStart`.
 - [ ] Sudo без пароля ОТКЛЮЧИТЬ. SSH key-only.
 - [ ] fail2ban для SSH + Pterodactyl panel.
 - [ ] Аккаунт панели — 2FA.
-- [ ] Так как собственный античит будет позже: запускать alpha/beta только с активным админ-наблюдением и логами.
+- [ ] В `warproject-server.toml` проверены `wguard.violationKickThreshold` / `violationBanThreshold` и листы `wguard.vehicleModNamespaces` / `wguard.weaponModNamespaces` совпадают с реальным набором модов (в особенности TaCZ/MTS/MrCrayfish).
 
 ## T−3 — мир и конфиги
 
 - [ ] Multiverse установлен и проверен на сервере.
 - [ ] Созданы/проверены нужные миры под зоны проекта.
 - [ ] Простроены: choice hall, Zarnavia spawn, Chernogryad spawn, captcha-spawn (y≈320 или выбранная безопасная высота).
+- [ ] **Обязательно:** все три `factions.*Spawn` в `warproject-server.toml` заменены с дефолта `[0, 64, 0]` на реальные координаты. Сервер логгирует WARN при старте, если это не сделано.
 - [ ] Реальные координаты проставлены в `warproject-server.toml` → `[factions]`, `[captcha]`, `[regions]`.
 - [ ] Для `regions.bases` указан правильный dimension/world id для каждого мира Multiverse.
 - [ ] WorldEdit разрешён только админам (permissions handler / panel policy).
@@ -45,6 +47,7 @@
 - [ ] Желательно поставить Spark и выполнить `/spark profiler --timeout 300`.
 - [ ] MSPT < 50 мс под нагрузкой.
 - [ ] Проверены: регистрация, логин, legacy login migration, капча, выбор фракции, captivity, ransom, rank promote/demote, audit log.
+- [ ] WGuard не даёт false positive в обычном PvP: проверьте audit log после стресс-теста (`SELECT * FROM audit_log WHERE action LIKE 'WGUARD_%' ORDER BY ts DESC LIMIT 50;`). Если есть ложные флаги — подручивайте лимиты в `wguard.*` (особенно `killAuraMaxRotationPerTick` и `reachMaxDistance`).
 - [ ] Проверены переходы/телепорты между Multiverse-мирами, если они участвуют в gameplay flow.
 - [ ] Работают бэкапы и restore (ручно выполнить восстановление из архива).
 - [ ] Логи (`server/logs/`) и sqlite в бэкапе.
@@ -56,12 +59,12 @@
 - [ ] Дежурный админ в чате.
 - [ ] Сверкнуть `enforce-secure-profile=false`, `online-mode=false` (cracked).
 - [ ] Сверкнуть, что RCON недоступен с публичного интернета.
-- [ ] Первые 30 минут — следим за `/spark tps` или логами panel, если Spark ещё не установлен.
+- [ ] Первые 30 минут — следим за `/spark tps` или логами panel, если Spark ещё не установлен, и за audit-логом на `WGUARD_BAN`.
 
 ## T+24h — пост-лонч
 
 - [ ] Разобраны инциденты (баны, роллбэки через Ledger/ручные логи).
 - [ ] Проверяем, сколько RAM реально используется, подкручиваем `-Xmx` при необходимости.
-- [ ] Aggregate-отчёт в audit-канал: сколько регистраций, фракционный баланс, пики онлайна.
+- [ ] Aggregate-отчёт в audit-канал: сколько регистраций, фракционный баланс, пики онлайна, сколько WGUARD_BAN выдано.
 - [ ] Бэкап и верификация restore выполнены ещё раз.
 - [ ] Собрать feedback от игроков, завести issues в GitHub.
