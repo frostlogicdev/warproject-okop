@@ -1,0 +1,110 @@
+{
+  "_comment": "WarProject NeoForge 1.21.1 egg (cracked, military RP). Import via Admin > Nests > Import Egg.",
+  "meta": { "version": "PTDL_v2", "update_url": null },
+  "exported_at": "2026-05-19T17:00:00+03:00",
+  "name": "WarProject NeoForge 1.21.1",
+  "author": "frostlogicdev",
+  "description": "Pterodactyl egg for the WarProject military RP mod on NeoForge 1.21.1. Cracked online-mode=false, target 150 players. See docs/pterodactyl/README.md.",
+  "features": ["eula", "java_version", "pid_limit"],
+  "docker_images": {
+    "Java 21 (yolks)": "ghcr.io/pterodactyl/yolks:java_21"
+  },
+  "file_denylist": [],
+  "startup": "java @user_jvm_args.txt @libraries/net/neoforged/neoforge/\u007b\u007bNEOFORGE_VERSION\u007d\u007d/unix_args.txt nogui",
+  "config": {
+    "files": "{\"server.properties\":{\"parser\":\"properties\",\"find\":{\"server-port\":\"\u007b\u007bserver.build.default.port\u007d\u007d\",\"server-ip\":\"0.0.0.0\",\"max-players\":\"\u007b\u007bserver.build.env.MAX_PLAYERS\u007d\u007d\",\"white-list\":\"\u007b\u007bserver.build.env.WHITELIST\u007d\u007d\",\"enforce-whitelist\":\"\u007b\u007bserver.build.env.WHITELIST\u007d\u007d\",\"motd\":\"\u007b\u007bserver.build.env.SERVER_MOTD\u007d\u007d\",\"rcon.port\":\"\u007b\u007bserver.build.env.RCON_PORT\u007d\u007d\",\"rcon.password\":\"\u007b\u007bserver.build.env.RCON_PASSWORD\u007d\u007d\",\"enable-rcon\":\"true\",\"online-mode\":\"false\",\"enforce-secure-profile\":\"false\"\u007d\u007d\u007d",
+    "startup": "{\"done\":\"Done (\"}",
+    "logs": "{}",
+    "stop": "stop"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\nset -euo pipefail\napt-get update -y\napt-get install -y curl jq ca-certificates\nmkdir -p /mnt/server/mods /mnt/server/libraries\ncd /mnt/server\nINSTALLER=\"neoforge-${NEOFORGE_VERSION}-installer.jar\"\nINSTALLER_URL=\"https://maven.neoforged.net/releases/net/neoforged/neoforge/${NEOFORGE_VERSION}/${INSTALLER}\"\necho \"[install] downloading ${INSTALLER}\"\ncurl -fL -o \"${INSTALLER}\" \"${INSTALLER_URL}\"\necho \"[install] running NeoForge installer\"\njava -jar \"${INSTALLER}\" --install-server .\nrm -f \"${INSTALLER}\" \"${INSTALLER}.log\"\nWP_JAR=\"warproject-${WP_VERSION}.jar\"\nWP_URL=\"https://github.com/${WP_REPO}/releases/download/v${WP_VERSION}/${WP_JAR}\"\necho \"[install] downloading WarProject mod ${WP_URL}\"\nif ! curl -fL -o \"mods/${WP_JAR}\" \"${WP_URL}\"; then echo \"[install] WARN: WarProject jar fetch failed; upload manually to mods/\"; fi\necho \"eula=true\" > eula.txt\necho \"[install] done\"\n",
+      "container": "ghcr.io/pterodactyl/installers:debian",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "NeoForge version",
+      "description": "NeoForge version compatible with Minecraft 1.21.1.",
+      "env_variable": "NEOFORGE_VERSION",
+      "default_value": "21.1.229",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "WarProject version",
+      "description": "WarProject mod version. Must match a GitHub Release tag v<version>.",
+      "env_variable": "WP_VERSION",
+      "default_value": "3.0.0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "WarProject repo",
+      "description": "GitHub <owner>/<repo> publishing the WarProject release.",
+      "env_variable": "WP_REPO",
+      "default_value": "frostlogicdev/warproject-okop",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:128"
+    },
+    {
+      "name": "WarProject branch",
+      "description": "Branch label (informational; the mod itself is pulled from Releases).",
+      "env_variable": "WP_BRANCH",
+      "default_value": "01u16jspaspjgna",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:64"
+    },
+    {
+      "name": "Max players",
+      "description": "server.properties max-players. Target up to 150.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "150",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|between:1,200"
+    },
+    {
+      "name": "MOTD",
+      "description": "Server MOTD. \u00a7 color codes supported.",
+      "env_variable": "SERVER_MOTD",
+      "default_value": "\u00a7c\u00a7lWar Project \u00a78| \u00a7fMilitary RP",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:120"
+    },
+    {
+      "name": "Whitelist",
+      "description": "Enable whitelist + enforce-whitelist.",
+      "env_variable": "WHITELIST",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|in:true,false"
+    },
+    {
+      "name": "RCON port",
+      "description": "TCP RCON port. Bind to localhost only in firewall.",
+      "env_variable": "RCON_PORT",
+      "default_value": "25575",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|between:1024,65535"
+    },
+    {
+      "name": "RCON password",
+      "description": "RCON password. At least 16 random characters.",
+      "env_variable": "RCON_PASSWORD",
+      "default_value": "",
+      "user_viewable": false,
+      "user_editable": true,
+      "rules": "required|string|min:16|max:128"
+    }
+  ]
+}
