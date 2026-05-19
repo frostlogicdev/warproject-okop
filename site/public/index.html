@@ -1,208 +1,106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>War Project — Военный режим Minecraft</title>
-  <meta name="description" content="War Project — военный режим Minecraft с реалистичными механиками: фракции, звания, дипломатия, окопы и укрепления.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>War Project — Окопы, базы, война на NeoForge 1.21.1</title>
+  <meta name="description" content="War Project — военный режим для Minecraft 1.21.1 (NeoForge): окопная фортификация, полевые лагеря, военные базы, античит WGuard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/main.css" />
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="navbar" id="navbar">
-    <div class="container nav-container">
-      <a href="#" class="nav-logo">
-        <div class="logo-icon">W</div>
-        <span>WAR PROJECT</span>
+  <script src="/js/wguard-splash.js"></script>
+
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark"><span>W</span></span>
+        War Project
       </a>
-      <div class="nav-links">
-        <a href="#features">Особенности</a>
-        <a href="#factions">Фракции</a>
-        <a href="#download">Скачать</a>
-        <a href="#" class="btn btn-sm btn-accent" id="nav-auth-btn">Войти</a>
-      </div>
+      <ul>
+        <li><a href="#features">Фичи</a></li>
+        <li><a href="#status">Сервер</a></li>
+        <li><a href="#wguard">WGuard</a></li>
+        <li><a href="#install">Установка</a></li>
+      </ul>
+      <a class="cta" href="#install">Скачать лаунчер</a>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-particles" id="particles"></div>
-    <div class="container hero-content">
-      <div class="hero-badge animate-on-scroll">SEASON 1</div>
-      <h1 class="hero-title animate-on-scroll">
-        <span class="hero-title-line">WAR</span>
-        <span class="hero-title-line accent">PROJECT</span>
-      </h1>
-      <p class="hero-subtitle animate-on-scroll">
-        Военный режим Minecraft с реалистичными механиками.<br>
-        Выбери фракцию. Построй укрепления. Вступи в бой.
-      </p>
-      <div class="hero-actions animate-on-scroll">
-        <a href="#download" class="btn btn-primary btn-lg">
-          <span>Скачать лаунчер</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-        </a>
-        <div class="hero-stats">
-          <div class="stat">
-            <span class="stat-value" id="online-count">—</span>
-            <span class="stat-label">Онлайн</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat">
-            <span class="stat-value">1.21.1</span>
-            <span class="stat-label">Версия</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="hero-scroll-indicator">
-      <div class="scroll-arrow"></div>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="section" id="features">
+  <header id="top" class="hero">
+    <div class="stripes"></div>
     <div class="container">
-      <div class="section-header animate-on-scroll">
-        <h2 class="section-title">Особенности режима</h2>
-        <p class="section-subtitle">Уникальные механики, которых нет ни на одном другом сервере</p>
-      </div>
-      <div class="features-grid">
-        <div class="feature-card animate-on-scroll" data-delay="0">
-          <div class="feature-icon">⚔️</div>
-          <h3>Две фракции</h3>
-          <p>Зарнавия и Черноград — два государства в состоянии войны. Выбери сторону и сражайся за свою страну.</p>
-        </div>
-        <div class="feature-card animate-on-scroll" data-delay="100">
-          <div class="feature-icon">🎖️</div>
-          <h3>Система званий</h3>
-          <p>15 воинских званий от рядового до генерала. Продвигайся по службе, получай новые полномочия.</p>
-        </div>
-        <div class="feature-card animate-on-scroll" data-delay="200">
-          <div class="feature-icon">🏰</div>
-          <h3>31 блок укреплений</h3>
-          <p>Окопы, мешки с песком, колючая проволока, бункеры — всё для реалистичной фортификации.</p>
-        </div>
-        <div class="feature-card animate-on-scroll" data-delay="300">
-          <div class="feature-icon">📋</div>
-          <h3>Документы</h3>
-          <p>Паспорта, военные билеты, система пленения. Захвати паспорт врага как трофей.</p>
-        </div>
-        <div class="feature-card animate-on-scroll" data-delay="400">
-          <div class="feature-icon">🤝</div>
-          <h3>Дипломатия</h3>
-          <p>Перемирия, обмены пленными, переговоры между фракциями. Война — это не только бой.</p>
-        </div>
-        <div class="feature-card animate-on-scroll" data-delay="500">
-          <div class="feature-icon">🗺️</div>
-          <h3>Карта территорий</h3>
-          <p>Интеграция с JourneyMap — маркеры баз, территории фракций, командные метки на карте.</p>
-        </div>
+      <span class="tag">NeoForge 21.1 • Minecraft 1.21.1 • Java 21</span>
+      <h1>Война начинается<br/>с <span class="accent">окопа</span>.</h1>
+      <p>31 блок военной фортификации, полевые лагеря, военные базы, интеграция с JourneyMap и собственный античит WGuard. Без колхоза, без лишних вибраций — только военная тёмная эстетика.</p>
+      <div class="hero-cta">
+        <a class="cta" href="#install">Начать операцию</a>
+        <a class="cta ghost" href="https://github.com/frostlogicdev/warproject-okop" target="_blank" rel="noopener">GitHub</a>
       </div>
     </div>
-  </section>
+  </header>
 
-  <!-- Factions Section -->
-  <section class="section section-dark" id="factions">
+  <section id="features" class="section">
     <div class="container">
-      <div class="section-header animate-on-scroll">
-        <h2 class="section-title">Выбери сторону</h2>
-        <p class="section-subtitle">Каждая фракция имеет свою историю, территорию и командование</p>
-      </div>
-      <div class="factions-grid">
-        <div class="faction-card faction-zarnavia animate-on-scroll">
-          <div class="faction-emblem">Z</div>
-          <h3>Зарнавия</h3>
-          <p>Индустриальная держава с мощной армией и развитой инфраструктурой. Дисциплина и порядок — основа государства.</p>
-          <ul class="faction-traits">
-            <li>Сильная вертикаль командования</li>
-            <li>Развитая система укреплений</li>
-            <li>Индустриальная мощь</li>
-          </ul>
-        </div>
-        <div class="faction-vs animate-on-scroll">
-          <span>VS</span>
-        </div>
-        <div class="faction-card faction-chernogryad animate-on-scroll">
-          <div class="faction-emblem">Ч</div>
-          <h3>Черноград</h3>
-          <p>Свободолюбивая нация с гибкой тактикой и сильным духом. Каждый боец — герой, каждый бой — подвиг.</p>
-          <ul class="faction-traits">
-            <li>Гибкая тактика и маневренность</li>
-            <li>Сильный боевой дух</li>
-            <li>Партизанская война</li>
-          </ul>
-        </div>
+      <h2>Арсенал</h2>
+      <p class="lead">Всё сделано для серверной игры: предсказуемые механики, без оверпауэра, баланс под военные жанры.</p>
+      <div class="grid">
+        <div class="card"><h3>15 блоков Okop</h3><p>Бруствер, мешки, рогатки, пулемётные гнёзда, колючка, бетонные брустверы.</p></div>
+        <div class="card"><h3>Полевые лагеря</h3><p>Палатки, полевая кухня, радио, аптечки — всё в едином военном стиле.</p></div>
+        <div class="card"><h3>Baza — 8 военных блоков</h3><p>Ангары, вышки, кПП, бронированные ворота и брифинг-зоны.</p></div>
+        <div class="card"><h3>JourneyMap soft-интеграция</h3><p>Объекты отмечаются на карте без жёсткой зависимости — работает и без JourneyMap.</p></div>
+        <div class="card"><h3>WGuard antiсheat</h3><p>Собственный античит: валидация на сервере, проверка целостности, HWID, packet-limits.</p></div>
+        <div class="card"><h3>SQLite-персистенс</h3><p>Роли, взводы, входы — сохраняются локально, без внешних БД.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- Download Section -->
-  <section class="section" id="download">
+  <section id="status" class="section">
     <div class="container">
-      <div class="download-card animate-on-scroll">
-        <div class="download-content">
-          <h2>Готов к бою?</h2>
-          <p>Скачай лаунчер War Project, создай аккаунт и присоединяйся к серверу. Война ждёт.</p>
-          <div class="download-requirements">
-            <div class="req-item">
-              <span class="req-label">Minecraft</span>
-              <span class="req-value">1.21.1</span>
-            </div>
-            <div class="req-item">
-              <span class="req-label">NeoForge</span>
-              <span class="req-value">21.1.229+</span>
-            </div>
-            <div class="req-item">
-              <span class="req-label">Java</span>
-              <span class="req-value">21</span>
-            </div>
-            <div class="req-item">
-              <span class="req-label">RAM</span>
-              <span class="req-value">4+ GB</span>
-            </div>
-          </div>
-        </div>
-        <div class="download-action">
-          <a href="#" class="btn btn-primary btn-xl download-btn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <span>Скачать лаунчер</span>
-          </a>
-          <span class="download-note">Windows 10/11 • 64-bit</span>
-        </div>
+      <h2>Статус операций</h2>
+      <p class="lead">Опрос обновляется каждые 30 секунд через <code>/api/server/status</code>.</p>
+      <div id="server-status" class="status">
+        <div class="stat"><div class="label">состояние</div><div class="val" data-k="state"><span class="dot bad"></span>—</div></div>
+        <div class="stat"><div class="label">игроки</div><div class="val" data-k="players">—</div></div>
+        <div class="stat"><div class="label">версия</div><div class="val" data-k="version">1.21.1</div></div>
+        <div class="stat"><div class="label">TPS</div><div class="val" data-k="tps">—</div></div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container footer-content">
-      <div class="footer-brand">
-        <div class="nav-logo">
-          <div class="logo-icon">W</div>
-          <span>WAR PROJECT</span>
-        </div>
-        <p>© 2026 FrostLogic Dev. Все права защищены.</p>
+  <section id="wguard" class="section">
+    <div class="container">
+      <h2>WGuard — античит с коробки</h2>
+      <p class="lead">Каждый запуск сайта и лаунчера сопровождается проверкой целостности (сплеш выше). Серверные проверки нельзя обойти модификацией клиента: все команды ревалидируются на сервере.</p>
+      <div class="grid">
+        <div class="card"><h3>HWID + сессии</h3><p>Привязка входа к аппаратному ID. Короткие токены с refresh.</p></div>
+        <div class="card"><h3>Packet-limit</h3><p>Аномальные скачки трафика блокируются, log пишется в audit.</p></div>
+        <div class="card"><h3>Server-side validation</h3><p>Ни одно решение (лечение, выдача, перемещение) не принимается от клиента напрямую.</p></div>
       </div>
-      <div class="footer-links">
-        <a href="#">Discord</a>
-        <a href="#">Правила</a>
-        <a href="#">Поддержка</a>
+    </div>
+  </section>
+
+  <section id="install" class="section">
+    <div class="container">
+      <h2>Установка</h2>
+      <p class="lead">Лаунчер — рекомендуемый способ запуска. Для выделенных серверов есть Docker-пакет.</p>
+      <div class="grid">
+        <div class="card"><h3>1. Лаунчер</h3><p><code>cd launcher && npm install && npm run dev</code></p></div>
+        <div class="card"><h3>2. Сайт локально</h3><p><code>cd site && npm install && npm start</code> → <code>:4000</code></p></div>
+        <div class="card"><h3>3. Сервер (Docker)</h3><p><code>cd docker && EULA=true docker compose up -d</code></p></div>
       </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container row">
+      <span>© 2026 FrostLogic Dev — MIT</span>
+      <span class="mono">build.target=1.21.1 • neoforge=21.1.229+</span>
     </div>
   </footer>
 
-  <script src="/js/main.js"></script>
+  <script src="/js/app.js" defer></script>
 </body>
 </html>
