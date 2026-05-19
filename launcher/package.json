@@ -4,10 +4,12 @@
   "description": "War Project Minecraft Launcher",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder",
-    "dev": "concurrently \"npm run dev:renderer\" \"wait-on http://localhost:3000 && electron .\"",
-    "dev:renderer": "vite"
+    "start": "concurrently \"npm:dev:renderer\" \"wait-on http://localhost:3000 && electron .\"",
+    "dev": "concurrently \"npm:dev:renderer\" \"wait-on http://localhost:3000 && electron .\"",
+    "dev:renderer": "vite",
+    "electron:only": "electron .",
+    "build:renderer": "vite build",
+    "build": "npm run build:renderer && electron-builder"
   },
   "author": "FrostLogic Dev",
   "license": "MIT",
