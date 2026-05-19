@@ -1,7 +1,7 @@
 /* =========================================================================
    WAR PROJECT — v3 minimal
    Минималистичный сайт: чёрный фон, белый текст, янтарный акцент.
-   Один шрифт + моно для лейблов. Без сеток, без кроссхейров, без угловых срезов.
+   Все hover-состояния — янтарные, белого свечения нет.
    ========================================================================= */
 
 :root {
@@ -85,6 +85,7 @@ p  { margin: 0 0 1em; color: var(--fg-dim); }
   letter-spacing: -0.01em;
   font-size: 16px;
 }
+.nav__brand:hover { color: var(--accent); }
 .nav__dot {
   width: 8px; height: 8px; border-radius: 999px;
   background: var(--accent);
@@ -96,7 +97,7 @@ p  { margin: 0 0 1em; color: var(--fg-dim); }
   padding: 8px 0;
   transition: color .15s var(--ease);
 }
-.nav__link:hover, .nav__link.is-active { color: var(--fg); }
+.nav__link:hover, .nav__link.is-active { color: var(--accent); }
 .nav__cta { margin-left: 8px; }
 
 /* --- Buttons ------------------------------------------------------------- */
@@ -119,7 +120,11 @@ p  { margin: 0 0 1em; color: var(--fg-dim); }
   color: var(--fg);
   border-color: var(--line-2);
 }
-.btn--ghost:hover { background: transparent; border-color: var(--fg); color: var(--fg); }
+.btn--ghost:hover {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
 .btn--lg { padding: 13px 22px; font-size: 15px; }
 
 /* --- Hero ---------------------------------------------------------------- */
@@ -137,7 +142,7 @@ p  { margin: 0 0 1em; color: var(--fg-dim); }
 .section__head h2 { margin: 12px 0 12px; }
 .section__head p { margin: 0; }
 
-/* --- Server dashboard — одна строка, минимально ----------------- */
+/* --- Server dashboard ---------------------------------------------------- */
 .stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -162,7 +167,7 @@ p  { margin: 0 0 1em; color: var(--fg-dim); }
 .status-dot.warn { background: var(--accent); }
 .status-dot.bad  { background: #d9534f; }
 
-/* --- Features — простой список ------------------------------- */
+/* --- Features ------------------------------------------------------------ */
 .features {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -222,7 +227,7 @@ p  { margin: 0 0 1em; color: var(--fg-dim); }
 }
 .footer__links { display: flex; gap: 22px; flex-wrap: wrap; }
 .footer__links a { color: var(--fg-mute); }
-.footer__links a:hover { color: var(--fg); }
+.footer__links a:hover { color: var(--accent); }
 
 /* --- WGuard Splash ------------------------------------------------------- */
 .wg-splash {
