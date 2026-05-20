@@ -7,6 +7,10 @@ import com.frostlogic.warproject.persistence.Database;
 import com.frostlogic.warproject.persistence.dao.AuditLogDao;
 import com.frostlogic.warproject.persistence.dao.BansDao;
 import com.frostlogic.warproject.persistence.dao.MutesDao;
+import com.frostlogic.warproject.persistence.dao.PassportsDao;
+import com.frostlogic.warproject.persistence.dao.PlayersDao;
+import com.frostlogic.warproject.server.captivity.CaptivityService;
+import com.frostlogic.warproject.server.captivity.CaptivityTimeoutService;
 import com.frostlogic.warproject.server.collab.CollaboratorService;
 import com.frostlogic.warproject.server.wguard.WGuardEventHandler;
 import com.frostlogic.warproject.server.wguard.WGuardService;
@@ -41,6 +45,7 @@ public final class ServerEvents {
 
     private static Database database;
     private static WGuardService wguardService;
+    private static CaptivityService captivityService;
 
     /**
      * Returns the shared Database instance. May be null if the server has not started yet.
@@ -54,6 +59,13 @@ public final class ServerEvents {
      */
     public static WGuardService getWGuardService() {
         return wguardService;
+    }
+
+    /**
+     * Returns the shared CaptivityService instance. May be null if the server has not started yet.
+     */
+    public static CaptivityService getCaptivityService() {
+        return captivityService;
     }
 
     private ServerEvents() {
@@ -83,6 +95,20 @@ public final class ServerEvents {
         WGuardEventHandler.init(wguardService);
         WarProject.LOGGER.info("[WarProject] WGuard anti-cheat initialised (enabled={}).",
                 WpConfig.WGUARD_ENABLED.get());
+
+        // Captivity: instantiate the shared service and publish it via the
+        // static handle so CaptivityTimeoutService (a static event-bus
+        // subscriber) can perform per-minute auto-release / escape sweeps.
+        // Without this the timeout sweep no-ops silently and captives stay
+        // captured forever.
+        captivityService = new CaptivityService(
+                database,
+                new PassportsDao(),
+                new PlayersDao(),
+                new AuditLogDao()
+        );
+        CaptivityService.init(captivityService);
+        WarProject.LOGGER.info("[WarProject] Captivity service initialised (timeout=30 min, escape interval=5 min).");
 
         // Boot-time configuration sanity check: faction spawns must be set before
         // the server is opened to the public. The [0,64,0] placeholder will drop
@@ -127,7 +153,10 @@ public final class ServerEvents {
         safeRun("FactionMarkerService.uninstall", com.frostlogic.warproject.server.map.FactionMarkerService::uninstall);
         safeRun("ServiceRegistry.clear", com.frostlogic.warproject.network.ServiceRegistry::clear);
         safeRun("WGuardEventHandler.clear", () -> WGuardEventHandler.init(null));
+        safeRun("CaptivityTimeoutService.clear", CaptivityTimeoutService::clear);
+        safeRun("CaptivityService.clear", () -> CaptivityService.init(null));
         wguardService = null;
+        captivityService = null;
         database = null;
     }
 
@@ -183,7 +212,7 @@ public final class ServerEvents {
             return;
         }
 
-        // ─── Ban enforcement ────────────────────────────────────────────
+        // ─── Ban enforcement ──────────────────────────────────
         // Check if the player has an active ban in the database. If so,
         // disconnect them immediately before any auth/onboarding flow runs.
         if (database != null) {
@@ -206,11 +235,11 @@ public final class ServerEvents {
         }
     }
 
-    // ─── Mute enforcement ───────────────────────────────────────────────────
+    // ─── Mute enforcement ───────────────────────────────────────────
     // Blocks chat messages from players who have an active mute in the database.
     // Runs at HIGH priority so it fires after FreezeService (HIGHEST) but before
     // normal chat processing.
-    // ──────────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────────
 
     /**
      * Enforces mute on chat messages. If the player has an active mute in the
@@ -275,7 +304,7 @@ public final class ServerEvents {
             return;
         }
 
-        // ─── Pipeline guard ───────────────────────────────────────────────
+        // ─── Pipeline guard ────────────────────────────────────────
         // If the player already has a legacy JSON profile and NO DB account
         // yet, they belong to the legacy pipeline. Sending AuthScreenStatePayload
         // here would race with the legacy WarLoginHandler.promptLogin sending
@@ -283,7 +312,7 @@ public final class ServerEvents {
         // auth screens, breaking onboarding non-deterministically.
         // The new pipeline takes over only for genuinely fresh players (no JSON
         // profile, no DB account) or for players who already have a DB account.
-        // ─────────────────────────────────────────────────────────────────────────
+        // ───────────────────────────────────────────────────────────────────────────
         String uuid = player.getStringUUID();
         boolean accountExists = database.inTx(conn ->
                 new com.frostlogic.warproject.persistence.dao.AccountsDao().findByUuid(conn, uuid).isPresent()
