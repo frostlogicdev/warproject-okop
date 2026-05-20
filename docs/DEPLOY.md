@@ -8,7 +8,7 @@
 - NeoForge 21.1.229
 - Java 21
 - Pterodactyl Panel + Wings
-- SQLite по умолчанию
+- SQLite по умолчанию (journal_mode=WAL, synchronous=NORMAL, busy_timeout=5 с, foreign_keys=ON — выставляются в `Database.initialize()` и `getConnection()`)
 - Cracked mode: `online-mode=false`, `enforce-secure-profile=false`
 
 ## 1. Что уже есть в репозитории
@@ -24,9 +24,9 @@
 
 ## 2. Critical перед публичным открытием
 
-### Координаты миров
+### 2.1 Координаты миров
 
-Пока координаты не заполнены — публично не открывать.
+Пока координаты не заполнены — публично не открывать. При старте сервер логгирует WARN, если любой из `factions.*Spawn` остаётся на плейсхолдере `[0, 64, 0]`.
 
 Нужно будет заполнить в `server/config/warproject-server.toml`:
 
@@ -50,7 +50,7 @@ bases = [
 
 Так как используется Multiverse, для каждого региона нужен правильный `<dimension>` / world id.
 
-### RCON
+### 2.2 RCON
 
 В git-шаблоне RCON выключен:
 
@@ -65,7 +65,7 @@ enable-rcon=false
 - `25575/tcp` доступен только localhost / WireGuard / private network;
 - не открывать RCON в публичный интернет.
 
-### Авторизация
+### 2.3 Авторизация
 
 Уже сделано:
 
@@ -81,6 +81,16 @@ enable-rcon=false
 ```
 
 И вручную проверить legacy-login migration на тестовом профиле.
+
+### 2.4 Античит — WGuard
+
+Античит входит в `warproject-*.jar` (пакет `server/wguard/`) и инициализируется в `ServerEvents.onServerAboutToStart`. Покрывает SPEED / FLY / REACH / KILL_AURA / FAST_BREAK / NUKER / NO_FALL с эскалацией violation → kick → ban и записью в `audit_log`.
+
+Перед релизом:
+
+- убедитесь, что в `warproject-server.toml` выставлен `wguard.enabled = true` (это дефолт);
+- проверьте `wguard.vehicleModNamespaces` и `wguard.weaponModNamespaces` — в списке должны быть намеспейсы всех gun/vehicle-модов, которые реально стоят на сервере;
+- после внутреннего стресс-теста проверьте `SELECT * FROM audit_log WHERE action LIKE 'WGUARD_%' LIMIT 50;` на false positives. Подробнее — `docs/MODS.md §4`.
 
 ## 3. Импорт egg
 
@@ -147,8 +157,9 @@ RCON_PASSWORD=<secret>
 3. Pterodactyl install test
 4. Проверка входа, регистрации, капчи
 5. Проверка Multiverse-миров и телепортов
-6. Проверка координат фракций и регионов
-7. Проверка backup + restore
-8. Stress-test closed alpha
+6. Проверка координат фракций и регионов (нет WARN о плейсхолдерах в логах)
+7. Проверка WGuard в audit\_log
+8. Проверка backup + restore
+9. Stress-test closed alpha
 
 Полный чек-лист: `docs/LAUNCH_CHECKLIST.md`.
