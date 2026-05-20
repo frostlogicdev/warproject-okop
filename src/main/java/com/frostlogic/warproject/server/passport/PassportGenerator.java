@@ -86,6 +86,7 @@ public final class PassportGenerator {
                 null,   // acceptedAt
                 null,   // acceptedBy
                 null,   // capturedByUuid
+                null,   // capturedAt (set when player is actually captured; null at issue time)
                 false,  // trophy
                 now
         );

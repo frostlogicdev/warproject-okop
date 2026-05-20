@@ -48,7 +48,7 @@ public final class SoftRpGameRulesHandler {
             forceBool(rules, GameRules.RULE_KEEPINVENTORY, true, server, "keepInventory", level);
             forceBool(rules, GameRules.RULE_DOMOBSPAWNING, false, server, "doMobSpawning", level);
             forceBool(rules, GameRules.RULE_SHOWDEATHMESSAGES, false, server, "showDeathMessages", level);
-            forceBool(rules, GameRules.RULE_ANNOUNCEADVANCEMENTS, false, server, "announceAdvancements", level);
+            forceBool(rules, GameRules.RULE_ANNOUNCE_ADVANCEMENTS, false, server, "announceAdvancements", level);
             forceInt(rules, GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE, 101, server,
                     "playersSleepingPercentage", level);
         }
