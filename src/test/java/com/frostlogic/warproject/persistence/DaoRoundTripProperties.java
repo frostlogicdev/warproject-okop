@@ -4,7 +4,6 @@ import com.frostlogic.warproject.persistence.dao.*;
 import net.jqwik.api.*;
 import net.jqwik.api.lifecycle.AfterTry;
 import net.jqwik.api.lifecycle.BeforeTry;
-import org.assertj.core.api.Assertions;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,13 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Property-based tests for DAO round-trip: insert → read by key returns identical object.
- * For audit_log — additionally validates Property 27 (no secrets in extra_json).
- * <p>
- * Uses in-memory SQLite ({@code jdbc:sqlite::memory:}) with V1 migration applied before each test.
- * <p>
- * <b>Validates: Requirements 18.2, 20.2</b>
- * <p>
- * Design: §12 Property 13, 27
  */
 class DaoRoundTripProperties {
 
@@ -58,10 +50,8 @@ class DaoRoundTripProperties {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
             sql = reader.lines().collect(Collectors.joining("\n"));
         }
-        // Replace ${AI} token with AUTOINCREMENT for SQLite
         sql = sql.replace("${AI}", "AUTOINCREMENT");
 
-        // Use Migrations.splitStatements which correctly handles comments and quotes
         String[] statements = Migrations.splitStatements(sql);
         try (Statement stmt = conn.createStatement()) {
             for (String s : statements) {
@@ -72,8 +62,6 @@ class DaoRoundTripProperties {
             }
         }
     }
-
-    // ==================== AccountsDao ====================
 
     @Property
     void accountsRoundTrip(@ForAll("accounts") AccountsDao.Account account) {
@@ -97,11 +85,8 @@ class DaoRoundTripProperties {
         ).as(AccountsDao.Account::new);
     }
 
-    // ==================== PlayersDao ====================
-
     @Property
     void playersRoundTrip(@ForAll("players") PlayersDao.Player player) {
-        // Insert prerequisite account
         AccountsDao accountsDao = new AccountsDao();
         accountsDao.insert(conn, new AccountsDao.Account(
                 player.uuid(), "$2a$10$dummyhash000000000000000000000000000000000000000000",
@@ -146,11 +131,8 @@ class DaoRoundTripProperties {
         ));
     }
 
-    // ==================== PassportsDao ====================
-
     @Property
     void passportsRoundTrip(@ForAll("passports") PassportsDao.Passport passport) {
-        // Insert prerequisite account and player
         AccountsDao accountsDao = new AccountsDao();
         accountsDao.insert(conn, new AccountsDao.Account(
                 passport.ownerUuid(), "$2a$10$dummyhash000000000000000000000000000000000000000000",
@@ -177,7 +159,6 @@ class DaoRoundTripProperties {
         Arbitrary<String> factions = Arbitraries.of("ZARNAVIA", "CHERNOGRYAD");
         Arbitrary<String> statuses = Arbitraries.of("CANDIDATE", "ACCEPTED", "CAPTURED");
 
-        // Split into two combines since jqwik supports max 8 params
         return Combinators.combine(
                 passportIds, uuids(), factions,
                 Arbitraries.strings().alpha().ofMinLength(2).ofMaxLength(16),
@@ -190,16 +171,15 @@ class DaoRoundTripProperties {
                         Arbitraries.longs().between(0L, System.currentTimeMillis()).injectNull(0.4),
                         Arbitraries.strings().alpha().ofMinLength(3).ofMaxLength(16).injectNull(0.4),
                         uuids().injectNull(0.5),
+                        Arbitraries.longs().between(0L, System.currentTimeMillis()).injectNull(0.5),
                         Arbitraries.of(true, false),
                         Arbitraries.longs().between(0L, System.currentTimeMillis())
-                ).as((acceptedAt, acceptedBy, capturedByUuid, trophy, createdAt) ->
+                ).as((acceptedAt, acceptedBy, capturedByUuid, capturedAt, trophy, createdAt) ->
                         new PassportsDao.Passport(id, owner, faction, rpName, rpSurname,
                                 dob, sigSeed, status, acceptedAt, acceptedBy,
-                                capturedByUuid, trophy, createdAt))
+                                capturedByUuid, capturedAt, trophy, createdAt))
         );
     }
-
-    // ==================== SubdivisionsDao ====================
 
     @Property
     void subdivisionsRoundTrip(@ForAll("subdivisionInputs") SubdivisionInput input) {
@@ -226,14 +206,6 @@ class DaoRoundTripProperties {
         ).as(SubdivisionInput::new);
     }
 
-    // ==================== AuditLogDao (Property 27) ====================
-
-    /**
-     * Property 27: round-trip insert → findById returns identical entry.
-     * Additionally verifies that extra_json does NOT contain password or captcha code substrings.
-     * <p>
-     * <b>Validates: Requirements 18.2, 20.2</b>
-     */
     @Property
     void auditLogRoundTrip(@ForAll("auditEntries") AuditInput input) {
         AuditLogDao dao = new AuditLogDao();
@@ -254,7 +226,6 @@ class DaoRoundTripProperties {
         assertThat(entry.reason()).isEqualTo(input.reason());
         assertThat(entry.extraJson()).isEqualTo(input.extraJson());
 
-        // Property 27: extra_json must NOT contain passwords or captcha codes
         if (entry.extraJson() != null) {
             assertThat(entry.extraJson()).doesNotContainIgnoringCase("password");
             assertThat(entry.extraJson()).doesNotContainIgnoringCase("captcha_code");
@@ -275,7 +246,6 @@ class DaoRoundTripProperties {
                 "MUTE", "WARN", "CAPTURE_PASSPORT", "COLLAB", "UNCOLLAB",
                 "SUBDIV_CREATE", "SUBDIV_DELETE", "GENERALCHAT_SEND"
         );
-        // extra_json must never contain secrets — generate safe JSON-like content
         Arbitrary<String> safeExtraJson = Arbitraries.of(
                 null,
                 "{\"faction\":\"ZARNAVIA\"}",
@@ -296,8 +266,6 @@ class DaoRoundTripProperties {
                 safeExtraJson
         ).as(AuditInput::new);
     }
-
-    // ==================== BansDao ====================
 
     @Property
     void bansRoundTrip(@ForAll("bans") BansDao.Ban ban) {
@@ -320,8 +288,6 @@ class DaoRoundTripProperties {
         ).as(BansDao.Ban::new);
     }
 
-    // ==================== MutesDao ====================
-
     @Property
     void mutesRoundTrip(@ForAll("mutes") MutesDao.Mute mute) {
         MutesDao dao = new MutesDao();
@@ -342,8 +308,6 @@ class DaoRoundTripProperties {
                 Arbitraries.longs().between(System.currentTimeMillis(), System.currentTimeMillis() + 86400000L * 30)
         ).as(MutesDao.Mute::new);
     }
-
-    // ==================== WarnsDao ====================
 
     @Property
     void warnsRoundTrip(@ForAll("warnInputs") WarnInput input) {
@@ -370,8 +334,6 @@ class DaoRoundTripProperties {
         ).as(WarnInput::new);
     }
 
-    // ==================== CooldownsDao ====================
-
     @Property
     void cooldownsRoundTrip(@ForAll("cooldownInputs") CooldownInput input) {
         CooldownsDao dao = new CooldownsDao();
@@ -395,8 +357,6 @@ class DaoRoundTripProperties {
         ).as(CooldownInput::new);
     }
 
-    // ==================== RanksDao ====================
-
     @Property
     void ranksRoundTrip(@ForAll("rankInputs") RanksDao.Rank rank) {
         RanksDao dao = new RanksDao();
@@ -417,8 +377,6 @@ class DaoRoundTripProperties {
         ).as(RanksDao.Rank::new);
     }
 
-    // ==================== PassportSequenceDao ====================
-
     @Property
     void passportSequenceRoundTrip(@ForAll("prefixes") String prefix) {
         PassportSequenceDao dao = new PassportSequenceDao();
@@ -429,7 +387,6 @@ class DaoRoundTripProperties {
         assertThat(found.get().prefix()).isEqualTo(prefix);
         assertThat(found.get().lastN()).isEqualTo(0);
 
-        // Verify nextValue increments correctly
         int next = dao.nextValue(conn, prefix);
         assertThat(next).isEqualTo(1);
 
@@ -442,8 +399,6 @@ class DaoRoundTripProperties {
     Arbitrary<String> prefixes() {
         return Arbitraries.of("ZRN-", "CHN-");
     }
-
-    // ==================== Helpers ====================
 
     private Arbitrary<String> uuids() {
         return Arbitraries.create(() -> UUID.randomUUID().toString());
