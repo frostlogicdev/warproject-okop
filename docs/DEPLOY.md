@@ -8,7 +8,7 @@
 - NeoForge 21.1.229
 - Java 21
 - Pterodactyl Panel + Wings
-- SQLite по умолчанию (journal_mode=WAL, synchronous=NORMAL, busy_timeout=5 с, foreign_keys=ON — выставляются в `Database.initialize()` и `getConnection()`)
+- SQLite по умолчанию (journal_mode=WAL, synchronous=NORMAL, busy_timeout=5 с, foreign_keys=ON — выставляются в `Database.initialize()` и `getConnection()`)
 - Cracked mode: `online-mode=false`, `enforce-secure-profile=false`
 
 ## 1. Что уже есть в репозитории
@@ -50,6 +50,8 @@ bases = [
 
 Так как используется Multiverse, для каждого региона нужен правильный `<dimension>` / world id.
 
+**Стороны фиксированы.** На сервере ровно две игровые фракции: **Zarnavia** и **Chernogryad**. Создание пользовательских фракций не предусмотрено по дизайну. Subdivisions внутри этих двух сторон создаются через `SubdivisionsDao` и менеджмент команды.
+
 ### 2.2 RCON
 
 В git-шаблоне RCON выключен:
@@ -61,7 +63,7 @@ enable-rcon=false
 На production включать RCON только в runtime-конфиге Pterodactyl:
 
 - `RCON_PASSWORD` — secret в панели, не в git;
-- пароль ≥16 случайных символов;
+- пароль ≥ 16 случайных символов;
 - `25575/tcp` доступен только localhost / WireGuard / private network;
 - не открывать RCON в публичный интернет.
 
@@ -92,6 +94,51 @@ enable-rcon=false
 - проверьте `wguard.vehicleModNamespaces` и `wguard.weaponModNamespaces` — в списке должны быть намеспейсы всех gun/vehicle-модов, которые реально стоят на сервере;
 - после внутреннего стресс-теста проверьте `SELECT * FROM audit_log WHERE action LIKE 'WGUARD_%' LIMIT 50;` на false positives. Подробнее — `docs/MODS.md §4`.
 
+### 2.5 Open-beta tuning (10–30 игроков)
+
+Эти параметры зафиксированы для текущей открытой беты. Менять их нужно одновременно в репе и в panel-environment, иначе поведение расходится.
+
+**`server/server.properties`:**
+
+```properties
+max-players=30
+white-list=false
+player-idle-timeout=0
+online-mode=false
+enforce-secure-profile=false
+view-distance=10
+simulation-distance=8
+spawn-protection=0
+```
+
+* `player-idle-timeout=0` — AFK-кик отключён по выбору владельца сервера. Игроки не кикаются вовсе (важно для RP-караульных точек, баз без движения, и т.д.).
+* `white-list=false` — доступ полностью открыт. WGuard + newbie-protection — единственный барьер.
+* `spawn-protection=0` — регионы WarProject (`RegionGuard`) решают это сами; vanilla spawn-protection ломает систему капчи.
+
+**Панель Pterodactyl:**
+
+```text
+MAX_PLAYERS=30
+WHITELIST=false
+```
+
+**Мод-левел настройки (автоматически из кода):**
+
+| Параметр | Значение | Где выставляется |
+|---|---|---|
+| Combat-tag | 60 с | `CombatTagService.COMBAT_TAG_DURATION_MS` |
+| Soft-RP death — ничего не дропается | `keepInventory=true` в каждом измерении | `SoftRpGameRulesHandler.onServerStarted` |
+| PvP-защита непринятых | взаимно отменяет урон при любой стороне вне `PlayerState.ACCEPTED` | `NewbieProtectionHandler` (priority HIGHEST) |
+| Death респавн | 60-с кинематика на спавне фракции | `RealisticDeathHandler` |
+| Античит | enabled, OP и не-ACCEPTED исключены | `WGuardEventHandler` |
+
+**Плен (captivity):**
+
+* Игрок в `PlayerState.CAPTURED` — сняты оружие и броня, паспорт у захватчика (`CaptivityService.capture`).
+* Освобождение — вручную через `RansomTradeMenu` или админ-команду (`CaptivityService.ransom`).
+* **TODO open-beta:** автоматическое освобождение по истечении 30 минут (требует новой колонки `passports.captured_at` + scheduled `CaptivityTimeoutService`). Не включать открытую бету, пока не реализовано — иначе пленный может висеть вечно если захватчик оффлайн.
+* **TODO open-beta:** механика побега (шансовая попытка из зоны базы захватчика).
+
 ## 3. Импорт egg
 
 1. Pterodactyl Panel → Admin → Nests.
@@ -104,25 +151,25 @@ NEOFORGE_VERSION=21.1.229
 WP_VERSION=3.0.0
 WP_REPO=frostlogicdev/warproject-okop
 WP_BRANCH=01u16jspaspjgna
-MAX_PLAYERS=150
-WHITELIST=true
+MAX_PLAYERS=30
+WHITELIST=false
 RCON_PORT=25575
 RCON_PASSWORD=<secret>
 ```
 
 ## 4. Создание сервера
 
-Рекомендуемые ресурсы для alpha/beta:
+Рекомендуемые ресурсы для открытой беты (10–30 игроков):
 
 | Параметр | Значение |
 |---|---|
-| RAM | 12–16 GB |
+| RAM | 6 GB (по выбору владельца; alpha-тесты достаточны с этим объёмом) |
 | CPU | 4–6 vCPU, желательно высокая частота |
 | Disk | 30–50 GB NVMe |
 | Swap | 0–2 GB |
 | Docker image | `ghcr.io/pterodactyl/yolks:java_21` |
 
-Для первых тестов можно меньше, но под публичный сервер нужен запас.
+JVM-флаги в `server/user_jvm_args.txt` уже настроены под 6 GB хип (`-Xmx6G -Xms6G`) + G1 + `AlwaysPreTouch` + `G1HeapRegionSize=8M`.
 
 ## 5. Моды
 
@@ -132,11 +179,12 @@ RCON_PASSWORD=<secret>
 
 - Spark — profiling/TPS/MSPT;
 - Ledger — расследования и rollback;
-- Open Parties and Claims — защита баз/claim-зоны;
+- Open Parties and Claims — защита баз/claim-зоны (PvP внутри claim-а ОСТАВИТЬ ВКЛЮЧЁННЫМ);
 - FerriteCore / Canary / ScalableLux — производительность;
-- Simple Voice Chat — если нужен voice RP.
+- Simple Voice Chat — военный RP без голоса не работает.
 
-Подробно: `docs/MODS.md`.
+Полный мод-сет + версии + чёрный список: `docs/MODS_RECOMMENDED.md`.
+Мод-взаимодействия и white/blacklist namespaces: `docs/MODS.md`.
 
 ## 6. Бэкапы
 
@@ -160,6 +208,8 @@ RCON_PASSWORD=<secret>
 6. Проверка координат фракций и регионов (нет WARN о плейсхолдерах в логах)
 7. Проверка WGuard в audit\_log
 8. Проверка backup + restore
-9. Stress-test closed alpha
+9. Проверка newbie-protection: новый игрок (NEW/CANDIDATE) не получает урон от ACCEPTED и не может ударить ACCEPTED
+10. Проверка soft-RP death: умер → инвентарь сохранён, XP сохранён, ничего не выпало
+11. Stress-test closed alpha
 
 Полный чек-лист: `docs/LAUNCH_CHECKLIST.md`.
