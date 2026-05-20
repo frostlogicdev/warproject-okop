@@ -185,8 +185,8 @@ public final class WpConfig {
         builder.push("candidate");
 
         CANDIDATE_TIMEOUT_SECONDS = builder
-                .comment("Candidate timeout in seconds of active session (default: 24h = 86400)")
-                .defineInRange("timeoutSeconds", 86400, 3600, 604800);
+                .comment("Candidate timeout in seconds of active session (default: 20m = 1200; raise to 86400 for 24h)")
+                .defineInRange("timeoutSeconds", 1200, 60, 604800);
 
         CANDIDATE_ACTIONBAR_INTERVAL_TICKS = builder
                 .comment("Interval in ticks between actionbar reminders for candidates (default: 600 = ~30s)")
