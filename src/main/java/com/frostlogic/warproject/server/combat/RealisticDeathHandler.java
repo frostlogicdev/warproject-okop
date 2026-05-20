@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <ol>
  *   <li>Determines if the killing blow was a headshot (projectile hit above eye level)</li>
  *   <li>Sends {@link DeathCinematicPayload} to the dying player's client</li>
- *   <li>Enforces a 60-second respawn delay (player cannot click respawn early)</li>
+ *   <li>Enforces a 120-second respawn delay (player cannot click respawn early)</li>
  *   <li>After the delay, auto-respawns the player at their faction base</li>
  * </ol>
  * <p>
@@ -47,8 +47,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @EventBusSubscriber(modid = WarProject.MOD_ID)
 public final class RealisticDeathHandler {
 
-    /** Respawn delay in ticks (60 seconds × 20 ticks/sec). */
-    public static final int RESPAWN_DELAY_TICKS = 1200;
+    /**
+     * Respawn delay in ticks (120 seconds × 20 ticks/sec = 2400).
+     * <p>
+     * Tuned for full RP immersion: gives the dying player time to read the
+     * death cause, see the killer's name (if known), and contemplate the
+     * tactical outcome before respawning. Long enough to discourage rambo
+     * play, short enough not to annoy.
+     */
+    public static final int RESPAWN_DELAY_TICKS = 2400;
 
     /**
      * Tracks dead players awaiting respawn: UUID → tick when they should respawn.
@@ -58,7 +65,7 @@ public final class RealisticDeathHandler {
     private RealisticDeathHandler() {
     }
 
-    // ─── Death Event ──────────────────────────────────────────────────────────────
+    // ─── Death Event ──────────────────────────────────────────────────────────────────────────
 
     /**
      * Intercepts player death to send the cinematic payload and schedule delayed respawn.
@@ -83,7 +90,7 @@ public final class RealisticDeathHandler {
                 player.getGameProfile().getName(), headshot, RESPAWN_DELAY_TICKS);
     }
 
-    // ─── Tick — Auto-respawn ──────────────────────────────────────────────────────
+    // ─── Tick — Auto-respawn ───────────────────────────────────────────────────────────────────────
 
     /**
      * On each server tick, checks if any pending respawns have reached their time
@@ -115,7 +122,7 @@ public final class RealisticDeathHandler {
         }
     }
 
-    // ─── Respawn Event — Prevent Early Respawn ────────────────────────────────────
+    // ─── Respawn Event — Prevent Early Respawn ─────────────────────────────────────────────────────────
 
     /**
      * When a player respawns, remove them from the pending map.
@@ -139,7 +146,7 @@ public final class RealisticDeathHandler {
         }
     }
 
-    // ─── Public API ───────────────────────────────────────────────────────────────
+    // ─── Public API ──────────────────────────────────────────────────────────────────────────────────────
 
     /**
      * Returns the remaining respawn delay in ticks for the given player, or 0 if not pending.
@@ -157,7 +164,7 @@ public final class RealisticDeathHandler {
         return PENDING_RESPAWNS.containsKey(uuid);
     }
 
-    // ─── Headshot Detection ───────────────────────────────────────────────────────
+    // ─── Headshot Detection ──────────────────────────────────────────────────────────────────────────
 
     /**
      * Determines if the killing blow was a headshot.
@@ -181,7 +188,7 @@ public final class RealisticDeathHandler {
         return false;
     }
 
-    // ─── Internal ─────────────────────────────────────────────────────────────────
+    // ─── Internal ────────────────────────────────────────────────────────────────────────────────────────
 
     private record RespawnEntry(long respawnAtTick, boolean headshot) {
     }
