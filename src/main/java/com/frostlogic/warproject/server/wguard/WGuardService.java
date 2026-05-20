@@ -61,6 +61,15 @@ public final class WGuardService {
 
         public String id() { return id; }
         public int vlWeight() { return vlWeight; }
+
+        /**
+         * Translation-key suffix for this check. Strips underscores so the key
+         * matches the lang-file convention
+         * ({@code wp.wguard.killaura}, {@code wp.wguard.fastbreak}, {@code wp.wguard.nofall}).
+         */
+        public String langSuffix() {
+            return id.toLowerCase().replace("_", "");
+        }
     }
 
     /** Per-player violation tracking data. */
@@ -101,7 +110,7 @@ public final class WGuardService {
         this.auditLogDao = auditLogDao;
     }
 
-    // ─── Public API ────────────────────────────────────────────────────────────
+    // ─── Public API ───────────────────────────────────────────────────────
 
     /**
      * Returns (or creates) the violation tracker for the given player.
@@ -149,7 +158,7 @@ public final class WGuardService {
             kick(player, check);
         } else {
             // Warning message to the player
-            player.sendSystemMessage(Component.translatable("wp.wguard." + check.id().toLowerCase())
+            player.sendSystemMessage(Component.translatable("wp.wguard." + check.langSuffix())
                     .withStyle(net.minecraft.ChatFormatting.RED));
         }
     }
@@ -187,7 +196,7 @@ public final class WGuardService {
         return pv != null ? pv.totalVl() : 0;
     }
 
-    // ─── Actions ───────────────────────────────────────────────────────────────
+    // ─── Actions ────────────────────────────────────────────────────────────
 
     private void kick(ServerPlayer player, CheckType check) {
         String playerName = player.getGameProfile().getName();
@@ -221,7 +230,7 @@ public final class WGuardService {
         player.connection.disconnect(Component.translatable("wp.wguard.ban"));
     }
 
-    // ─── Helpers ────────────────────────────────────────────────────────────────
+    // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private void writeAudit(String uuid, String name, CheckType check, String detail, int vl) {
         long now = System.currentTimeMillis();
