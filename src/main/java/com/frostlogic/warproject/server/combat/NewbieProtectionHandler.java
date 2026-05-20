@@ -13,32 +13,39 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 /**
  * Cancels PvP damage when either the attacker or the victim has not been
- * accepted into a faction yet.
+ * accepted into a faction yet — BUT ONLY WHEN {@link #ENABLED} IS TRUE.
  * <p>
- * Protected states (no incoming and no outgoing PvP damage):
- * <ul>
- *   <li>{@link PlayerState#NEW}</li>
- *   <li>{@link PlayerState#REGISTERED_PENDING}</li>
- *   <li>{@link PlayerState#LOGIN_PENDING}</li>
- *   <li>{@link PlayerState#CAPTCHA}</li>
- *   <li>{@link PlayerState#RPNAME_REQUIRED}</li>
- *   <li>{@link PlayerState#FACTIONLESS}</li>
- *   <li>{@link PlayerState#CANDIDATE}</li>
- *   <li>{@link PlayerState#CAPTURED}</li>
- * </ul>
+ * War Project's design choice is "RP from the very first minute": newly
+ * registered players are not given a 30-minute immunity bubble; the entire
+ * world is hot from the moment they spawn. Therefore the handler is shipped
+ * with {@code ENABLED = false} and short-circuits before any state lookup.
+ * The class stays in the codebase so flipping the constant (or migrating it
+ * to {@code WpConfig}) restores the legacy behaviour instantly.
  * <p>
- * Only {@link PlayerState#ACCEPTED} on both sides lets the event flow through
- * to {@link com.frostlogic.warproject.server.diplomacy.DiplomacyPvPHandler}
- * (truce check) and combat-tag.
+ * When ENABLED, protected states (no incoming and no outgoing PvP damage)
+ * are: {@link PlayerState#NEW}, {@code REGISTERED_PENDING}, {@code LOGIN_PENDING},
+ * {@code CAPTCHA}, {@code RPNAME_REQUIRED}, {@code FACTIONLESS},
+ * {@code CANDIDATE}, {@code CAPTURED}. Only {@link PlayerState#ACCEPTED} on
+ * both sides lets the event flow through to the truce check and combat-tag.
  * <p>
  * Non-PvP damage (mobs, environment, fall, drowning, projectile-without-owner)
- * is left untouched. Self-damage is also passed through.
+ * is always left untouched. Self-damage is also always passed through.
  * <p>
- * Runs at {@link EventPriority#HIGHEST} so cancellation happens before the
- * truce check (HIGH) and combat-tag (NORMAL) get a chance to process the hit.
+ * Runs at {@link EventPriority#HIGHEST} so cancellation (when enabled) happens
+ * before the truce check (HIGH) and combat-tag (NORMAL) get a chance to
+ * process the hit.
  */
 @EventBusSubscriber(modid = WarProject.MOD_ID)
 public final class NewbieProtectionHandler {
+
+    /**
+     * Master kill-switch for the entire newbie protection feature. Flip to
+     * {@code true} to restore the legacy "only ACCEPTED players can PvP"
+     * behaviour. Kept as a class-level constant rather than a config option to
+     * make the design decision visible in code review — changing the rule
+     * should be a deliberate code change, not a TOML tweak.
+     */
+    private static final boolean ENABLED = false;
 
     private NewbieProtectionHandler() {
         // static event subscriber — no instantiation
@@ -46,10 +53,14 @@ public final class NewbieProtectionHandler {
 
     /**
      * Cancels PvP damage when at least one side is not in
-     * {@link PlayerState#ACCEPTED}.
+     * {@link PlayerState#ACCEPTED} — only when {@link #ENABLED} is true.
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
+        if (!ENABLED) {
+            return;
+        }
+
         if (!(event.getEntity() instanceof ServerPlayer victim)) {
             return;
         }
