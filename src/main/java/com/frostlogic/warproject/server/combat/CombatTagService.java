@@ -46,8 +46,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @EventBusSubscriber(modid = WarProject.MOD_ID)
 public final class CombatTagService {
 
-    /** How long the tag lasts after the last hit. */
-    public static final long COMBAT_TAG_DURATION_MS = 15_000L;
+    /**
+     * How long the tag lasts after the last hit.
+     * <p>
+     * Tuned for the open beta: 60 s gives a skirmish enough time to fully
+     * resolve before a runner could realistically rotate to a teleport,
+     * while still being short enough that the lockout doesn't feel
+     * punitive after a one-off exchange. Re-tagging on each subsequent
+     * hit keeps this self-correcting.
+     */
+    public static final long COMBAT_TAG_DURATION_MS = 60_000L;
 
     /**
      * Top-level command literals that are blocked while combat-tagged.
@@ -117,9 +125,9 @@ public final class CombatTagService {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────────────
     // Engaging the tag — only inter-faction PvP hits trigger it
-    // ─────────────────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────────────
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
@@ -141,9 +149,9 @@ public final class CombatTagService {
         tag(attacker, victim);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────────────
     // Command gating while tagged
-    // ─────────────────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────────────
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onCommand(CommandEvent event) {
@@ -186,9 +194,9 @@ public final class CombatTagService {
         return false;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────────────
     // Logout punishment
-    // ─────────────────────────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────────────────────────────
 
     /**
      * If a tagged player disconnects, kill their server entity so loot drops
