@@ -29,7 +29,8 @@ import java.util.Optional;
  *       active {@code GC} cooldown (i.e. {@code expires_at <= now}).</li>
  *   <li>After a successful {@link #send(ServerPlayer, String)}, the
  *       {@code cooldowns(uuid, GC)} row is upserted with
- *       {@code expires_at = now + 30_000} ms (Req. 15.4).</li>
+ *       {@code expires_at = now + 3_000} ms (Req. 15.4, tuned to 3s for
+ *       lively radio chatter).</li>
  *   <li>{@link #recipients(MinecraftServer)} returns the set of online players
  *       whose role is at least {@link Role#COMMANDER}, regardless of faction
  *       (Req. 15.3).</li>
@@ -55,8 +56,14 @@ public final class GeneralChatService {
     /** {@code cd_type} value used in the {@code cooldowns} table for GeneralChat. */
     public static final String COOLDOWN_TYPE = "GC";
 
-    /** Cooldown duration in milliseconds (Req. 15.4). */
-    public static final long COOLDOWN_MILLIS = 30_000L;
+    /**
+     * Cooldown duration in milliseconds (Req. 15.4).
+     * <p>
+     * Tuned to 3 seconds for an active wartime-radio feel: tactical updates
+     * flow freely between commanders without 30s waits, but rapid-fire spam
+     * is still throttled.
+     */
+    public static final long COOLDOWN_MILLIS = 3_000L;
 
     /** Audit action recorded in {@code audit_log} for every successful send (Req. 20.3). */
     public static final String AUDIT_ACTION = "GENERALCHAT_SEND";
@@ -71,9 +78,9 @@ public final class GeneralChatService {
         this.auditLogDao = Objects.requireNonNull(auditLogDao, "auditLogDao");
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════════════════
     // Public API — Property 22 surface
-    // ═══════════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════════════════
 
     /**
      * Returns {@code true} iff the initiator is allowed to send a GeneralChat
@@ -126,9 +133,9 @@ public final class GeneralChatService {
      *       {@link SendResult.CooldownActive}).</li>
      *   <li>Compute recipients; if the set is empty, the cooldown is
      *       <em>not</em> set and the result is {@link SendResult.NoRecipients}
-     *       so the initiator can retry without waiting 30 s.</li>
-     *   <li>Atomically upsert {@code cooldowns(uuid, GC, now + 30_000)} and
-     *       insert a {@code GENERALCHAT_SEND} audit row in a single
+     *       so the initiator can retry without waiting the cooldown.</li>
+     *   <li>Atomically upsert {@code cooldowns(uuid, GC, now + COOLDOWN_MILLIS)}
+     *       and insert a {@code GENERALCHAT_SEND} audit row in a single
      *       transaction.</li>
      *   <li>After commit, broadcast {@code Component.translatable("wp.gc.line",
      *       actor, message)} to every recipient.</li>
@@ -137,9 +144,9 @@ public final class GeneralChatService {
      * <strong>Note on the empty-recipient short-circuit.</strong> Property 22
      * specifies the cooldown is set "after a successful send". A send to an
      * empty audience is treated as not-successful here so the initiator is not
-     * locked out for 30 s by accident (e.g. they were the only COMMANDER+
-     * online and someone just disconnected). This is an implementation detail
-     * outside the formal property; see design §12 Property 22.
+     * locked out by accident (e.g. they were the only COMMANDER+ online and
+     * someone just disconnected). This is an implementation detail outside the
+     * formal property; see design §12 Property 22.
      *
      * @param initiator the sender (must be online)
      * @param message   the raw message; will be trimmed before broadcast
@@ -209,9 +216,9 @@ public final class GeneralChatService {
         return new SendResult.Success(recipients.size(), newExpiresAt);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════════════════
     // Helpers
-    // ═══════════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════════════════
 
     /**
      * Returns {@code true} iff the player's WP role attachment is at least
@@ -248,9 +255,9 @@ public final class GeneralChatService {
         return rp.map(RpName::fullName).orElseGet(() -> player.getGameProfile().getName());
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════════════════
     // Result types
-    // ═══════════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════════════════
 
     /**
      * Outcome of a {@link #send(ServerPlayer, String)} call. Sealed so that
