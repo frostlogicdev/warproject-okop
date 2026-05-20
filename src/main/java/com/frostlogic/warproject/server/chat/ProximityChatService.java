@@ -9,9 +9,6 @@ import com.frostlogic.warproject.attachment.RpName;
 import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.OutgoingChatMessage;
-import net.minecraft.network.chat.PlayerChatMessage;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -22,6 +19,7 @@ import com.mojang.logging.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -31,7 +29,8 @@ import java.util.Optional;
  * broadcast (all players) with scope-limited delivery:
  * <ul>
  *   <li><b>LOCAL</b> (default) — only players within a configurable radius
- *       ({@link WpConfig#CHAT_LOCAL_RADIUS}) in the same dimension.</li>
+ *       ({@link WpConfig#CHAT_LOCAL_RADIUS}) in the same dimension. Format:
+ *       {@code [Звание] Имя Фамилия: текст}.</li>
  *   <li><b>FACTION</b> — all online ACCEPTED members of the sender's faction.</li>
  *   <li><b>COMMANDER</b> — commanders+ of the sender's faction only.</li>
  * </ul>
@@ -57,7 +56,7 @@ public final class ProximityChatService {
     private ProximityChatService() {
     }
 
-    // ─── Event Subscriber ──────────────────────────────────────────────────────
+    // ─── Event Subscriber ────────────────────────────────────────────────
 
     /**
      * Intercepts vanilla chat and routes it through the proximity system.
@@ -82,7 +81,7 @@ public final class ProximityChatService {
         deliverLocal(sender, event.getRawText());
     }
 
-    // ─── Public API ────────────────────────────────────────────────────────────
+    // ─── Public API ─────────────────────────────────────────────────────────
 
     /**
      * Delivers a LOCAL-scope message: only players within radius in the same dimension.
@@ -173,11 +172,17 @@ public final class ProximityChatService {
                 sender.getGameProfile().getName(), faction, recipients.size());
     }
 
-    // ─── Formatting ────────────────────────────────────────────────────────────
+    // ─── Formatting ────────────────────────────────────────────────────────
 
+    /**
+     * Builds a localized {@code [Звание] Имя Фамилия: текст} line.
+     * The role label is itself a translation key ({@code wp.role.<lowercase>})
+     * so client locales render it natively.
+     */
     private static MutableComponent formatLocal(ServerPlayer sender, String message) {
         String displayName = displayName(sender);
-        return Component.translatable("wp.chat.local", displayName, message);
+        Component roleLabel = roleLabel(sender);
+        return Component.translatable("wp.chat.local", roleLabel, displayName, message);
     }
 
     private static MutableComponent formatFaction(ServerPlayer sender, String message, FactionId faction) {
@@ -193,6 +198,20 @@ public final class ProximityChatService {
     }
 
     /**
+     * Translates the sender's {@link Role} into a localized label. OPs get a
+     * distinct "admin" key so admin messages visually stand out in local chat.
+     */
+    private static Component roleLabel(ServerPlayer sender) {
+        Role role = sender.getData(WpAttachmentTypes.ROLE.get());
+        String key = "wp.role." + role.name().toLowerCase(Locale.ROOT);
+        MutableComponent label = Component.translatable(key);
+        if (role == Role.OP) {
+            label = label.withStyle(net.minecraft.ChatFormatting.RED);
+        }
+        return label;
+    }
+
+    /**
      * Computes the player's display name for the chat line. Prefers the RP name;
      * falls back to the Mojang profile name.
      */
@@ -201,7 +220,7 @@ public final class ProximityChatService {
         return rp.map(RpName::fullName).orElseGet(() -> player.getGameProfile().getName());
     }
 
-    // ─── Config ────────────────────────────────────────────────────────────────
+    // ─── Config ───────────────────────────────────────────────────────────
 
     private static int getLocalRadius() {
         try {
