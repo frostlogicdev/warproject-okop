@@ -26,13 +26,14 @@ import java.util.Optional;
  * <ol>
  *   <li>Validates all preconditions (different factions, both ACCEPTED, raytrace ≤ 5,
  *       vulnerability predicate, target has passport)</li>
- *   <li>In a single DB transaction: updates passport (captured_by_uuid, trophy=1),
+ *   <li>In a single DB transaction: updates passport (captured_by_uuid, captured_at, trophy=1),
  *       updates player (captured=1), inserts audit log entry (CAPTURE_PASSPORT)</li>
  *   <li>Moves the passport ItemStack from target's inventory to initiator's inventory</li>
  * </ol>
  * <p>
  * The {@link #ransom(String, String, String)} method returns a captured passport to its
- * original owner (used by {@code RansomTradeMenu} or admin commands).
+ * original owner (used by {@code RansomTradeMenu}, admin commands, or
+ * {@code CaptivityTimeoutService} for auto-release / escape).
  * <p>
  * Replaces the legacy {@code server.CaptivityHandler}.
  * <p>
@@ -45,6 +46,31 @@ public final class CaptivityService {
 
     /** Maximum raytrace distance for capture interaction (blocks). */
     private static final double MAX_CAPTURE_DISTANCE = 5.0;
+
+    /**
+     * Singleton handle, set by {@link #init(CaptivityService)} during server
+     * startup and cleared on shutdown. Static event-bus subscribers (e.g.
+     * {@link CaptivityTimeoutService}) read this to call back into the service.
+     */
+    private static volatile CaptivityService instance;
+
+    /**
+     * Returns the active CaptivityService instance, or {@code null} if the
+     * server has not finished starting or has already stopped.
+     */
+    public static CaptivityService instance() {
+        return instance;
+    }
+
+    /**
+     * Sets the active CaptivityService instance. Called from {@code ServerEvents}
+     * on {@link net.neoforged.neoforge.event.server.ServerAboutToStartEvent} with
+     * a fresh service, and again with {@code null} on
+     * {@link net.neoforged.neoforge.event.server.ServerStoppingEvent}.
+     */
+    public static void init(CaptivityService service) {
+        instance = service;
+    }
 
     private final Database database;
     private final PassportsDao passportsDao;
@@ -59,9 +85,19 @@ public final class CaptivityService {
         this.auditLogDao = auditLogDao;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
+    /** Exposed for CaptivityTimeoutService and admin tooling. */
+    public PassportsDao passportsDao() {
+        return passportsDao;
+    }
+
+    /** Exposed for CaptivityTimeoutService and admin tooling. */
+    public Database database() {
+        return database;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Capture
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────────
 
     /**
      * Result of a capture attempt.
@@ -138,18 +174,19 @@ public final class CaptivityService {
         String targetUuid = target.getUUID().toString();
         String initiatorName = initiator.getGameProfile().getName();
         String targetName = target.getGameProfile().getName();
+        long now = System.currentTimeMillis();
 
         // --- Atomic DB transaction ---
         database.transaction(conn -> {
-            // Update passport: set captured_by_uuid and trophy flag
-            passportsDao.updateCaptureState(conn, passportId, initiatorUuid, true);
+            // Update passport: set captured_by_uuid, captured_at, trophy flag
+            passportsDao.updateCaptureState(conn, passportId, initiatorUuid, true, now);
 
             // Update player: set captured = 1
             playersDao.setCaptured(conn, targetUuid, true);
 
             // Insert audit log entry
             auditLogDao.insert(conn,
-                    System.currentTimeMillis(),
+                    now,
                     initiatorUuid,
                     initiatorName,
                     targetUuid,
@@ -255,9 +292,9 @@ public final class CaptivityService {
         captive.inventoryMenu.broadcastChanges();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────────
     // Ransom
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────────
 
     /**
      * Result of a ransom attempt.
@@ -270,8 +307,10 @@ public final class CaptivityService {
     /**
      * Returns a captured passport to its original owner.
      * <p>
-     * Used by {@code RansomTradeMenu} or admin commands to release a prisoner.
-     * Atomically clears the capture state in the database and updates player status.
+     * Used by {@code RansomTradeMenu}, admin commands, or
+     * {@code CaptivityTimeoutService} (auto-release after 30 min, or successful
+     * escape roll). Atomically clears the capture state in the database and
+     * updates player status.
      *
      * @param passportId the ID of the passport to return
      * @param fromUuid   the UUID of the player currently holding the trophy passport
@@ -307,7 +346,8 @@ public final class CaptivityService {
 
         // --- Atomic DB transaction ---
         database.transaction(conn -> {
-            // Clear capture state on passport
+            // Clear capture state on passport (captured_by_uuid=NULL, captured_at=NULL, trophy=0).
+            // 3-arg legacy variant delegates to the 4-arg with capturedAt=null.
             passportsDao.updateCaptureState(conn, passportId, null, false);
 
             // Clear captured flag on player
@@ -397,17 +437,36 @@ public final class CaptivityService {
         return result;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
+    /**
+     * Searches an online captor's inventory for a stale trophy passport with the given ID
+     * and removes it. Used by {@code CaptivityTimeoutService} after an auto-release or
+     * successful escape, so the captor does not keep an inert trophy item that no longer
+     * corresponds to any captive.
+     * <p>
+     * If the captor is offline, callers should pass {@code null} and accept that the
+     * stale trophy stays in the captor's inventory until next inspection — it just
+     * becomes a passport with no behavioural effect (DB capture state already cleared).
+     *
+     * @param captor      the captor (may be null if offline; method becomes a no-op)
+     * @param passportId  the passport ID to remove
+     * @return true if a trophy was found and removed
+     */
+    public static boolean removeStaleTrophy(ServerPlayer captor, String passportId) {
+        if (captor == null || passportId == null) return false;
+        PassportSlotInfo info = findPassportById(captor, passportId);
+        if (info == null) return false;
+        captor.getInventory().setItem(info.slot(), ItemStack.EMPTY);
+        captor.inventoryMenu.broadcastChanges();
+        return true;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
     // Validation helpers
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────────
 
     /**
      * Checks if the initiator is within capture distance of the target.
      * Uses simple eye-position distance check (≤ 5 blocks).
-     *
-     * @param initiator the capturing player
-     * @param target    the target player
-     * @return true if within capture distance
      */
     public static boolean isWithinCaptureDistance(ServerPlayer initiator, ServerPlayer target) {
         Vec3 initiatorPos = initiator.getEyePosition();
@@ -418,16 +477,6 @@ public final class CaptivityService {
 
     /**
      * Evaluates the vulnerability predicate for the target player.
-     * <p>
-     * The predicate is configured via {@code cfg.captivity.vulnerability}.
-     * Supported predicates:
-     * <ul>
-     *   <li>{@code HP_BELOW_HALF} — target's health is below 50% of max health</li>
-     *   <li>{@code ALWAYS} — always vulnerable (for testing/admin purposes)</li>
-     * </ul>
-     *
-     * @param target the target player to check vulnerability for
-     * @return true if the target satisfies the vulnerability condition
      */
     public static boolean isVulnerable(ServerPlayer target) {
         String predicate = WpConfig.CAPTIVITY_VULNERABILITY.get();
@@ -443,9 +492,9 @@ public final class CaptivityService {
         };
     }
 
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────────
     // Internal helpers
-    // ─────────────────────────────────────────────────────────────────────────────
+    // ────────────────────────────────────────────────────────────────────────────
 
     /**
      * Holds information about a passport found in a player's inventory.
@@ -454,9 +503,6 @@ public final class CaptivityService {
 
     /**
      * Finds the passport ItemStack in the target's inventory.
-     *
-     * @param player the player whose inventory to search
-     * @return the slot info if found, or null if no passport exists
      */
     private static PassportSlotInfo findPassportInInventory(ServerPlayer player) {
         Inventory inv = player.getInventory();
@@ -475,10 +521,6 @@ public final class CaptivityService {
 
     /**
      * Finds a passport with a specific ID in the player's inventory.
-     *
-     * @param player     the player whose inventory to search
-     * @param passportId the passport ID to look for
-     * @return the slot info if found, or null
      */
     private static PassportSlotInfo findPassportById(ServerPlayer player, String passportId) {
         Inventory inv = player.getInventory();
@@ -497,9 +539,6 @@ public final class CaptivityService {
     /**
      * Places an item in the main inventory area (slots 9..35).
      * Falls back to hotbar if main area is full.
-     *
-     * @param player the player to place the item for
-     * @param stack  the item stack to place
      */
     private static void placeInMainInventory(ServerPlayer player, ItemStack stack) {
         for (int slot = 9; slot <= 35; slot++) {
