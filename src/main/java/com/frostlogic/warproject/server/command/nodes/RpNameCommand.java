@@ -13,8 +13,14 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
@@ -277,6 +283,12 @@ public final class RpNameCommand {
      *   <li>{@link com.frostlogic.warproject.server.SpawnTeleporter#toWorldSpawn} — last resort.</li>
      * </ol>
      */
+    /** ResourceKey for the Multiworld "choicehall" dimension. */
+    private static final ResourceKey<Level> CHOICE_HALL_DIM = ResourceKey.create(
+            Registries.DIMENSION,
+            ResourceLocation.parse("multiworld:choicehall")
+    );
+
     private static void teleportToChoiceHall(ServerPlayer player) {
         // 1) Admin-set spawn point (preferred — has dimension + yaw/pitch).
         boolean ok = com.frostlogic.warproject.server.WarServerSettings.get()
@@ -296,7 +308,18 @@ public final class RpNameCommand {
             double x = coords.get(0) + 0.5;
             double y = coords.get(1);
             double z = coords.get(2) + 0.5;
-            player.teleportTo(player.serverLevel(), x, y, z, player.getYRot(), player.getXRot());
+
+            // Resolve the choicehall dimension — fall back to current level if not loaded
+            ServerLevel targetLevel = player.getServer() != null
+                    ? player.getServer().getLevel(CHOICE_HALL_DIM)
+                    : null;
+            if (targetLevel == null) {
+                LOGGER.warn("[WarProject] Dimension multiworld:choicehall not found, falling back to current level for {}",
+                        player.getGameProfile().getName());
+                targetLevel = player.serverLevel();
+            }
+
+            player.teleportTo(targetLevel, x, y, z, java.util.Set.of(), player.getYRot(), player.getXRot());
             return;
         }
 

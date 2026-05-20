@@ -1,6 +1,10 @@
 @echo off
 setlocal EnableExtensions EnableDelayedExpansion
 
+REM Ensure working directory is the script's own folder so Minecraft
+REM can find eula.txt, server.properties, world/, etc.
+cd /d "%~dp0"
+
 REM WarProject local Windows server launcher.
 REM NeoForge 1.21.1 requires Java 21. Class file major 65 = Java 21.
 REM Do NOT launch with Java 17/18/19/20, otherwise bootstraplauncher fails with:
@@ -85,18 +89,18 @@ if defined JAVA_HOME (
 )
 
 REM 3) Common Windows install locations for Java 21.
-for %%P in (
-    "C:\Program Files\Eclipse Adoptium\jdk-21*\bin\java.exe"
-    "C:\Program Files\Microsoft\jdk-21*\bin\java.exe"
-    "C:\Program Files\Java\jdk-21*\bin\java.exe"
-    "C:\Program Files\BellSoft\LibericaJDK-21*\bin\java.exe"
-    "C:\Program Files\Zulu\zulu-21*\bin\java.exe"
+REM    Use for /d to match JDK directories by wildcard, then check java.exe inside.
+REM    This avoids the for %%J in (%%~P) pattern which breaks on paths with spaces.
+for /d %%D in (
+    "C:\Program Files\Eclipse Adoptium\jdk-21*"
+    "C:\Program Files\Microsoft\jdk-21*"
+    "C:\Program Files\Java\jdk-21*"
+    "C:\Program Files\BellSoft\LibericaJDK-21*"
+    "C:\Program Files\Zulu\zulu-21*"
 ) do (
-    for %%J in (%%~P) do (
-        if exist "%%~J" (
-            call :accept_if_java21 "%%~J"
-            if not errorlevel 1 exit /b 0
-        )
+    if exist "%%~D\bin\java.exe" (
+        call :accept_if_java21 "%%~D\bin\java.exe"
+        if not errorlevel 1 exit /b 0
     )
 )
 
@@ -113,16 +117,20 @@ exit /b 1
 
 :accept_if_java21
 set "CANDIDATE=%~1"
-set "DETECTED_VERSION="
-set "DETECTED_MAJOR="
 
-for /f "tokens=2 delims=\"" %%V in ('"%CANDIDATE%" -version 2^>^&1 ^| findstr /i "version"') do set "DETECTED_VERSION=%%V"
-for /f "tokens=1 delims=." %%M in ("!DETECTED_VERSION!") do set "DETECTED_MAJOR=%%M"
+REM Redirect -version stderr to a temp file, then check for "21." in the
+REM version string.  This avoids the for /f single-quote parsing bug that
+REM breaks on paths containing spaces (e.g. "C:\Program Files\...").
+set "_VF=%TEMP%\wp_javaver_%RANDOM%.txt"
+"%CANDIDATE%" -version 2>"%_VF%"
+findstr /c:"\"21." "%_VF%" >nul 2>nul
+set "_IS21=!ERRORLEVEL!"
+del "%_VF%" 2>nul
 
-if "!DETECTED_MAJOR!"=="21" (
+if "%_IS21%"=="0" (
     set "JAVA_EXE=%CANDIDATE%"
     exit /b 0
 )
 
-echo [WarProject] Skipping non-Java-21 runtime: %CANDIDATE% version !DETECTED_VERSION!
+echo [WarProject] Skipping non-Java-21 runtime: %CANDIDATE%
 exit /b 1

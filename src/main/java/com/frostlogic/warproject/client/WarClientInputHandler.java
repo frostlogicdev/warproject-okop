@@ -39,8 +39,6 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class WarClientInputHandler {
     private static final double LOCAL_HINT_DISTANCE = 5.0D;
     private static boolean radialRequested = false;
-    /** Flag set by the mouse-button interceptor when middle-click opens the marker screen. */
-    private static boolean markerOpenedThisTick = false;
     /** Tracks previous middle-button state to detect press edge. */
     private static boolean middleWasDown = false;
 
@@ -49,7 +47,8 @@ public final class WarClientInputHandler {
 
     /**
      * Intercepts middle mouse button BEFORE vanilla processes it (pick block).
-     * Opens the marker TTL screen and cancels the event so pick block doesn't fire.
+     * Opens the marker TTL screen ONLY when the fullscreen map is open,
+     * so normal pick-block (copy block) works during gameplay.
      */
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
     public static void onMouseButton(net.neoforged.neoforge.client.event.InputEvent.MouseButton.Pre event) {
@@ -59,7 +58,9 @@ public final class WarClientInputHandler {
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
-        if (mc.screen != null) return; // don't intercept if a screen is open
+
+        // Only intercept when the fullscreen map screen is open
+        if (!isMapScreen(mc.screen)) return;
 
         // Open the marker TTL screen
         net.minecraft.world.phys.HitResult hit = pickBlockOrPosition(mc);
@@ -67,7 +68,6 @@ public final class WarClientInputHandler {
             net.minecraft.core.BlockPos pos = blockPosOf(hit);
             if (pos != null) {
                 mc.setScreen(new com.frostlogic.warproject.client.screen.MarkerTtlScreen(pos));
-                markerOpenedThisTick = true;
                 event.setCanceled(true); // prevent vanilla pick block
             }
         }
@@ -111,13 +111,13 @@ public final class WarClientInputHandler {
             radialRequested = false;
         }
 
-        // Middle mouse button marker — primary handler is onMouseButton() above.
+        // Middle mouse button marker — only when the map screen is open.
         // Fallback: poll GLFW directly in case the event doesn't fire.
         boolean middleDown = org.lwjgl.glfw.GLFW.glfwGetMouseButton(
                 mc.getWindow().getWindow(),
                 org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_MIDDLE) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
-        if (middleDown && !middleWasDown && mc.screen == null) {
-            // Rising edge — middle button just pressed
+        if (middleDown && !middleWasDown && isMapScreen(mc.screen)) {
+            // Rising edge — middle button just pressed while map is open
             net.minecraft.world.phys.HitResult hit = pickBlockOrPosition(mc);
             if (hit != null) {
                 net.minecraft.core.BlockPos pos = blockPosOf(hit);
@@ -169,6 +169,18 @@ public final class WarClientInputHandler {
             return b.getBlockPos();
         }
         return null;
+    }
+
+    /**
+     * Returns true if the given screen is the JourneyMap fullscreen map.
+     * JourneyMap's fullscreen map screen class is checked by simple name
+     * to avoid a hard dependency on the JourneyMap API.
+     */
+    private static boolean isMapScreen(net.minecraft.client.gui.screens.Screen screen) {
+        if (screen == null) return false;
+        String className = screen.getClass().getName();
+        return className.contains("journeymap") && className.contains("Fullscreen") ||
+               className.contains("journeymap") && className.contains("MapScreen");
     }
 
     private static Player findTargetPlayer(Minecraft mc) {

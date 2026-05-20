@@ -1,10 +1,13 @@
 package com.frostlogic.warproject.client;
 
 import com.frostlogic.warproject.WarProject;
+import com.frostlogic.warproject.client.renderer.FactionNpcRenderer;
+import com.frostlogic.warproject.server.faction.npc.FactionNpcEntityType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 /**
  * Client-side event subscriber for WarProject (NeoForge game event bus, CLIENT dist only).
@@ -33,5 +36,13 @@ public final class ClientEventHandler {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         WarProject.LOGGER.debug("[WarProject] ClientEventHandler: client setup complete.");
+    }
+
+    /**
+     * Registers custom entity renderers on the client.
+     */
+    @SubscribeEvent
+    public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(FactionNpcEntityType.FACTION_NPC.get(), FactionNpcRenderer::new);
     }
 }

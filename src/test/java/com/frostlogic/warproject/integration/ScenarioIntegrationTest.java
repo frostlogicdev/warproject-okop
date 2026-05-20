@@ -426,22 +426,25 @@ class ScenarioIntegrationTest {
     }
 
     private void applyMigration(Connection conn) throws IOException, SQLException {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("db/migrations/V1__init.sql");
-        if (is == null) {
-            throw new IOException("V1__init.sql not found on classpath");
-        }
-        String sql;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            sql = reader.lines().collect(Collectors.joining("\n"));
-        }
-        sql = sql.replace("${AI}", "AUTOINCREMENT");
+        String[] migrationFiles = {"V1__init.sql", "V2__military_features.sql", "V3__captivity_timeout.sql"};
+        for (String migrationFile : migrationFiles) {
+            InputStream is = getClass().getClassLoader().getResourceAsStream("db/migrations/" + migrationFile);
+            if (is == null) {
+                throw new IOException(migrationFile + " not found on classpath");
+            }
+            String sql;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                sql = reader.lines().collect(Collectors.joining("\n"));
+            }
+            sql = sql.replace("${AI}", "AUTOINCREMENT");
 
-        String[] statements = splitStatements(sql);
-        try (Statement stmt = conn.createStatement()) {
-            for (String s : statements) {
-                String trimmed = s.trim();
-                if (!trimmed.isEmpty()) {
-                    stmt.execute(trimmed);
+            String[] statements = splitStatements(sql);
+            try (Statement stmt = conn.createStatement()) {
+                for (String s : statements) {
+                    String trimmed = s.trim();
+                    if (!trimmed.isEmpty()) {
+                        stmt.execute(trimmed);
+                    }
                 }
             }
         }

@@ -34,11 +34,16 @@ public final class FactionNpcInteractHandler {
     /**
      * Handles {@link PlayerInteractEvent.EntityInteract} for FactionNpcEntity.
      * <p>
-     * When a player right-clicks on a FactionNpcEntity:
+     * Right-clicking a recruiter NPC always cancels the vanilla interaction so
+     * the player never gets the "Mob does nothing" feel. After that:
      * <ul>
-     *   <li>If the player is in FACTIONLESS state → sends OpenFactionChoicePayload to open the choice screen</li>
-     *   <li>If the player already has a faction → sends error message "Фракция уже выбрана"</li>
-     *   <li>If the player is not in a valid state for faction choice → ignores silently</li>
+     *   <li>OPs (permission level ≥ 2) always get the choice screen — useful for
+     *       admin testing regardless of the player's lifecycle state.</li>
+     *   <li>{@code FACTIONLESS} players get the choice screen.</li>
+     *   <li>Players who already have a faction are told so explicitly.</li>
+     *   <li>Players in a pre-faction lifecycle stage (NEW / LOGIN_PENDING /
+     *       CAPTCHA / RPNAME_REQUIRED) get a state-specific hint instead of
+     *       silently being ignored.</li>
      * </ul>
      */
     @SubscribeEvent
@@ -54,26 +59,49 @@ public final class FactionNpcInteractHandler {
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
 
-        // Check player state
-        PlayerState state = player.getData(WpAttachmentTypes.PLAYER_STATE.get());
+        FactionId factionId = npc.getFactionId();
 
-        // If player already has a faction (CANDIDATE, ACCEPTED, CAPTURED) → reject
+        // Admin override: always open the screen, regardless of state. Lets OPs
+        // smoke-test the choice flow without going through full onboarding.
+        if (player.hasPermissions(2)) {
+            sendOpenChoice(player, factionId);
+            return;
+        }
+
+        // Already has a faction (CANDIDATE / ACCEPTED / CAPTURED) — explain why.
         Optional<FactionId> existingFaction = player.getData(WpAttachmentTypes.FACTION.get());
         if (existingFaction.isPresent()) {
             player.sendSystemMessage(Component.translatable("wp.faction.already_chosen"));
             return;
         }
 
-        // Only allow interaction in FACTIONLESS state
-        if (state != PlayerState.FACTIONLESS) {
-            // Player is not in a state where they can choose a faction (e.g. still in auth/captcha)
+        PlayerState state = player.getData(WpAttachmentTypes.PLAYER_STATE.get());
+        if (state == PlayerState.FACTIONLESS) {
+            sendOpenChoice(player, factionId);
             return;
         }
 
-        // Send S2C payload to open the faction choice confirmation screen
-        FactionId factionId = npc.getFactionId();
-        PacketDistributor.sendToPlayer(player, new OpenFactionChoicePayload(factionId.getSerializedName()));
+        // Player is in a pre-faction lifecycle stage. Give them a state-specific
+        // hint instead of silent failure — the server-side legacy bridge can map
+        // these onto JSON-pipeline players too.
+        Component hint = switch (state) {
+            case NEW, REGISTERED_PENDING, LOGIN_PENDING ->
+                    Component.translatable("wp.faction.not_logged_in");
+            case CAPTCHA ->
+                    Component.translatable("wp.faction.captcha_first");
+            case RPNAME_REQUIRED ->
+                    Component.translatable("wp.faction.rpname_first");
+            // Any state outside of the above (CANDIDATE / ACCEPTED / CAPTURED)
+            // would have been caught by the `existingFaction` branch above; if
+            // it somehow falls through, treat it as already chosen.
+            default ->
+                    Component.translatable("wp.faction.already_chosen");
+        };
+        player.sendSystemMessage(hint);
+    }
 
+    private static void sendOpenChoice(ServerPlayer player, FactionId factionId) {
+        PacketDistributor.sendToPlayer(player, new OpenFactionChoicePayload(factionId.getSerializedName()));
         WarProject.LOGGER.debug("[WarProject] Sent OpenFactionChoicePayload to {}: faction={}",
                 player.getGameProfile().getName(), factionId.getSerializedName());
     }

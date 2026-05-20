@@ -51,9 +51,9 @@
 	loginCooldownSeconds = 90
 
 [candidate]
-	#Candidate timeout in seconds of active session (default: 24h = 86400)
-	# Default: 86400
-	# Range: 3600 ~ 604800
+	#Candidate timeout in seconds of active session (default: 20m = 1200; raise to 86400 for 24h)
+	# Default: 1200
+	# Range: 60 ~ 604800
 	timeoutSeconds = 86400
 	#Interval in ticks between actionbar reminders for candidates (default: 600 = ~30s)
 	# Default: 600
@@ -78,7 +78,7 @@
 	#Spawn coordinates [x, y, z] for Chernogryad base
 	chernogryadSpawn = [0, 64, 0]
 	#Spawn coordinates [x, y, z] for the faction choice hall
-	choiceHallSpawn = [0, 64, 0]
+	choiceHallSpawn = [51, -1944, -282]
 
 [ranks]
 	#Ordered list of ranks for Zarnavia faction (lowest to highest).
@@ -153,3 +153,64 @@
 	# Default: 100
 	# Range: 1 ~ 1000
 	maxPerPlayer = 100
+
+[chat]
+	#Radius in blocks for local (proximity) chat. Players outside this radius cannot hear the message.
+	# Default: 50
+	# Range: 10 ~ 1000
+	localRadius = 50
+
+[wguard]
+	#Enable WGuard anti-cheat system
+	enabled = true
+	#Maximum allowed horizontal movement per tick in blocks. Vanilla max: ~10 (sprinting + jumping). Default: 12 to allow some latency tolerance.
+	# Default: 12
+	# Range: 5 ~ 50
+	speedMaxBlocksPerTick = 12
+	#Number of consecutive fly violations before action. Each violation = 1 tick of airborne movement without flight permission.
+	# Default: 5
+	# Range: 1 ~ 50
+	flyViolationThreshold = 5
+	#Maximum allowed attack/interact distance in blocks. Vanilla: ~6.0 for creative, ~4.5 for survival. Default: 5.5 to allow some latency tolerance.
+	# Default: 55
+	# Range: 30 ~ 100
+	reachMaxDistance = 55
+	#Maximum attacks per second before KillAura flag. Vanilla max for auto-clicker: ~16 (game tick rate). Default: 12.
+	# Default: 12
+	# Range: 4 ~ 30
+	killAuraMaxAttacksPerSecond = 12
+	#Maximum head rotation degrees per tick before KillAura flag. Normal play: ~180°/sec = 9°/tick. Default: 90 to allow fast flicks.
+	# Default: 90
+	# Range: 20 ~ 360
+	killAuraMaxRotationPerTick = 90
+	#Minimum ticks between breaking two different blocks. Vanilla: instant for some tools. Default: 2 to catch nuker patterns.
+	# Default: 2
+	# Range: 1 ~ 20
+	fastBreakMinTicks = 2
+	#Total violation level at which the player is kicked. Violations decay over time.
+	# Default: 50
+	# Range: 10 ~ 500
+	violationKickThreshold = 50
+	#Total violation level at which the player is banned. Violations decay over time.
+	# Default: 150
+	# Range: 20 ~ 1000
+	violationBanThreshold = 150
+	#Ticks between violation level decay steps. Each step reduces total VL by 1.
+	# Default: 100
+	# Range: 20 ~ 6000
+	violationDecayTicks = 100
+	#Mod namespace prefixes for vehicle mods (planes, cars, tanks, etc.).
+	#Players riding entities from these mods are exempt from SPEED/FLY/NO_FALL checks.
+	#Examples: immersive_aircraft, vs_eureka, flan, create, valkyrieskies, mcwplanes
+	vehicleModNamespaces = ["immersive_aircraft", "vs_eureka", "flan", "create", "valkyrieskies", "mcwplanes", "mcheli", "simpleplanes", "aircraft", "vcraft", "vz"]
+	#Mod namespace prefixes for weapon mods (guns, rifles, turrets, etc.).
+	#Players holding items from these mods get relaxed KILL_AURA checks
+	#(automatic weapons fire faster than melee).
+	#Examples: tacz, vic3, cmg, timeless_and_classics, flan, gun
+	weaponModNamespaces = ["tacz", "vic3", "cmg", "timeless_and_classics", "flan", "gun", "cgm", "scorched_guns", "dtt"]
+	#Speed limit multiplier when riding a vehicle from a known mod. Default: 10 (allows planes/cars).
+	# Default: 10
+	# Range: 1 ~ 100
+	vehicleSpeedMultiplier = 10
+	#If true, completely skip SPEED/FLY/NO_FALL checks for players riding any entity (not just whitelisted mods). Recommended true for servers with vehicle mods.
+	skipRidingPlayers = true

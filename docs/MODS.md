@@ -13,7 +13,7 @@
 | **WarProject** | `warproject-3.0.0.jar` | Основной мод проекта |
 | **JourneyMap** | `journeymap-neoforge-1.21.1-6.0.0-beta.74.jar` | Добавлен |
 | **WorldEdit** | `worldedit-mod-7.3.5.jar` | Добавлен; разрешать только админам |
-| **Multiverse** | `multiverse-1.21.1-4.3.1.jar` | Добавлен; используется для нескольких миров |
+| **Multiworld** | `Multiworld-NeoForged-1.21.1.jar` | Добавлен; аналог Multiverse-Core для NeoForge (создание миров, `/mw create`, `/mw tp`) |
 
 ## 1. Производительность сервера (CRITICAL)
 
@@ -38,7 +38,7 @@
 |---|---|---|
 | **JourneyMap** | Карта + веб-UI. | Добавлен |
 | **WorldEdit** | Строительство и правки мира. | Добавлен; только для админов |
-| **Multiverse** | Несколько миров/измерений, чтобы не размещать все зоны в одном мире. | Добавлен |
+| **Multiworld** | Несколько миров/измерений, аналог Multiverse-Core для NeoForge. Команды `/mw create`, `/mw tp`. | Добавлен |
 | **Simple Voice Chat** | Голосовой чат с групповыми каналами для фракций / подразделений. UDP порт 24454. | Желательно для RP |
 
 ## 4. Античит — WGuard (в `warproject-*.jar`)
@@ -72,7 +72,7 @@
 
 Все флаги пишутся в `audit_log` (`WGUARD_FLAG` / `WGUARD_BAN`), и все онлайн-OP получают уведомление в чат. Полностью отключить античит можно `wguard.enabled = false` в `warproject-server.toml`.
 
-## 5. Multiverse и координаты
+## 5. Multiworld и координаты
 
 Так как проект будет использовать несколько миров, все координаты в `server/config/warproject-server.toml` должны указывать правильный dimension/world id.
 

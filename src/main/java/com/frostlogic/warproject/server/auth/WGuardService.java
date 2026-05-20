@@ -7,11 +7,19 @@ import com.frostlogic.warproject.persistence.Database;
 import com.frostlogic.warproject.persistence.dao.AccountsDao;
 import com.frostlogic.warproject.persistence.dao.CooldownsDao;
 import com.frostlogic.warproject.persistence.dao.PlayersDao;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -284,6 +292,11 @@ public final class WGuardService {
         PlayerState targetState = resolvePostLoginState(uuid);
         player.setData(WpAttachmentTypes.PLAYER_STATE.get(), targetState);
 
+        // Teleport FACTIONLESS players to the choice hall so they can pick a faction
+        if (targetState == PlayerState.FACTIONLESS) {
+            teleportToChoiceHall(player);
+        }
+
         LOGGER.info("Player {} logged in successfully, state -> {}", uuid, targetState);
         return new AuthResult.Ok();
     }
@@ -323,6 +336,42 @@ public final class WGuardService {
                 WpConfig.AUTH_PASSWORD_MAX_LEN.get(),
                 WpConfig.AUTH_PASSWORD_ALLOWED_CHARS.get()
         );
+    }
+
+    /** ResourceKey for the Multiworld "choicehall" dimension. */
+    private static final ResourceKey<Level> CHOICE_HALL_DIM = ResourceKey.create(
+            Registries.DIMENSION,
+            ResourceLocation.parse("multiworld:choicehall")
+    );
+
+    /**
+     * Teleports the player to the faction choice hall in the
+     * {@code multiworld:choicehall} dimension.
+     */
+    private void teleportToChoiceHall(ServerPlayer player) {
+        List<? extends Integer> coords = WpConfig.FACTIONS_CHOICE_HALL_SPAWN.get();
+        boolean isDefault = coords.size() >= 3
+                && coords.get(0) == 0 && coords.get(1) == 64 && coords.get(2) == 0;
+        if (coords.size() < 3 || isDefault) {
+            LOGGER.warn("[WGuard] choiceHallSpawn not configured, cannot teleport {}", player.getGameProfile().getName());
+            return;
+        }
+
+        double x = coords.get(0) + 0.5;
+        double y = coords.get(1);
+        double z = coords.get(2) + 0.5;
+
+        // Resolve the choicehall dimension — fall back to overworld if not loaded
+        ServerLevel targetLevel = player.getServer() != null
+                ? player.getServer().getLevel(CHOICE_HALL_DIM)
+                : null;
+        if (targetLevel == null) {
+            LOGGER.warn("[WGuard] Dimension multiworld:choicehall not found, falling back to overworld for {}",
+                    player.getGameProfile().getName());
+            targetLevel = player.serverLevel();
+        }
+
+        player.teleportTo(targetLevel, x, y, z, Set.of(), player.getYRot(), player.getXRot());
     }
 
     /**

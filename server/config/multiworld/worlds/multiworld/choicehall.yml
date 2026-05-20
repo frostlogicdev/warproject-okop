@@ -1,0 +1,4 @@
+namespace: multiworld
+path: choicehall
+environment: minecraft:flat/mw
+seed: 879593245

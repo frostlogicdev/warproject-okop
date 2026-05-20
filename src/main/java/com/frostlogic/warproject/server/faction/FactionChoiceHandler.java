@@ -88,18 +88,20 @@ public final class FactionChoiceHandler {
             return;
         }
 
-        // 2. Check player state is FACTIONLESS
+        // 2. Check player state is FACTIONLESS — OPs are exempt so /wp NPC
+        // interaction works for admin testing regardless of lifecycle state.
+        boolean isOp = player.hasPermissions(2);
         PlayerState state = player.getData(WpAttachmentTypes.PLAYER_STATE.get());
-        if (state != PlayerState.FACTIONLESS) {
+        if (!isOp && state != PlayerState.FACTIONLESS) {
             player.sendSystemMessage(Component.translatable("wp.faction.wrong_state"));
             WarProject.LOGGER.debug("[WarProject] Player {} tried to choose faction in state {}",
                     player.getGameProfile().getName(), state.getSerializedName());
             return;
         }
 
-        // 3. Check player doesn't already have a faction
+        // 3. Check player doesn't already have a faction — also exempt for OPs.
         Optional<FactionId> existingFaction = player.getData(WpAttachmentTypes.FACTION.get());
-        if (existingFaction.isPresent()) {
+        if (!isOp && existingFaction.isPresent()) {
             player.sendSystemMessage(Component.translatable("wp.faction.already_chosen"));
             WarProject.LOGGER.debug("[WarProject] Player {} already has faction {}",
                     player.getGameProfile().getName(), existingFaction.get().getSerializedName());
