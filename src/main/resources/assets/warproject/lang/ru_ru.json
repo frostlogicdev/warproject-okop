@@ -351,5 +351,19 @@
   "wp.rank.error.no_ranks_configured": "Лестница званий для этой фракции не настроена.",
   "wp.rank.error.already_highest": "Игрок уже на высшем звании.",
   "wp.rank.error.already_lowest": "Игрок уже на низшем звании.",
-  "wp.rank.error.insufficient_rank": "Вашего звания недостаточно для этого действия."
+  "wp.rank.error.insufficient_rank": "Вашего звания недостаточно для этого действия.",
+  "wp.ui.republic_header": "Республика Зарнавия · Военный департамент",
+  "wp.ui.recruit_header": "Призывной пункт · Форма А-1",
+  "wp.ui.oath_header": "Зал выбора стороны · протокол",
+  "wp.ui.login_subtitle": "— возвращение в строй —",
+  "wp.ui.register_subtitle": "— заполнить разборчиво —",
+  "wp.ui.password_hint": "не менее 8 знаков · конфиденциально",
+  "wp.ui.match_ok": "пароли совпадают",
+  "wp.ui.secure_link": "защищённый канал",
+  "wp.ui.id_issued": "выдадут жетон",
+  "wp.ui.signed_voluntarily": "подписано добровольно",
+  "wp.ui.oath_irreversible": "— решение бесповоротно —",
+  "wp.ui.stamp_login": "ВХОД",
+  "wp.ui.stamp_new1": "НОВЫЙ",
+  "wp.ui.stamp_new2": "ПРИЗЫВ"
 }

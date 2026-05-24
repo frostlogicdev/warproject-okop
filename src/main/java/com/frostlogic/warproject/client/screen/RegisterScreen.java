@@ -1,9 +1,11 @@
 package com.frostlogic.warproject.client.screen;
 
+import com.frostlogic.warproject.client.widget.PaperButton;
+import com.frostlogic.warproject.client.widget.PaperEditBox;
+import com.frostlogic.warproject.client.widget.PaperUi;
 import com.frostlogic.warproject.network.payload.c2s.RegisterRequestPayload;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -16,14 +18,7 @@ import org.jetbrains.annotations.Nullable;
  * Two password fields (password + confirm) + register button + show/hide
  * toggle. Used for the player's first connection.
  *
- * <p>Opened by {@code ClientPayloadHandler.onAuthScreenState} when the server
- * sends an {@code AuthScreenStatePayload(REGISTER, ...)}. Submits both fields
- * as a C2S {@link RegisterRequestPayload}; the server is the source of truth
- * for password complexity rules — this screen only forwards the inputs.
- *
- * <p>The "show/hide" toggle flips between rendering the typed input as bullet
- * glyphs and rendering it raw, so the player can verify their typing without
- * leaking the password elsewhere.
+ * <p>Visual direction: "paper passport" — recruitment intake form A-1.
  *
  * <p>The screen ignores ESC ({@link #shouldCloseOnEsc()} returns {@code false}),
  * does not pause the integrated server, and persists until the server clears
@@ -33,21 +28,19 @@ import org.jetbrains.annotations.Nullable;
  */
 public class RegisterScreen extends Screen {
 
+    private static final int CARD_W = 260;
+    private static final int CARD_H = 240;
     private static final int FIELD_WIDTH = 200;
-    private static final int FIELD_HEIGHT = 20;
-    private static final int FIELD_GAP = 6;
+    private static final int FIELD_HEIGHT = 18;
+    private static final int FIELD_GAP = 28;
     private static final int BUTTON_WIDTH = 200;
-    private static final int BUTTON_HEIGHT = 20;
-    private static final int TOGGLE_WIDTH = 60;
-    private static final int BACKGROUND_COLOR = 0xFF0A0A0A;
-    private static final int TITLE_COLOR = 0xFFFFFFFF;
-    private static final int ERROR_COLOR = 0xFFFF6B6B;
+    private static final int BUTTON_HEIGHT = 22;
     private static final char MASK_GLYPH = '*';
 
-    private EditBox passwordField;
-    private EditBox confirmField;
-    private Button submitButton;
-    private Button toggleButton;
+    private PaperEditBox passwordField;
+    private PaperEditBox confirmField;
+    private PaperButton submitButton;
+    private PaperButton toggleButton;
     private boolean visible;
     private @Nullable Component errorMessage;
 
@@ -63,12 +56,12 @@ public class RegisterScreen extends Screen {
     @Override
     protected void init() {
         int centerX = this.width / 2;
-        int centerY = this.height / 2;
+        int cardY = (this.height - CARD_H) / 2;
         int fieldX = centerX - FIELD_WIDTH / 2;
-        int passwordY = centerY - 20;
-        int confirmY = passwordY + FIELD_HEIGHT + FIELD_GAP;
+        int passwordY = cardY + 100;
+        int confirmY = passwordY + FIELD_GAP;
 
-        passwordField = new EditBox(this.font, fieldX, passwordY, FIELD_WIDTH, FIELD_HEIGHT,
+        passwordField = new PaperEditBox(this.font, fieldX, passwordY, FIELD_WIDTH, FIELD_HEIGHT,
                 Component.translatable("wp.auth.password"));
         passwordField.setMaxLength(RegisterRequestPayload.MAX_PASSWORD_LENGTH);
         passwordField.setHint(Component.translatable("wp.auth.password"));
@@ -76,26 +69,31 @@ public class RegisterScreen extends Screen {
         addRenderableWidget(passwordField);
         setInitialFocus(passwordField);
 
-        confirmField = new EditBox(this.font, fieldX, confirmY, FIELD_WIDTH, FIELD_HEIGHT,
+        confirmField = new PaperEditBox(this.font, fieldX, confirmY, FIELD_WIDTH, FIELD_HEIGHT,
                 Component.translatable("wp.auth.password_confirm"));
         confirmField.setMaxLength(RegisterRequestPayload.MAX_PASSWORD_LENGTH);
         confirmField.setHint(Component.translatable("wp.auth.password_confirm"));
         confirmField.setFormatter((input, cursorPosUnused) -> maskFormatter(input, visible));
         addRenderableWidget(confirmField);
 
-        submitButton = Button.builder(
-                        Component.translatable("wp.auth.register"),
-                        b -> onSubmit())
-                .bounds(centerX - BUTTON_WIDTH / 2, confirmY + FIELD_HEIGHT + 10, BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build();
+        submitButton = new PaperButton(
+                centerX - BUTTON_WIDTH / 2,
+                confirmY + FIELD_HEIGHT + 18,
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT,
+                Component.translatable("wp.auth.register"),
+                PaperButton.Variant.PRIMARY,
+                this::onSubmit);
         addRenderableWidget(submitButton);
 
-        toggleButton = Button.builder(
-                        Component.translatable(visible ? "wp.auth.hide" : "wp.auth.show"),
-                        b -> onToggleVisibility())
-                .bounds(centerX - BUTTON_WIDTH / 2, confirmY + FIELD_HEIGHT + 10 + BUTTON_HEIGHT + 4,
-                        TOGGLE_WIDTH, BUTTON_HEIGHT)
-                .build();
+        toggleButton = new PaperButton(
+                centerX - BUTTON_WIDTH / 2,
+                confirmY + FIELD_HEIGHT + 18 + BUTTON_HEIGHT + 4,
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT - 4,
+                Component.translatable(visible ? "wp.auth.hide" : "wp.auth.show"),
+                PaperButton.Variant.SECONDARY,
+                this::onToggleVisibility);
         addRenderableWidget(toggleButton);
     }
 
@@ -109,8 +107,6 @@ public class RegisterScreen extends Screen {
             return;
         }
         PacketDistributor.sendToServer(new RegisterRequestPayload(password, confirm));
-        // Server may bounce the form back with an error; clear inputs to avoid
-        // leaving cleartext in the textbox while we wait for the response.
         passwordField.setValue("");
         confirmField.setValue("");
     }
@@ -120,7 +116,6 @@ public class RegisterScreen extends Screen {
         if (toggleButton != null) {
             toggleButton.setMessage(Component.translatable(visible ? "wp.auth.hide" : "wp.auth.show"));
         }
-        // Force the EditBox to re-run the formatter against the current value.
         if (passwordField != null) {
             passwordField.setValue(passwordField.getValue());
         }
@@ -129,10 +124,6 @@ public class RegisterScreen extends Screen {
         }
     }
 
-    /**
-     * Called externally when the server reports a register error and we want
-     * to keep this screen open with a localized message.
-     */
     public void setError(@Nullable Component message) {
         this.errorMessage = message;
         if (passwordField != null) {
@@ -146,8 +137,7 @@ public class RegisterScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Enter submits the form when focus is on the confirm field.
-        if (keyCode == 257 /* GLFW_KEY_ENTER */ || keyCode == 335 /* GLFW_KEY_KP_ENTER */) {
+        if (keyCode == 257 || keyCode == 335) {
             onSubmit();
             return true;
         }
@@ -156,27 +146,73 @@ public class RegisterScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        super.render(g, mouseX, mouseY, partialTick);
+        // Custom paint order — see LoginScreen for rationale.
         int centerX = this.width / 2;
-        int centerY = this.height / 2;
-        // Title above the inputs.
-        g.drawCenteredString(this.font, this.title, centerX, centerY - 60, TITLE_COLOR);
-        // Localized error line above the inputs, if any.
+        int cardX = (this.width - CARD_W) / 2;
+        int cardY = (this.height - CARD_H) / 2;
+
+        PaperUi.drawPaperBackground(g, this.width, this.height);
+        PaperUi.drawCardFrame(g, cardX, cardY, CARD_W, CARD_H);
+
+        // Header
+        PaperUi.drawCoat(g, centerX, cardY + 16);
+        g.drawCenteredString(this.font,
+                Component.translatable("wp.ui.recruit_header"),
+                centerX, cardY + 28, PaperUi.INK_FADED);
+        PaperUi.drawSpacedCentered(g, this.font,
+                Component.translatable("wp.auth.register").getString(),
+                centerX, cardY + 44, PaperUi.INK);
+        PaperUi.drawHeaderRule(g, cardX + 16, cardY + 60, CARD_W - 32);
+        g.drawCenteredString(this.font,
+                Component.translatable("wp.ui.register_subtitle"),
+                centerX, cardY + 66, PaperUi.INK_FADED);
+
+        // Labels for the two fields
+        g.drawString(this.font,
+                Component.translatable("wp.auth.password").getString().toUpperCase(),
+                cardX + 30, cardY + 90, PaperUi.INK_FADED, false);
+        g.drawString(this.font,
+                Component.translatable("wp.auth.password_confirm").getString().toUpperCase(),
+                cardX + 30, cardY + 90 + FIELD_GAP, PaperUi.INK_FADED, false);
+
+        // Confirm-state line — green tick if both filled and equal, red on error, faded hint otherwise.
         if (errorMessage != null) {
-            g.drawCenteredString(this.font, errorMessage, centerX, centerY - 40, ERROR_COLOR);
+            g.drawCenteredString(this.font, errorMessage, centerX, cardY + 150, PaperUi.ERROR);
+        } else {
+            String pwd     = passwordField != null ? passwordField.getValue() : "";
+            String confirm = confirmField  != null ? confirmField.getValue()  : "";
+            if (!pwd.isEmpty() && !confirm.isEmpty() && pwd.equals(confirm)) {
+                g.drawCenteredString(this.font,
+                        Component.translatable("wp.ui.match_ok"),
+                        centerX, cardY + 150, PaperUi.APPROVED);
+            } else {
+                g.drawCenteredString(this.font,
+                        Component.translatable("wp.ui.password_hint"),
+                        centerX, cardY + 150, PaperUi.INK_FADED);
+            }
+        }
+
+        // Rubber stamp — bottom-right (recruitment seal).
+        PaperUi.drawSeal(g, cardX + CARD_W - 36, cardY + CARD_H - 60, 22,
+                Component.translatable("wp.ui.stamp_new1"),
+                Component.translatable("wp.ui.stamp_new2"));
+
+        // Footer
+        PaperUi.drawDashedRule(g, cardX + 16, cardY + CARD_H - 18, CARD_W - 32, PaperUi.INK_MUTED);
+        g.drawString(this.font, "WP · т. 3.0.0", cardX + 18, cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+        Component foot = Component.translatable("wp.ui.id_issued");
+        g.drawString(this.font, foot, cardX + CARD_W - 16 - this.font.width(foot), cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+
+        for (Renderable r : this.renderables) {
+            r.render(g, mouseX, mouseY, partialTick);
         }
     }
 
     @Override
     public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        g.fill(0, 0, this.width, this.height, BACKGROUND_COLOR);
+        // No-op: render() does everything in one pass.
     }
 
-    /**
-     * Returns either the input itself or a bullet-mask depending on
-     * {@code visible}. Cursor positions handled by {@link EditBox} are not
-     * affected because the formatter only changes glyph rendering.
-     */
     private static FormattedCharSequence maskFormatter(String input, boolean visible) {
         if (input == null || input.isEmpty()) {
             return FormattedCharSequence.EMPTY;

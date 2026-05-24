@@ -351,5 +351,19 @@
   "wp.rank.error.no_ranks_configured": "No rank ladder is configured for this faction.",
   "wp.rank.error.already_highest": "Player is already at the highest rank.",
   "wp.rank.error.already_lowest": "Player is already at the lowest rank.",
-  "wp.rank.error.insufficient_rank": "Your rank is not high enough for this action."
+  "wp.rank.error.insufficient_rank": "Your rank is not high enough for this action.",
+  "wp.ui.republic_header": "Republic of Zarnavia · Military Department",
+  "wp.ui.recruit_header": "Recruitment Office · Form A-1",
+  "wp.ui.oath_header": "Choice Hall · Oath Protocol",
+  "wp.ui.login_subtitle": "— returning to duty —",
+  "wp.ui.register_subtitle": "— complete in legible hand —",
+  "wp.ui.password_hint": "at least 8 characters · keep confidential",
+  "wp.ui.match_ok": "passwords match",
+  "wp.ui.secure_link": "secure channel",
+  "wp.ui.id_issued": "an ID will be issued",
+  "wp.ui.signed_voluntarily": "signed voluntarily",
+  "wp.ui.oath_irreversible": "— the oath cannot be undone —",
+  "wp.ui.stamp_login": "ENTRY",
+  "wp.ui.stamp_new1": "NEW",
+  "wp.ui.stamp_new2": "RECRUIT"
 }

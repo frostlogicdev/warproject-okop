@@ -1,8 +1,11 @@
 package com.frostlogic.warproject.client.screen;
 
+import com.frostlogic.warproject.client.widget.PaperButton;
+import com.frostlogic.warproject.client.widget.PaperEditBox;
+import com.frostlogic.warproject.client.widget.PaperUi;
 import com.frostlogic.warproject.network.payload.c2s.LoginRequestPayload;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.Renderable;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -21,6 +24,10 @@ import org.jetbrains.annotations.Nullable;
  * back to the user as cleartext (formatted as bullet glyphs in the
  * {@link EditBox}).
  *
+ * <p>Visual direction: "paper passport" — cream paper card centred on the page,
+ * crimson seal stamp, ink-on-paper inputs, double-ruled primary action. See
+ * {@link PaperUi}.
+ *
  * <p>The screen ignores ESC ({@link #shouldCloseOnEsc()} returns {@code false}),
  * does not pause the integrated server, and accepts no keyboard escape from
  * the auth flow until the server explicitly clears it (mode != LOGIN).
@@ -29,17 +36,16 @@ import org.jetbrains.annotations.Nullable;
  */
 public class LoginScreen extends Screen {
 
+    private static final int CARD_W = 260;
+    private static final int CARD_H = 196;
     private static final int FIELD_WIDTH = 200;
-    private static final int FIELD_HEIGHT = 20;
+    private static final int FIELD_HEIGHT = 18;
     private static final int BUTTON_WIDTH = 200;
-    private static final int BUTTON_HEIGHT = 20;
-    private static final int BACKGROUND_COLOR = 0xFF0A0A0A;
-    private static final int TITLE_COLOR = 0xFFFFFFFF;
-    private static final int ERROR_COLOR = 0xFFFF6B6B;
+    private static final int BUTTON_HEIGHT = 22;
     private static final char MASK_GLYPH = '*';
 
-    private EditBox passwordField;
-    private Button submitButton;
+    private PaperEditBox passwordField;
+    private PaperButton submitButton;
     private @Nullable Component errorMessage;
 
     public LoginScreen(@Nullable Component errorMessage) {
@@ -54,10 +60,12 @@ public class LoginScreen extends Screen {
     @Override
     protected void init() {
         int centerX = this.width / 2;
-        int centerY = this.height / 2;
-        int fieldX = centerX - FIELD_WIDTH / 2;
+        int cardY = (this.height - CARD_H) / 2;
 
-        passwordField = new EditBox(this.font, fieldX, centerY - 10, FIELD_WIDTH, FIELD_HEIGHT,
+        // Password field — centred horizontally, ~ ⅔ down the card.
+        int fieldX = centerX - FIELD_WIDTH / 2;
+        int fieldY = cardY + 110;
+        passwordField = new PaperEditBox(this.font, fieldX, fieldY, FIELD_WIDTH, FIELD_HEIGHT,
                 Component.translatable("wp.auth.password"));
         passwordField.setMaxLength(LoginRequestPayload.MAX_PASSWORD_LENGTH);
         passwordField.setHint(Component.translatable("wp.auth.password"));
@@ -65,11 +73,15 @@ public class LoginScreen extends Screen {
         addRenderableWidget(passwordField);
         setInitialFocus(passwordField);
 
-        submitButton = Button.builder(
-                        Component.translatable("wp.auth.login"),
-                        b -> onSubmit())
-                .bounds(centerX - BUTTON_WIDTH / 2, centerY + 20, BUTTON_WIDTH, BUTTON_HEIGHT)
-                .build();
+        // Primary action — confirm login.
+        submitButton = new PaperButton(
+                centerX - BUTTON_WIDTH / 2,
+                fieldY + FIELD_HEIGHT + 16,
+                BUTTON_WIDTH,
+                BUTTON_HEIGHT,
+                Component.translatable("wp.auth.login"),
+                PaperButton.Variant.PRIMARY,
+                this::onSubmit);
         addRenderableWidget(submitButton);
     }
 
@@ -82,8 +94,6 @@ public class LoginScreen extends Screen {
             return;
         }
         PacketDistributor.sendToServer(new LoginRequestPayload(password));
-        // The screen stays open until the server tells us to close it
-        // (AuthScreenStatePayload with a different mode, or session join).
         passwordField.setValue("");
     }
 
@@ -101,7 +111,6 @@ public class LoginScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // Enter submits the form.
         if (keyCode == 257 /* GLFW_KEY_ENTER */ || keyCode == 335 /* GLFW_KEY_KP_ENTER */) {
             onSubmit();
             return true;
@@ -111,25 +120,70 @@ public class LoginScreen extends Screen {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        super.render(g, mouseX, mouseY, partialTick);
+        // Fully custom render order: paper bg → card → decorations → widgets on top.
+        // We intentionally do NOT call super.render(), because vanilla Screen.render()
+        // would re-invoke renderBackground() and paint over our decorations.
         int centerX = this.width / 2;
-        int centerY = this.height / 2;
-        // Title above the input.
-        g.drawCenteredString(this.font, this.title, centerX, centerY - 50, TITLE_COLOR);
-        // Localized error line above the input, if any.
+        int cardX = (this.width - CARD_W) / 2;
+        int cardY = (this.height - CARD_H) / 2;
+
+        // 1) Paper + card frame.
+        PaperUi.drawPaperBackground(g, this.width, this.height);
+        PaperUi.drawCardFrame(g, cardX, cardY, CARD_W, CARD_H);
+
+        // 2) Header / decorations (drawn before widgets so widgets sit on top).
+        // Header eagle + republic line + title (handled outside super.render so super doesn't
+        // paint widgets over the title).
+        PaperUi.drawCoat(g, centerX, cardY + 16);
+        g.drawCenteredString(this.font,
+                Component.translatable("wp.ui.republic_header"),
+                centerX, cardY + 28, PaperUi.INK_FADED);
+        PaperUi.drawSpacedCentered(g, this.font,
+                this.title.getString(), centerX, cardY + 44, PaperUi.INK);
+        // Crimson rule under the header.
+        PaperUi.drawHeaderRule(g, cardX + 16, cardY + 60, CARD_W - 32);
+        g.drawCenteredString(this.font,
+                Component.translatable("wp.ui.login_subtitle"),
+                centerX, cardY + 66, PaperUi.INK_FADED);
+
+        // Field label
+        g.drawString(this.font,
+                Component.translatable("wp.auth.password").getString().toUpperCase(),
+                cardX + 30, cardY + 100, PaperUi.INK_FADED, false);
+
+        // Error message — drawn under the field if present.
         if (errorMessage != null) {
-            g.drawCenteredString(this.font, errorMessage, centerX, centerY - 30, ERROR_COLOR);
+            g.drawCenteredString(this.font, errorMessage, centerX, cardY + 152, PaperUi.ERROR);
+        } else {
+            g.drawCenteredString(this.font,
+                    Component.translatable("wp.ui.password_hint"),
+                    centerX, cardY + 152, PaperUi.INK_FADED);
+        }
+
+        // Footer rule + footer labels (ink-faded)
+        PaperUi.drawDashedRule(g, cardX + 16, cardY + CARD_H - 18, CARD_W - 32, PaperUi.INK_MUTED);
+        g.drawString(this.font, "WP · т. 3.0.0", cardX + 18, cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+        Component sec = Component.translatable("wp.ui.secure_link");
+        g.drawString(this.font, sec, cardX + CARD_W - 16 - this.font.width(sec), cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+
+        // Rubber stamp — top-right of the card, rendered behind the form via z-index of draw order.
+        // It's drawn here (in render, before widgets) so widgets sit on top.
+        PaperUi.drawSeal(g, cardX + CARD_W - 32, cardY + 32, 22,
+                Component.translatable("wp.ui.stamp_login"),
+                Component.literal("24·V·MMXXVI"));
+
+        // 3) Widgets — manually iterate so they always paint on top of our decorations.
+        for (Renderable r : this.renderables) {
+            r.render(g, mouseX, mouseY, partialTick);
         }
     }
 
     @Override
     public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // Solid dark background — blocks all underlying HUD/world rendering
-        // (per Design §9.1: super.renderBackground → solid #0A0A0A).
-        g.fill(0, 0, this.width, this.height, BACKGROUND_COLOR);
+        // No-op: render() above paints the entire surface in one pass. We override
+        // here so the engine cannot draw the vanilla dirt/menu background under us.
     }
 
-    /** Replaces every character with a fixed glyph, regardless of input. */
     private static FormattedCharSequence maskFormatter(String input) {
         if (input == null || input.isEmpty()) {
             return FormattedCharSequence.EMPTY;

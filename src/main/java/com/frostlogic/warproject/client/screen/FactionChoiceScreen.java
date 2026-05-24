@@ -1,42 +1,43 @@
 package com.frostlogic.warproject.client.screen;
 
+import com.frostlogic.warproject.client.widget.PaperButton;
+import com.frostlogic.warproject.client.widget.PaperUi;
 import com.frostlogic.warproject.network.payload.c2s.FactionChoicePayload;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Client-side confirmation screen for faction choice.
- * <p>
- * Opened when the server sends {@code OpenFactionChoicePayload} after the player
- * right-clicks on a FactionNpcEntity. Displays a confirmation dialog with the
- * faction name and two buttons: confirm and cancel.
- * <p>
- * On confirmation, sends a C2S {@link FactionChoicePayload} back to the server.
- * <p>
- * Requirements: 6.3
- * Design: §3, §8.2
+ * Client-side confirmation modal for faction choice.
+ *
+ * <p>Opened when the server sends {@code OpenFactionChoicePayload} after the
+ * player right-clicks a {@code FactionNpcEntity}. Renders as a single
+ * passport-style card with the chosen faction's emblem letter + name + a stern
+ * irreversibility note, then a primary "swear the oath" button in DANGER red
+ * and a secondary "cancel" button.
+ *
+ * <p>Sends a C2S {@link FactionChoicePayload} on confirm.
+ *
+ * <p>Requirements: 6.3 — Design: §3, §8.2.
  */
 public class FactionChoiceScreen extends Screen {
 
-    private static final int BUTTON_WIDTH = 120;
-    private static final int BUTTON_HEIGHT = 20;
-    private static final int BUTTON_SPACING = 10;
+    private static final int CARD_W = 240;
+    private static final int CARD_H = 196;
+    private static final int BTN_W = 200;
+    private static final int BTN_H = 22;
 
     private final String factionId;
     private final Component factionDisplayName;
 
     /**
-     * Creates the faction choice confirmation screen.
-     *
-     * @param factionId the serialized faction ID (e.g. "zarnavia" or "chernogryad")
+     * @param factionId serialized faction ID (e.g. "zarnavia" or "chernogryad")
      */
     public FactionChoiceScreen(String factionId) {
         super(Component.translatable("wp.faction.choice_title"));
         this.factionId = factionId;
-        // Resolve the display name from the faction ID
         this.factionDisplayName = resolveFactionDisplayName(factionId);
     }
 
@@ -45,44 +46,85 @@ public class FactionChoiceScreen extends Screen {
         super.init();
 
         int centerX = this.width / 2;
-        int centerY = this.height / 2;
+        int cardY = (this.height - CARD_H) / 2;
 
-        // Confirm button
-        this.addRenderableWidget(Button.builder(
+        // Primary CTA — irreversible, so DANGER variant (crimson body).
+        this.addRenderableWidget(new PaperButton(
+                centerX - BTN_W / 2,
+                cardY + CARD_H - 56,
+                BTN_W, BTN_H,
                 Component.translatable("wp.faction.confirm"),
-                button -> onConfirm()
-        ).bounds(
-                centerX - BUTTON_WIDTH - BUTTON_SPACING / 2,
-                centerY + 20,
-                BUTTON_WIDTH,
-                BUTTON_HEIGHT
-        ).build());
+                PaperButton.Variant.DANGER,
+                this::onConfirm));
 
-        // Cancel button
-        this.addRenderableWidget(Button.builder(
+        // Secondary — quiet "cancel" line under the danger button.
+        this.addRenderableWidget(new PaperButton(
+                centerX - BTN_W / 2,
+                cardY + CARD_H - 56 + BTN_H + 4,
+                BTN_W, BTN_H - 4,
                 Component.translatable("wp.faction.cancel"),
-                button -> onCancel()
-        ).bounds(
-                centerX + BUTTON_SPACING / 2,
-                centerY + 20,
-                BUTTON_WIDTH,
-                BUTTON_HEIGHT
-        ).build());
+                PaperButton.Variant.SECONDARY,
+                this::onCancel));
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // Custom paint order — see LoginScreen for rationale.
         int centerX = this.width / 2;
-        int centerY = this.height / 2;
+        int cardX = (this.width - CARD_W) / 2;
+        int cardY = (this.height - CARD_H) / 2;
 
-        // Title
-        guiGraphics.drawCenteredString(this.font, this.title, centerX, centerY - 40, 0xFFFFFF);
+        PaperUi.drawPaperBackground(g, this.width, this.height);
+        PaperUi.drawCardFrame(g, cardX, cardY, CARD_W, CARD_H);
 
-        // Confirmation question with faction name
+        // Header
+        PaperUi.drawCoat(g, centerX, cardY + 16);
+        g.drawCenteredString(this.font,
+                Component.translatable("wp.ui.oath_header"),
+                centerX, cardY + 28, PaperUi.INK_FADED);
+        PaperUi.drawSpacedCentered(g, this.font,
+                this.title.getString(),
+                centerX, cardY + 44, PaperUi.INK);
+        PaperUi.drawHeaderRule(g, cardX + 16, cardY + 60, CARD_W - 32);
+
+        // Faction emblem disc (single, large) — colored per faction.
+        int discColor = factionAccent(factionId);
+        PaperUi.drawDisc(g, centerX, cardY + 90, 18, PaperUi.PAPER);
+        PaperUi.drawCircleOutline(g, centerX, cardY + 90, 18, discColor);
+        PaperUi.drawCircleOutline(g, centerX, cardY + 90, 14, discColor);
+        // First letter of the faction id.
+        String initial = factionInitial(factionId);
+        int iw = this.font.width(initial);
+        g.drawString(this.font, initial,
+                centerX - iw / 2, cardY + 90 - this.font.lineHeight / 2 + 1, discColor, false);
+
+        // Faction name
+        PaperUi.drawSpacedCentered(g, this.font,
+                factionDisplayName.getString(), centerX, cardY + 116, PaperUi.INK);
+
+        // Confirmation question
         Component question = Component.translatable("wp.faction.choice_question", factionDisplayName);
-        guiGraphics.drawCenteredString(this.font, question, centerX, centerY - 10, 0xCCCCCC);
+        g.drawCenteredString(this.font, question, centerX, cardY + 130, PaperUi.INK_FADED);
+
+        // Irreversibility warning
+        g.drawCenteredString(this.font,
+                Component.translatable("wp.ui.oath_irreversible"),
+                centerX, cardY + 142, PaperUi.SEAL);
+
+        // Footer
+        PaperUi.drawDashedRule(g, cardX + 16, cardY + CARD_H - 18, CARD_W - 32, PaperUi.INK_MUTED);
+        g.drawString(this.font, "WP · т. 3.0.0", cardX + 18, cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+        Component foot = Component.translatable("wp.ui.signed_voluntarily");
+        g.drawString(this.font, foot, cardX + CARD_W - 16 - this.font.width(foot), cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+
+        for (Renderable r : this.renderables) {
+            r.render(g, mouseX, mouseY, partialTick);
+        }
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // No-op: render() does everything in one pass.
     }
 
     @Override
@@ -91,7 +133,6 @@ public class FactionChoiceScreen extends Screen {
     }
 
     private void onConfirm() {
-        // Send C2S packet to confirm faction choice
         PacketDistributor.sendToServer(new FactionChoicePayload(factionId));
         this.onClose();
     }
@@ -100,15 +141,27 @@ public class FactionChoiceScreen extends Screen {
         this.onClose();
     }
 
-    /**
-     * Resolves the display name component for the given faction ID.
-     * Uses translation keys matching the FactionId enum's displayNameKey().
-     */
     private static Component resolveFactionDisplayName(String factionId) {
         return switch (factionId) {
             case "zarnavia" -> Component.translatable("wp.faction.zarnavia");
             case "chernogryad" -> Component.translatable("wp.faction.chernogryad");
             default -> Component.literal(factionId);
+        };
+    }
+
+    private static int factionAccent(String factionId) {
+        return switch (factionId) {
+            case "zarnavia" -> 0xFF3A6A2A;     // muted green
+            case "chernogryad" -> PaperUi.SEAL; // crimson
+            default -> PaperUi.INK;
+        };
+    }
+
+    private static String factionInitial(String factionId) {
+        return switch (factionId) {
+            case "zarnavia" -> "З";
+            case "chernogryad" -> "Ч";
+            default -> "?";
         };
     }
 }
