@@ -481,7 +481,22 @@ public final class ServerPayloadHandler {
                         double x = coords.get(0) + 0.5;
                         double y = coords.get(1);
                         double z = coords.get(2) + 0.5;
-                        player.teleportTo(player.serverLevel(), x, y, z, player.getYRot(), player.getXRot());
+                        // Resolve multiworld:choicehall explicitly — at this stage the
+                        // player is in the captcha sky-cage (overworld), so we must
+                        // switch dimension, otherwise they'd land at the choice-hall
+                        // XYZ inside the overworld and fall into void.
+                        net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> choiceHallDim =
+                                net.minecraft.resources.ResourceKey.create(
+                                        net.minecraft.core.registries.Registries.DIMENSION,
+                                        net.minecraft.resources.ResourceLocation.parse("multiworld:choicehall"));
+                        net.minecraft.server.level.ServerLevel targetLevel = player.getServer() != null
+                                ? player.getServer().getLevel(choiceHallDim) : null;
+                        if (targetLevel == null) {
+                            targetLevel = player.serverLevel();
+                            WarProject.LOGGER.warn("[WP RpName] Dimension multiworld:choicehall not found, falling back to current level for {}",
+                                    player.getGameProfile().getName());
+                        }
+                        player.teleportTo(targetLevel, x, y, z, java.util.Set.of(), player.getYRot(), player.getXRot());
                     } else {
                         com.frostlogic.warproject.server.SpawnTeleporter.toWorldSpawn(player);
                         WarProject.LOGGER.warn("[WP RpName] No spawnPoint configured and FACTIONS_CHOICE_HALL_SPAWN is default. Falling back to world spawn for {}.",

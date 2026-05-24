@@ -29,6 +29,7 @@
 	# Default: 0
 	# Range: > -2147483648
 	spawnZ = 0
+	# Captcha sky-cage is in minecraft:overworld at y=320.
 	#Length of captcha code
 	# Default: 6
 	# Range: 3 ~ 16
@@ -52,6 +53,9 @@
 
 [candidate]
 	#Candidate timeout in seconds of active session (default: 20m = 1200; raise to 86400 for 24h)
+	#NOTE: raised to 24h (86400) so candidates do not get demoted while a faction
+	#officer is offline and unable to /wp accept them. Lower to 1200 once enough
+	#officers are online to handle acceptances within ~20 minutes.
 	# Default: 1200
 	# Range: 60 ~ 604800
 	timeoutSeconds = 86400
@@ -66,18 +70,21 @@
 	#List of base region definitions.
 	#Format: 'faction;dimension;minX,minY,minZ;maxX,maxY,maxZ'
 	#Example: 'ZARNAVIA;minecraft:overworld;100,60,100;200,120,200'
-	bases = []
+	bases = [
+		"ZARNAVIA;minecraft:overworld;1982,-29,2401;2136,-2,2555",
+		"CHERNOGRYAD;minecraft:overworld;2598,-34,1214;2768,-7,1377"
+	]
 	#Interval in ticks between region cache updates on PlayerTickEvent (default: 10)
 	# Default: 10
 	# Range: 1 ~ 200
 	tickIntervalTicks = 10
 
 [factions]
-	#Spawn coordinates [x, y, z] for Zarnavia base
-	zarnaviaSpawn = [0, 64, 0]
-	#Spawn coordinates [x, y, z] for Chernogryad base
-	chernogryadSpawn = [0, 64, 0]
-	#Spawn coordinates [x, y, z] for the faction choice hall
+	#Spawn coordinates [x, y, z] for Zarnavia base (minecraft:overworld).
+	zarnaviaSpawn = [2035, -20, 2431]
+	#Spawn coordinates [x, y, z] for Chernogryad base (minecraft:overworld).
+	chernogryadSpawn = [2649, -29, 1245]
+	#Spawn coordinates [x, y, z] for the faction choice hall (multiworld:choicehall — dimension hardcoded in WGuardService).
 	choiceHallSpawn = [51, -1944, -282]
 
 [ranks]

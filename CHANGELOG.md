@@ -7,6 +7,10 @@ The current release scope is **mod + server for Pterodactyl**. Launcher and site
 ## [Unreleased]
 
 ### Fixed
+- **Faction-choice teleport crossed dimensions silently.** `FactionChoiceHandler.teleportToFactionSpawn` used `player.serverLevel()`, but at the moment of faction selection the player is standing inside `multiworld:choicehall`. Players would have been teleported to the configured XYZ inside the choice-hall dimension (void / unreachable) instead of the overworld base. Now resolves `Level.OVERWORLD` explicitly via `MinecraftServer.getLevel`.
+- Same cross-dimension bug fixed in `EventService.teleportParticipantsToFactionSpawns` (post-event recall) and in `ServerPayloadHandler.onRpName` (RP-name → choice-hall step now resolves `multiworld:choicehall` explicitly, matching the already-correct logic in `RpNameCommand`).
+- `server/config/warproject-server.toml`: real spawn coordinates wired in — `factions.zarnaviaSpawn = [2035, -20, 2431]`, `factions.chernogryadSpawn = [2649, -29, 1245]`, `factions.choiceHallSpawn = [51, -1944, -282]`. Captcha sky-cage stays at `[0, 320, 0]` in the overworld.
+- `server/config/warproject-server.toml`: `regions.bases` populated with the two faction bases as overworld AABBs (Zarnavia 1982,-29,2401 → 2136,-2,2555 and Chernogryad 2598,-34,1214 → 2768,-7,1377). Without these `RegionGuard` would not have protected the bases from grief.
 - ~87 missing translation keys added to `en_us.json` and `ru_ru.json`. Without them, players saw raw IDs like `wp.captivity.error.too_far` and `wp.auth.error.invalid_credentials` instead of localized error messages — affected captivity flow, auth/login flow, awards, diplomacy, events, passport guard and rank promote/demote.
 - `server.properties`: `max-players=30`, `view-distance=10`, `simulation-distance=8` realigned with `docs/DEPLOY.md §2.5` open-beta tuning (previously drifted to 150 / 8 / 6).
 - `server/user_jvm_args.txt`: `-Xms4G -Xmx4G` realigned with `docs/DEPLOY.md §4` (previously `-Xms3G -Xmx4G`; DEPLOY.md claimed `-Xmx6G`). Doc updated to match the safer 4 GB heap that leaves ≈2 GB for native / metaspace on a 6 GB Pterodactyl plan.

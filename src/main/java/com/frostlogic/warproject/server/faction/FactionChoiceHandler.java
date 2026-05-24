@@ -18,8 +18,11 @@ import com.frostlogic.warproject.server.faction.npc.FactionNpcEntity;
 import com.frostlogic.warproject.server.passport.PassportGenerator;
 import com.frostlogic.warproject.server.passport.PassportPlacement;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -337,7 +340,15 @@ public final class FactionChoiceHandler {
             double x = spawnCoords.get(0) + 0.5;
             double y = spawnCoords.get(1);
             double z = spawnCoords.get(2) + 0.5;
-            player.teleportTo(player.serverLevel(), x, y, z, player.getYRot(), player.getXRot());
+            // Faction bases are in the overworld — at the time of faction choice
+            // the player is typically standing inside multiworld:choicehall, so we
+            // must resolve the overworld dimension explicitly before teleporting.
+            MinecraftServer server = player.getServer();
+            ServerLevel targetLevel = server != null ? server.getLevel(Level.OVERWORLD) : null;
+            if (targetLevel == null) {
+                targetLevel = player.serverLevel();
+            }
+            player.teleportTo(targetLevel, x, y, z, java.util.Set.of(), player.getYRot(), player.getXRot());
             WarProject.LOGGER.debug("[WarProject] Teleported {} to faction spawn ({}, {}, {})",
                     player.getGameProfile().getName(), x, y, z);
         } else {

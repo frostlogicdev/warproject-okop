@@ -440,7 +440,14 @@ public final class EventService {
             double x = coords.get(0).doubleValue() + 0.5;
             double y = coords.get(1).doubleValue();
             double z = coords.get(2).doubleValue() + 0.5;
-            player.teleportTo(player.serverLevel(), x, y, z, player.getYRot(), player.getXRot());
+            // Faction bases are in the overworld — resolve explicitly so the
+            // teleport works even if the player ended the event in another
+            // dimension (e.g. multiworld:choicehall or an event arena).
+            ServerLevel targetLevel = server.getLevel(Level.OVERWORLD);
+            if (targetLevel == null) {
+                targetLevel = player.serverLevel();
+            }
+            player.teleportTo(targetLevel, x, y, z, java.util.Set.of(), player.getYRot(), player.getXRot());
             player.setDeltaMovement(0.0, 0.0, 0.0);
             player.fallDistance = 0.0F;
         }
