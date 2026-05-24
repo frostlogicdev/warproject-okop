@@ -29,12 +29,29 @@ import org.jetbrains.annotations.Nullable;
 public class RegisterScreen extends Screen {
 
     private static final int CARD_W = 260;
-    private static final int CARD_H = 240;
+    private static final int CARD_H = 252;
     private static final int FIELD_WIDTH = 200;
     private static final int FIELD_HEIGHT = 18;
     private static final int FIELD_GAP = 28;
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 22;
+
+    // ── Vertical anchor table (relative to cardY) ──────────────────────
+    // All Y positions are derived from these constants so the form lays out
+    // without overlapping (see bug report 24-V-2026: rubber stamp painted
+    // over both buttons).
+    private static final int Y_COAT          = 18;
+    private static final int Y_RECRUIT       = 30;
+    private static final int Y_TITLE         = 44;
+    private static final int Y_HEADER_RULE   = 62;
+    private static final int Y_SUBTITLE      = 70;
+    private static final int Y_PW_LABEL      = 90;
+    private static final int Y_PW_FIELD      = 100;
+    private static final int Y_CONFIRM_LABEL = Y_PW_LABEL + FIELD_GAP;
+    private static final int Y_CONFIRM_FIELD = Y_PW_FIELD + FIELD_GAP;
+    private static final int Y_HINT          = Y_CONFIRM_FIELD + FIELD_HEIGHT + 8;     // ≈ 154
+    private static final int Y_SUBMIT        = Y_HINT + 14;                            // ≈ 168
+    private static final int Y_TOGGLE        = Y_SUBMIT + BUTTON_HEIGHT + 6;           // ≈ 196
     private static final char MASK_GLYPH = '*';
 
     private PaperEditBox passwordField;
@@ -58,10 +75,8 @@ public class RegisterScreen extends Screen {
         int centerX = this.width / 2;
         int cardY = (this.height - CARD_H) / 2;
         int fieldX = centerX - FIELD_WIDTH / 2;
-        int passwordY = cardY + 100;
-        int confirmY = passwordY + FIELD_GAP;
 
-        passwordField = new PaperEditBox(this.font, fieldX, passwordY, FIELD_WIDTH, FIELD_HEIGHT,
+        passwordField = new PaperEditBox(this.font, fieldX, cardY + Y_PW_FIELD, FIELD_WIDTH, FIELD_HEIGHT,
                 Component.translatable("wp.auth.password"));
         passwordField.setMaxLength(RegisterRequestPayload.MAX_PASSWORD_LENGTH);
         passwordField.setHint(Component.translatable("wp.auth.password"));
@@ -69,7 +84,7 @@ public class RegisterScreen extends Screen {
         addRenderableWidget(passwordField);
         setInitialFocus(passwordField);
 
-        confirmField = new PaperEditBox(this.font, fieldX, confirmY, FIELD_WIDTH, FIELD_HEIGHT,
+        confirmField = new PaperEditBox(this.font, fieldX, cardY + Y_CONFIRM_FIELD, FIELD_WIDTH, FIELD_HEIGHT,
                 Component.translatable("wp.auth.password_confirm"));
         confirmField.setMaxLength(RegisterRequestPayload.MAX_PASSWORD_LENGTH);
         confirmField.setHint(Component.translatable("wp.auth.password_confirm"));
@@ -78,7 +93,7 @@ public class RegisterScreen extends Screen {
 
         submitButton = new PaperButton(
                 centerX - BUTTON_WIDTH / 2,
-                confirmY + FIELD_HEIGHT + 18,
+                cardY + Y_SUBMIT,
                 BUTTON_WIDTH,
                 BUTTON_HEIGHT,
                 Component.translatable("wp.auth.register"),
@@ -88,7 +103,7 @@ public class RegisterScreen extends Screen {
 
         toggleButton = new PaperButton(
                 centerX - BUTTON_WIDTH / 2,
-                confirmY + FIELD_HEIGHT + 18 + BUTTON_HEIGHT + 4,
+                cardY + Y_TOGGLE,
                 BUTTON_WIDTH,
                 BUTTON_HEIGHT - 4,
                 Component.translatable(visible ? "wp.auth.hide" : "wp.auth.show"),
@@ -155,47 +170,50 @@ public class RegisterScreen extends Screen {
         PaperUi.drawCardFrame(g, cardX, cardY, CARD_W, CARD_H);
 
         // Header
-        PaperUi.drawCoat(g, centerX, cardY + 16);
+        PaperUi.drawCoat(g, centerX, cardY + Y_COAT);
         g.drawCenteredString(this.font,
                 Component.translatable("wp.ui.recruit_header"),
-                centerX, cardY + 28, PaperUi.INK_FADED);
+                centerX, cardY + Y_RECRUIT, PaperUi.INK_FADED);
         PaperUi.drawSpacedCentered(g, this.font,
                 Component.translatable("wp.auth.register").getString(),
-                centerX, cardY + 44, PaperUi.INK);
-        PaperUi.drawHeaderRule(g, cardX + 16, cardY + 60, CARD_W - 32);
+                centerX, cardY + Y_TITLE, PaperUi.INK);
+        PaperUi.drawHeaderRule(g, cardX + 16, cardY + Y_HEADER_RULE, CARD_W - 32);
         g.drawCenteredString(this.font,
                 Component.translatable("wp.ui.register_subtitle"),
-                centerX, cardY + 66, PaperUi.INK_FADED);
+                centerX, cardY + Y_SUBTITLE, PaperUi.INK_FADED);
 
-        // Labels for the two fields
+        // Field labels — aligned to the field column (not a hardcoded inset)
+        // so they line up cleanly with the input boxes.
+        int labelX = cardX + (CARD_W - FIELD_WIDTH) / 2;
         g.drawString(this.font,
                 Component.translatable("wp.auth.password").getString().toUpperCase(),
-                cardX + 30, cardY + 90, PaperUi.INK_FADED, false);
+                labelX, cardY + Y_PW_LABEL, PaperUi.INK_FADED, false);
         g.drawString(this.font,
                 Component.translatable("wp.auth.password_confirm").getString().toUpperCase(),
-                cardX + 30, cardY + 90 + FIELD_GAP, PaperUi.INK_FADED, false);
+                labelX, cardY + Y_CONFIRM_LABEL, PaperUi.INK_FADED, false);
 
-        // Confirm-state line — green tick if both filled and equal, red on error, faded hint otherwise.
+        // Status line (between the confirm field and the submit button).
+        // Green tick when both fields filled and equal, red on server error,
+        // faded hint otherwise.
         if (errorMessage != null) {
-            g.drawCenteredString(this.font, errorMessage, centerX, cardY + 150, PaperUi.ERROR);
+            g.drawCenteredString(this.font, errorMessage, centerX, cardY + Y_HINT, PaperUi.ERROR);
         } else {
             String pwd     = passwordField != null ? passwordField.getValue() : "";
             String confirm = confirmField  != null ? confirmField.getValue()  : "";
             if (!pwd.isEmpty() && !confirm.isEmpty() && pwd.equals(confirm)) {
                 g.drawCenteredString(this.font,
                         Component.translatable("wp.ui.match_ok"),
-                        centerX, cardY + 150, PaperUi.APPROVED);
+                        centerX, cardY + Y_HINT, PaperUi.APPROVED);
             } else {
                 g.drawCenteredString(this.font,
                         Component.translatable("wp.ui.password_hint"),
-                        centerX, cardY + 150, PaperUi.INK_FADED);
+                        centerX, cardY + Y_HINT, PaperUi.INK_FADED);
             }
         }
 
-        // Rubber stamp — bottom-right (recruitment seal).
-        PaperUi.drawSeal(g, cardX + CARD_W - 36, cardY + CARD_H - 60, 22,
-                Component.translatable("wp.ui.stamp_new1"),
-                Component.translatable("wp.ui.stamp_new2"));
+        // Note: the round "НОВЫЙ ПРИЗЫВ" rubber stamp used to be painted at
+        // cardY+CARD_H-60 — that ran over both buttons. Removed; the dashed
+        // footer + spaced-letter title carry the document tone instead.
 
         // Footer
         PaperUi.drawDashedRule(g, cardX + 16, cardY + CARD_H - 18, CARD_W - 32, PaperUi.INK_MUTED);

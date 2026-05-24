@@ -366,6 +366,7 @@
   "wp.ui.stamp_login": "ENTRY",
   "wp.ui.stamp_new1": "NEW",
   "wp.ui.stamp_new2": "RECRUIT",
+  "wp.ui.login_hint": "secure channel · keep confidential",
 
   "wp.npc.transport.zarnavia": "Zarnavia Technician",
   "wp.npc.transport.chernogryad": "Chernogryad Technician",

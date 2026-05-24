@@ -37,11 +37,25 @@ import org.jetbrains.annotations.Nullable;
 public class LoginScreen extends Screen {
 
     private static final int CARD_W = 260;
-    private static final int CARD_H = 196;
+    private static final int CARD_H = 204;
     private static final int FIELD_WIDTH = 200;
     private static final int FIELD_HEIGHT = 18;
     private static final int BUTTON_WIDTH = 200;
     private static final int BUTTON_HEIGHT = 22;
+
+    // ── Vertical anchor table (all relative to cardY) ──────────────────
+    // Keep these in sync with the constants used in init() and render() so
+    // refactors don't reintroduce element overlap (see image bug report
+    // 24-V-2026: hint text painted under the submit button).
+    private static final int Y_COAT          = 18;
+    private static final int Y_REPUBLIC      = 30;
+    private static final int Y_TITLE         = 44;
+    private static final int Y_HEADER_RULE   = 62;
+    private static final int Y_SUBTITLE      = 70;
+    private static final int Y_FIELD_LABEL   = 96;
+    private static final int Y_FIELD         = 110;
+    private static final int Y_HINT          = 136;
+    private static final int Y_SUBMIT        = 152;
     private static final char MASK_GLYPH = '*';
 
     private PaperEditBox passwordField;
@@ -62,10 +76,9 @@ public class LoginScreen extends Screen {
         int centerX = this.width / 2;
         int cardY = (this.height - CARD_H) / 2;
 
-        // Password field — centred horizontally, ~ ⅔ down the card.
+        // Password field — centred horizontally.
         int fieldX = centerX - FIELD_WIDTH / 2;
-        int fieldY = cardY + 110;
-        passwordField = new PaperEditBox(this.font, fieldX, fieldY, FIELD_WIDTH, FIELD_HEIGHT,
+        passwordField = new PaperEditBox(this.font, fieldX, cardY + Y_FIELD, FIELD_WIDTH, FIELD_HEIGHT,
                 Component.translatable("wp.auth.password"));
         passwordField.setMaxLength(LoginRequestPayload.MAX_PASSWORD_LENGTH);
         passwordField.setHint(Component.translatable("wp.auth.password"));
@@ -76,7 +89,7 @@ public class LoginScreen extends Screen {
         // Primary action — confirm login.
         submitButton = new PaperButton(
                 centerX - BUTTON_WIDTH / 2,
-                fieldY + FIELD_HEIGHT + 16,
+                cardY + Y_SUBMIT,
                 BUTTON_WIDTH,
                 BUTTON_HEIGHT,
                 Component.translatable("wp.auth.login"),
@@ -132,45 +145,44 @@ public class LoginScreen extends Screen {
         PaperUi.drawCardFrame(g, cardX, cardY, CARD_W, CARD_H);
 
         // 2) Header / decorations (drawn before widgets so widgets sit on top).
-        // Header eagle + republic line + title (handled outside super.render so super doesn't
-        // paint widgets over the title).
-        PaperUi.drawCoat(g, centerX, cardY + 16);
+        PaperUi.drawCoat(g, centerX, cardY + Y_COAT);
         g.drawCenteredString(this.font,
                 Component.translatable("wp.ui.republic_header"),
-                centerX, cardY + 28, PaperUi.INK_FADED);
+                centerX, cardY + Y_REPUBLIC, PaperUi.INK_FADED);
         PaperUi.drawSpacedCentered(g, this.font,
-                this.title.getString(), centerX, cardY + 44, PaperUi.INK);
+                this.title.getString(), centerX, cardY + Y_TITLE, PaperUi.INK);
         // Crimson rule under the header.
-        PaperUi.drawHeaderRule(g, cardX + 16, cardY + 60, CARD_W - 32);
+        PaperUi.drawHeaderRule(g, cardX + 16, cardY + Y_HEADER_RULE, CARD_W - 32);
         g.drawCenteredString(this.font,
                 Component.translatable("wp.ui.login_subtitle"),
-                centerX, cardY + 66, PaperUi.INK_FADED);
+                centerX, cardY + Y_SUBTITLE, PaperUi.INK_FADED);
 
-        // Field label
+        // Field label — sits 14 px above the field, left-aligned to the field column.
+        int fieldLabelX = cardX + (CARD_W - FIELD_WIDTH) / 2;
         g.drawString(this.font,
                 Component.translatable("wp.auth.password").getString().toUpperCase(),
-                cardX + 30, cardY + 100, PaperUi.INK_FADED, false);
+                fieldLabelX, cardY + Y_FIELD_LABEL, PaperUi.INK_FADED, false);
 
-        // Error message — drawn under the field if present.
+        // Status line — sits between field and submit button.
+        // Error in red if login failed; otherwise the subtle confidentiality hint.
         if (errorMessage != null) {
-            g.drawCenteredString(this.font, errorMessage, centerX, cardY + 152, PaperUi.ERROR);
+            g.drawCenteredString(this.font, errorMessage, centerX, cardY + Y_HINT, PaperUi.ERROR);
         } else {
             g.drawCenteredString(this.font,
-                    Component.translatable("wp.ui.password_hint"),
-                    centerX, cardY + 152, PaperUi.INK_FADED);
+                    Component.translatable("wp.ui.login_hint"),
+                    centerX, cardY + Y_HINT, PaperUi.INK_FADED);
         }
 
-        // Footer rule + footer labels (ink-faded)
+        // Footer rule + footer labels (ink-muted)
         PaperUi.drawDashedRule(g, cardX + 16, cardY + CARD_H - 18, CARD_W - 32, PaperUi.INK_MUTED);
         g.drawString(this.font, "WP · т. 3.0.0", cardX + 18, cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
         Component sec = Component.translatable("wp.ui.secure_link");
         g.drawString(this.font, sec, cardX + CARD_W - 16 - this.font.width(sec), cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
 
-        // Rubber stamp — top-right of the card, rendered behind the form via z-index of draw order.
-        // It's drawn here (in render, before widgets) so widgets sit on top.
-        PaperUi.drawSeal(g, cardX + CARD_W - 32, cardY + 32, 22,
-                Component.translatable("wp.ui.stamp_login"),
-                Component.literal("24·V·MMXXVI"));
+        // Note: the round "ВХОД" rubber stamp was removed — at 22 px radius it
+        // visually collided with the centred title across the top of the card.
+        // The crimson header rule + spaced title already carry the "official
+        // document" tone the seal was meant to reinforce.
 
         // 3) Widgets — manually iterate so they always paint on top of our decorations.
         for (Renderable r : this.renderables) {

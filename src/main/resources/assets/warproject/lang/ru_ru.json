@@ -366,6 +366,7 @@
   "wp.ui.stamp_login": "ВХОД",
   "wp.ui.stamp_new1": "НОВЫЙ",
   "wp.ui.stamp_new2": "ПРИЗЫВ",
+  "wp.ui.login_hint": "защищённый канал · конфиденциально",
 
   "wp.npc.transport.zarnavia": "Техник Зернавии",
   "wp.npc.transport.chernogryad": "Техник Черногрядии",

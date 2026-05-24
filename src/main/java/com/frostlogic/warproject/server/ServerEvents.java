@@ -314,8 +314,16 @@ public final class ServerEvents {
         // profile, no DB account) or for players who already have a DB account.
         // ───────────────────────────────────────────────────────────────────────────
         String uuid = player.getStringUUID();
+        // Account is "real" only if a row exists AND the stored password hash
+        // is a valid BCrypt string. Healing inserts (FactionChoiceHandler /
+        // AccountsDao.ensureExists) write a placeholder 'OP_NO_PASSWORD' which
+        // would otherwise route the player to LOGIN and crash the auth
+        // pipeline with BCrypt's "Invalid salt version" on every reconnect.
         boolean accountExists = database.inTx(conn ->
-                new com.frostlogic.warproject.persistence.dao.AccountsDao().findByUuid(conn, uuid).isPresent()
+                new com.frostlogic.warproject.persistence.dao.AccountsDao()
+                        .findByUuid(conn, uuid)
+                        .map(a -> com.frostlogic.warproject.server.auth.PasswordHasher.isLikelyBcryptHash(a.passwordHash()))
+                        .orElse(false)
         );
 
         if (!accountExists) {
