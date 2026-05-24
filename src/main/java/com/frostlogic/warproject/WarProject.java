@@ -4,6 +4,7 @@ import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import com.frostlogic.warproject.server.captivity.WpMenuTypes;
 import com.frostlogic.warproject.server.command.argument.WpCommandArgumentTypes;
 import com.frostlogic.warproject.server.faction.npc.FactionNpcEntityType;
+import com.frostlogic.warproject.server.transport.TransportNpcEntityType;
 import com.frostlogic.warproject.server.militaryid.MilitaryIdComponentTypes;
 import com.frostlogic.warproject.server.passport.PassportComponentTypes;
 import net.neoforged.bus.api.IEventBus;
@@ -41,6 +42,7 @@ public class WarProject {
         // --- New WarProject registries ---
         WpAttachmentTypes.REG.register(modEventBus);
         FactionNpcEntityType.register(modEventBus);
+        TransportNpcEntityType.register(modEventBus);
         PassportComponentTypes.register(modEventBus);
         MilitaryIdComponentTypes.register(modEventBus);
         WpMenuTypes.register(modEventBus);

@@ -95,6 +95,11 @@ public final class WpConfig {
     // --- chat ---
     public static final ModConfigSpec.IntValue CHAT_LOCAL_RADIUS;
 
+    // --- transport NPCs ---
+    public static final ModConfigSpec.BooleanValue TRANSPORT_ENABLED;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> TRANSPORT_VEHICLES_ZARNAVIA;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> TRANSPORT_VEHICLES_CHERNOGRYAD;
+
     // --- wguard (anti-cheat) ---
     public static final ModConfigSpec.BooleanValue WGUARD_ENABLED;
     public static final ModConfigSpec.IntValue WGUARD_SPEED_MAX_BLOCKS_PER_TICK;
@@ -465,6 +470,39 @@ public final class WpConfig {
                 .define("skipRidingPlayers", true);
 
         builder.pop(); // wguard
+
+        // ========== transport (vehicle requisition NPCs) ==========
+        builder.push("transport");
+
+        TRANSPORT_ENABLED = builder
+                .comment("Master toggle for the transport-technician NPCs at both faction bases.")
+                .define("enabled", true);
+
+        TRANSPORT_VEHICLES_ZARNAVIA = builder
+                .comment(
+                        "Vehicles offered by the Zarnavia technician.",
+                        "Format per entry: 'min_rank|item_id|display_translation_key'",
+                        "  min_rank        — lowest rank that can claim (none, private, corporal, sergeant, ...).",
+                        "  item_id         — registry id of the vehicle item from any vehicle mod (e.g. iv:tiger_2).",
+                        "  display_key     — translation key shown in the menu.",
+                        "Pipe separator is used because item ids contain colons.",
+                        "If the mod that registers item_id is not installed, the entry shows the barrier icon."
+                )
+                .defineListAllowEmpty("vehiclesZarnavia", List.of(
+                        "private|iv:tiger_2|wp.transport.vehicle.tiger_2",
+                        "sergeant|iv:btr_80a|wp.transport.vehicle.btr_80a",
+                        "lieutenant|iv:t_72b3|wp.transport.vehicle.t_72b3"
+                ), WpConfig::validateString);
+
+        TRANSPORT_VEHICLES_CHERNOGRYAD = builder
+                .comment("Vehicles offered by the Chernogryad technician. Same format as vehiclesZarnavia.")
+                .defineListAllowEmpty("vehiclesChernogryad", List.of(
+                        "private|iv:tiger_2|wp.transport.vehicle.tiger_2",
+                        "sergeant|iv:btr_80a|wp.transport.vehicle.btr_80a",
+                        "lieutenant|iv:t_72b3|wp.transport.vehicle.t_72b3"
+                ), WpConfig::validateString);
+
+        builder.pop(); // transport
 
         SPEC = builder.build();
     }

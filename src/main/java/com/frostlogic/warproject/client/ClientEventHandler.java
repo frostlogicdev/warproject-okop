@@ -2,7 +2,9 @@ package com.frostlogic.warproject.client;
 
 import com.frostlogic.warproject.WarProject;
 import com.frostlogic.warproject.client.renderer.FactionNpcRenderer;
+import com.frostlogic.warproject.client.renderer.TransportNpcRenderer;
 import com.frostlogic.warproject.server.faction.npc.FactionNpcEntityType;
+import com.frostlogic.warproject.server.transport.TransportNpcEntityType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -44,5 +46,6 @@ public final class ClientEventHandler {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(FactionNpcEntityType.FACTION_NPC.get(), FactionNpcRenderer::new);
+        event.registerEntityRenderer(TransportNpcEntityType.TRANSPORT_NPC.get(), TransportNpcRenderer::new);
     }
 }

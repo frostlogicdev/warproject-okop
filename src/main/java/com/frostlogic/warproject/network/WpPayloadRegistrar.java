@@ -224,6 +224,22 @@ public final class WpPayloadRegistrar {
                 }
         );
 
-        WarProject.LOGGER.info("[WarProject] Registered {} C2S and {} S2C payload types (version \"1\", optional)", 9, 14);
+        // ── Transport NPC (vehicle requisition) ─────────────────────────────
+        reg.playToServer(
+                com.frostlogic.warproject.network.payload.c2s.TransportChoicePayload.TYPE,
+                com.frostlogic.warproject.network.payload.c2s.TransportChoicePayload.STREAM_CODEC,
+                com.frostlogic.warproject.server.transport.TransportChoiceHandler::onChoice
+        );
+        reg.playToClient(
+                com.frostlogic.warproject.network.payload.s2c.OpenTransportChoicePayload.TYPE,
+                com.frostlogic.warproject.network.payload.s2c.OpenTransportChoicePayload.STREAM_CODEC,
+                (payload, context) -> {
+                    if (FMLEnvironment.dist == Dist.CLIENT) {
+                        ClientPayloadHandler.onOpenTransportChoice(payload, context);
+                    }
+                }
+        );
+
+        WarProject.LOGGER.info("[WarProject] Registered {} C2S and {} S2C payload types (version \"1\", optional)", 10, 15);
     }
 }

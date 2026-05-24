@@ -141,6 +141,17 @@ public final class ClientPayloadHandler {
         });
     }
 
+    public static void onOpenTransportChoice(
+            com.frostlogic.warproject.network.payload.s2c.OpenTransportChoicePayload payload,
+            IPayloadContext context) {
+        context.enqueueWork(() -> {
+            WarProject.LOGGER.debug("[WP Net] Received OpenTransportChoicePayload: faction={}, entries={}",
+                    payload.factionId(), payload.entries().size());
+            Minecraft.getInstance().setScreen(new com.frostlogic.warproject.client.screen.TransportChoiceScreen(
+                    payload.factionId(), payload.npcEntityId(), payload.entries()));
+        });
+    }
+
     public static void onOpenPassport(OpenPassportPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             WarProject.LOGGER.debug("[WP Net] Received OpenPassportPayload: success={}", payload.success());
