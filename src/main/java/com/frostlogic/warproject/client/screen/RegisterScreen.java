@@ -5,7 +5,7 @@ import com.frostlogic.warproject.client.widget.PaperEditBox;
 import com.frostlogic.warproject.client.widget.PaperUi;
 import com.frostlogic.warproject.network.payload.c2s.RegisterRequestPayload;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.Renderable;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;

@@ -4,7 +4,7 @@ import com.frostlogic.warproject.client.widget.PaperButton;
 import com.frostlogic.warproject.client.widget.PaperUi;
 import com.frostlogic.warproject.network.payload.c2s.FactionChoicePayload;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.Renderable;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
