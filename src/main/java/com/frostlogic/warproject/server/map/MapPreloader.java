@@ -1,6 +1,7 @@
 package com.frostlogic.warproject.server.map;
 
 import com.frostlogic.warproject.WarProject;
+import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +14,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -39,8 +42,48 @@ public final class MapPreloader {
     @Nullable
     private static PreloadSession activeSession = null;
 
+    /**
+     * Queue of players waiting for an auto-preload session. Only one player
+     * can be teleport-flown at a time (the routine yanks the player around the
+     * world), so additional candidates wait their turn here.
+     */
+    private static final Deque<UUID> pendingAutoQueue = new ArrayDeque<>();
+    /** Set of UUIDs already enqueued or actively running, prevents double-queue. */
+    private static final Set<UUID> enqueuedOrActive = new HashSet<>();
+
     private MapPreloader() {
     }
+
+    /**
+     * Queues an automatic preload for the given player at the given radius.
+     * <p>
+     * Unlike {@link #start(ServerPlayer, int)} this is a "silent" variant —
+     * fewer chat messages, marks {@code MAP_PRELOAD_DONE} attachment when
+     * complete so reconnects don't repeat the spiral, and queues behind any
+     * currently active session instead of refusing.
+     */
+    public static void enqueueAuto(ServerPlayer player, int radius) {
+        UUID uuid = player.getUUID();
+        if (enqueuedOrActive.contains(uuid)) {
+            return; // already in queue / running
+        }
+        if (player.getExistingData(WpAttachmentTypes.MAP_PRELOAD_DONE.get()).orElse(false)) {
+            return; // already preloaded historically
+        }
+        enqueuedOrActive.add(uuid);
+        pendingAutoQueue.add(uuid);
+        player.sendSystemMessage(Component.literal(String.format(
+                "[WP Map] Карта будет прогружена автоматически (радиус %d блоков). Не выходите из игры.",
+                radius)));
+        WarProject.LOGGER.info("[WP Map] Auto preload queued for {} (radius={}, queue size now {})",
+                player.getGameProfile().getName(), radius, pendingAutoQueue.size());
+        // Stash the requested radius on the player as a transient marker —
+        // we re-read it when the queue actually starts so it works even if
+        // config changes mid-flight.
+        pendingRadius.put(uuid, radius);
+    }
+
+    private static final java.util.Map<UUID, Integer> pendingRadius = new java.util.HashMap<>();
 
     /**
      * Starts a map preload session for the given player.
@@ -49,8 +92,14 @@ public final class MapPreloader {
      * @param radius radius in blocks from the center to preload
      */
     public static void start(ServerPlayer player, int radius) {
+        startInternal(player, radius, false);
+    }
+
+    private static void startInternal(ServerPlayer player, int radius, boolean auto) {
         if (activeSession != null) {
-            player.sendSystemMessage(Component.literal("[WP Map] Прогрузка уже запущена. Используйте /wp mapfill stop для отмены."));
+            if (!auto) {
+                player.sendSystemMessage(Component.literal("[WP Map] Прогрузка уже запущена. Используйте /wp mapfill stop для отмены."));
+            }
             return;
         }
 
@@ -62,7 +111,8 @@ public final class MapPreloader {
                 positions,
                 center,
                 player.serverLevel(),
-                0
+                0,
+                auto
         );
 
         // Make player invisible and invulnerable
@@ -74,11 +124,18 @@ public final class MapPreloader {
 
         int totalJumps = positions.size();
         int estimatedSeconds = totalJumps * TICKS_PER_JUMP / 20;
-        player.sendSystemMessage(Component.literal(
-                String.format("[WP Map] Прогрузка карты запущена. Радиус: %d блоков, ~%d точек, ~%d сек.",
-                        radius, totalJumps, estimatedSeconds)));
+        if (auto) {
+            player.sendSystemMessage(Component.literal(String.format(
+                    "[WP Map] Прогрузка карты началась. Радиус: %d блоков, ~%d сек. Не выходите.",
+                    radius, estimatedSeconds)));
+        } else {
+            player.sendSystemMessage(Component.literal(String.format(
+                    "[WP Map] Прогрузка карты запущена. Радиус: %d блоков, ~%d точек, ~%d сек.",
+                    radius, totalJumps, estimatedSeconds)));
+        }
 
-        WarProject.LOGGER.info("[WP Map] Preload started by {} — radius={}, points={}",
+        WarProject.LOGGER.info("[WP Map] Preload started{} for {} — radius={}, points={}",
+                auto ? " (auto)" : "",
                 player.getGameProfile().getName(), radius, totalJumps);
     }
 
@@ -104,6 +161,7 @@ public final class MapPreloader {
             player.sendSystemMessage(Component.literal("[WP Map] Прогрузка остановлена."));
         }
 
+        enqueuedOrActive.remove(activeSession.playerUuid);
         activeSession = null;
     }
 
@@ -116,6 +174,32 @@ public final class MapPreloader {
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
+        // ── Drain the auto-preload queue when no session is active ─────────
+        if (activeSession == null && !pendingAutoQueue.isEmpty()) {
+            UUID next = pendingAutoQueue.peek();
+            ServerPlayer nextPlayer = event.getServer().getPlayerList().getPlayer(next);
+            if (nextPlayer == null) {
+                // Player offline — drop them, retry on their next login.
+                pendingAutoQueue.poll();
+                enqueuedOrActive.remove(next);
+                pendingRadius.remove(next);
+                return;
+            }
+            // Only start auto-preload if the player has reached ACCEPTED state —
+            // teleporting someone stuck in the login or captcha screen would
+            // be jarring and pointless (their JM client may not even be ready).
+            com.frostlogic.warproject.attachment.PlayerState ps =
+                    nextPlayer.getData(WpAttachmentTypes.PLAYER_STATE.get());
+            if (ps != com.frostlogic.warproject.attachment.PlayerState.ACCEPTED) {
+                return; // try again next tick
+            }
+            pendingAutoQueue.poll();
+            int radius = pendingRadius.getOrDefault(next, 800);
+            pendingRadius.remove(next);
+            startInternal(nextPlayer, radius, true);
+            // fall through and tick the freshly-started session this same call
+        }
+
         if (activeSession == null) return;
 
         activeSession = activeSession.withTick(activeSession.tickCounter + 1);
@@ -125,7 +209,9 @@ public final class MapPreloader {
         // Find the player
         ServerPlayer player = event.getServer().getPlayerList().getPlayer(activeSession.playerUuid);
         if (player == null) {
-            // Player disconnected — cancel
+            // Player disconnected — cancel, allow retry on next login.
+            UUID gone = activeSession.playerUuid;
+            enqueuedOrActive.remove(gone);
             activeSession = null;
             return;
         }
@@ -138,8 +224,16 @@ public final class MapPreloader {
                     activeSession.center.getZ() + 0.5,
                     player.getYRot(), player.getXRot());
             restorePlayer(player);
-            player.sendSystemMessage(Component.literal("[WP Map] ✓ Прогрузка карты завершена!"));
-            WarProject.LOGGER.info("[WP Map] Preload completed for {}", player.getGameProfile().getName());
+            if (activeSession.auto) {
+                player.setData(WpAttachmentTypes.MAP_PRELOAD_DONE.get(), true);
+                player.sendSystemMessage(Component.literal("[WP Map] ✓ Карта прогружена. Приятной игры!"));
+            } else {
+                player.sendSystemMessage(Component.literal("[WP Map] ✓ Прогрузка карты завершена!"));
+            }
+            WarProject.LOGGER.info("[WP Map] Preload completed{} for {}",
+                    activeSession.auto ? " (auto)" : "",
+                    player.getGameProfile().getName());
+            enqueuedOrActive.remove(activeSession.playerUuid);
             activeSession = null;
             return;
         }
@@ -210,10 +304,11 @@ public final class MapPreloader {
             Deque<BlockPos> positions,
             BlockPos center,
             ServerLevel level,
-            int tickCounter
+            int tickCounter,
+            boolean auto
     ) {
         PreloadSession withTick(int newTick) {
-            return new PreloadSession(playerUuid, positions, center, level, newTick);
+            return new PreloadSession(playerUuid, positions, center, level, newTick, auto);
         }
     }
 }

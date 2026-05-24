@@ -95,6 +95,10 @@ public final class WpConfig {
     // --- chat ---
     public static final ModConfigSpec.IntValue CHAT_LOCAL_RADIUS;
 
+    // --- map auto-preload ---
+    public static final ModConfigSpec.BooleanValue MAP_AUTO_PRELOAD_ENABLED;
+    public static final ModConfigSpec.IntValue MAP_AUTO_PRELOAD_RADIUS;
+
     // --- transport NPCs ---
     public static final ModConfigSpec.BooleanValue TRANSPORT_ENABLED;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> TRANSPORT_VEHICLES_ZARNAVIA;
@@ -470,6 +474,25 @@ public final class WpConfig {
                 .define("skipRidingPlayers", true);
 
         builder.pop(); // wguard
+
+        // ========== map (JourneyMap auto-preload) ==========
+        builder.push("map");
+
+        MAP_AUTO_PRELOAD_ENABLED = builder
+                .comment(
+                        "When true, the first time a player reaches the ACCEPTED state",
+                        "the server teleports them in a spiral around their position",
+                        "(invisible + invulnerable + flying) so the client-side JourneyMap",
+                        "renders the surrounding chunks. The completion flag is stored on",
+                        "the player attachment, so each player goes through this once."
+                )
+                .define("autoPreloadEnabled", true);
+
+        MAP_AUTO_PRELOAD_RADIUS = builder
+                .comment("Radius in blocks for the auto preload spiral around the player's position.")
+                .defineInRange("autoPreloadRadius", 800, 64, 4096);
+
+        builder.pop(); // map
 
         // ========== transport (vehicle requisition NPCs) ==========
         builder.push("transport");
