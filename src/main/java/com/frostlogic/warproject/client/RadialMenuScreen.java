@@ -47,10 +47,24 @@ import java.util.UUID;
  */
 public class RadialMenuScreen extends Screen {
     private static final long ANIMATION_DURATION_MS = 220L;
-    private static final int INNER_RADIUS = 36;
-    private static final int OUTER_RADIUS = 96;
+    private static final int INNER_RADIUS = 42;
+    private static final int OUTER_RADIUS = 108;
     /** Number of triangle-strip steps used to approximate the arc within one sector. */
-    private static final int SEGMENTS_PER_SECTOR = 24;
+    private static final int SEGMENTS_PER_SECTOR = 28;
+    /** Sliver of empty space between adjacent sectors (radians) — crisp dividers. */
+    private static final float SECTOR_GAP_RADIANS = 0.012F;
+
+    // ─── Military palette (matches MilitaryButton rev 2) ─────────────────────
+    // ARGB packed colours; alpha is then scaled by the animation envelope.
+    private static final int COL_BODY_TOP    = 0x2E3A22; // dark olive top
+    private static final int COL_BODY_MID    = 0x3E4D2F; // mid olive
+    private static final int COL_BODY_BOT    = 0x252E1B; // darkest at bottom
+    private static final int COL_BODY_HOVER  = 0x5A7236; // brighter olive hover
+    private static final int COL_FRAME       = 0x8AA15A; // pale green outer frame
+    private static final int COL_FRAME_HOVER = 0xC7DB94; // bright lime hover frame
+    private static final int COL_DIVIDER     = 0x65784A; // sector divider tick
+    private static final int COL_CARD_FILL   = 0x161B11; // center card body
+    private static final int COL_CARD_FRAME  = 0xB7CC7E; // center card frame
 
     private final UUID targetUuid;
     /** Ordered list of sectors. EnumSet preserves natural enum order. */
@@ -105,8 +119,10 @@ public class RadialMenuScreen extends Screen {
         int cx = width / 2;
         int cy = height / 2;
 
-        // Dim background
-        gfx.fill(0, 0, width, height, (alpha / 2) << 24);
+        // Dim background — a touch darker than vanilla, with a hint of olive
+        // so the ring reads against it without overpowering the world view.
+        int bgAlpha = (int) (t * 160.0F) & 0xFF;
+        gfx.fill(0, 0, width, height, (bgAlpha << 24) | 0x0A0F06);
 
         // Hover detection in polar coordinates (only when fully open and not closing)
         hoveredItem = !closing ? hitTest(mouseX, mouseY, cx, cy, eased) : null;
@@ -177,35 +193,136 @@ public class RadialMenuScreen extends Screen {
 
         for (int i = 0; i < sectors.size(); i++) {
             boolean isHover = sectors.get(i) == hoveredItem;
-            // §9.2 colors: hovered ≈ #80C8FFFF, normal ≈ #80808080
-            int r, g, b;
-            if (isHover) {
-                r = 0xC8;
-                g = 0xE0;
-                b = 0xFF;
-            } else {
-                r = 0x80;
-                g = 0x80;
-                b = 0x80;
-            }
-            int a = Math.min(0x80, (int) ((alpha / 255.0F) * 0x80));
 
-            double sStart = startAngle + i * sweep;
-            double sEnd = sStart + sweep;
+            // Leave a sliver of empty space between sectors so each one reads
+            // as a distinct chip instead of a continuous ring. The gap is
+            // applied symmetrically; on hover we shrink the gap slightly so
+            // the hovered sector "breathes outward" a hair.
+            double gap = isHover ? SECTOR_GAP_RADIANS * 0.6F : SECTOR_GAP_RADIANS;
+            double sStart = startAngle + i * sweep + gap;
+            double sEnd = startAngle + (i + 1) * sweep - gap;
 
+            // 1) Body fill with vertical gradient (top→mid→bottom). Triangle
+            //    strip from inner edge to outer edge gives per-vertex colours,
+            //    so we lerp by the screen-space Y of each vertex relative to
+            //    the ring centre.
             BufferBuilder buf = Tesselator.getInstance()
                     .begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
             for (int s = 0; s <= SEGMENTS_PER_SECTOR; s++) {
                 double a2 = sStart + (sEnd - sStart) * s / (double) SEGMENTS_PER_SECTOR;
                 float cos = (float) Math.cos(a2);
                 float sin = (float) Math.sin(a2);
-                buf.addVertex(mat, cx + cos * innerR, cy + sin * innerR, 0.0F).setColor(r, g, b, a);
-                buf.addVertex(mat, cx + cos * outerR, cy + sin * outerR, 0.0F).setColor(r, g, b, a);
+                float ix = cos * innerR;
+                float iy = sin * innerR;
+                float ox = cos * outerR;
+                float oy = sin * outerR;
+                int innerCol = gradient(iy / outerR, isHover);
+                int outerCol = gradient(oy / outerR, isHover);
+                int innerAlpha = scaleAlpha(innerCol, alpha, 0xD0);
+                int outerAlpha = scaleAlpha(outerCol, alpha, 0xD0);
+                addVertexColor(buf, mat, cx + ix, cy + iy, innerCol, innerAlpha);
+                addVertexColor(buf, mat, cx + ox, cy + oy, outerCol, outerAlpha);
             }
             BufferUploader.drawWithShader(buf.buildOrThrow());
+
+            // 2) Outer-edge accent ring (1 px arc just outside outerR). On
+            //    hover the colour brightens to lime; idle is pale green.
+            int frameCol = isHover ? COL_FRAME_HOVER : COL_FRAME;
+            int frameAlpha = scaleAlpha(frameCol, alpha, isHover ? 0xFF : 0xC8);
+            float frameThickness = isHover ? 2.0F : 1.0F;
+            drawArc(mat, cx, cy, outerR, outerR - frameThickness, sStart, sEnd, frameCol, frameAlpha);
+
+            // 3) Inner-edge thin line (matches outer edge for a closed look).
+            drawArc(mat, cx, cy, innerR + 1.0F, innerR, sStart, sEnd, frameCol, frameAlpha);
+
+            // 4) Radial tick lines at sector borders — only on idle sectors
+            //    next to the hovered one so the dividers don't clutter when
+            //    the hover frame is already drawing a bright outline.
+            int dividerAlpha = scaleAlpha(COL_DIVIDER, alpha, 0xA0);
+            drawRadialLine(mat, cx, cy, innerR, outerR, sStart, COL_DIVIDER, dividerAlpha);
+            drawRadialLine(mat, cx, cy, innerR, outerR, sEnd, COL_DIVIDER, dividerAlpha);
         }
 
         RenderSystem.disableBlend();
+    }
+
+    /** Vertical-gradient colour at a normalised Y in [-1, 1] across the ring. */
+    private static int gradient(float yNorm, boolean hover) {
+        if (hover) {
+            // On hover the whole chip gets a single brighter olive — gradient
+            // is subtle (just a touch darker at the bottom).
+            int top = COL_BODY_HOVER;
+            int bot = darken(COL_BODY_HOVER, 0.78F);
+            return lerpRgb(top, bot, (yNorm + 1.0F) * 0.5F);
+        }
+        // Idle: 3-stop gradient (top → mid → bottom).
+        float t = (yNorm + 1.0F) * 0.5F;
+        if (t < 0.5F) {
+            return lerpRgb(COL_BODY_TOP, COL_BODY_MID, t * 2.0F);
+        }
+        return lerpRgb(COL_BODY_MID, COL_BODY_BOT, (t - 0.5F) * 2.0F);
+    }
+
+    private static int lerpRgb(int a, int b, float t) {
+        t = Math.max(0.0F, Math.min(1.0F, t));
+        int ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
+        int br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
+        int rr = (int) (ar + (br - ar) * t);
+        int rg = (int) (ag + (bg - ag) * t);
+        int rb = (int) (ab + (bb - ab) * t);
+        return (rr << 16) | (rg << 8) | rb;
+    }
+
+    private static int darken(int rgb, float f) {
+        int r = Math.max(0, (int) (((rgb >> 16) & 0xFF) * f));
+        int g = Math.max(0, (int) (((rgb >> 8) & 0xFF) * f));
+        int b = Math.max(0, (int) ((rgb & 0xFF) * f));
+        return (r << 16) | (g << 8) | b;
+    }
+
+    /** Combines the screen-fade alpha (0..255) with a per-element alpha. */
+    private static int scaleAlpha(int rgb, int screenAlpha, int maxAlpha) {
+        return (int) ((screenAlpha / 255.0F) * maxAlpha) & 0xFF;
+    }
+
+    private static void addVertexColor(BufferBuilder buf, Matrix4f mat, float x, float y, int rgb, int alpha) {
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+        buf.addVertex(mat, x, y, 0.0F).setColor(r, g, b, alpha);
+    }
+
+    /** Draws a thin arc (annular strip) between r1 and r2 across [s, e]. */
+    private static void drawArc(Matrix4f mat, int cx, int cy, float r1, float r2,
+                                 double s, double e, int rgb, int alpha) {
+        BufferBuilder buf = Tesselator.getInstance()
+                .begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        int steps = 24;
+        for (int i = 0; i <= steps; i++) {
+            double a = s + (e - s) * i / (double) steps;
+            float cos = (float) Math.cos(a);
+            float sin = (float) Math.sin(a);
+            addVertexColor(buf, mat, cx + cos * r1, cy + sin * r1, rgb, alpha);
+            addVertexColor(buf, mat, cx + cos * r2, cy + sin * r2, rgb, alpha);
+        }
+        BufferUploader.drawWithShader(buf.buildOrThrow());
+    }
+
+    /** Draws a 1px-wide radial line from inner to outer radius at angle a. */
+    private static void drawRadialLine(Matrix4f mat, int cx, int cy, float innerR, float outerR,
+                                        double angle, int rgb, int alpha) {
+        float cos = (float) Math.cos(angle);
+        float sin = (float) Math.sin(angle);
+        // Perpendicular offset (half-thickness) so we get a 1px strip rather than a hairline.
+        float px = -sin * 0.5F;
+        float py = cos * 0.5F;
+        BufferBuilder buf = Tesselator.getInstance()
+                .begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        addVertexColor(buf, mat, cx + cos * innerR - px, cy + sin * innerR - py, rgb, alpha);
+        addVertexColor(buf, mat, cx + cos * innerR + px, cy + sin * innerR + py, rgb, alpha);
+        addVertexColor(buf, mat, cx + cos * outerR - px, cy + sin * outerR - py, rgb, alpha);
+        addVertexColor(buf, mat, cx + cos * outerR + px, cy + sin * outerR + py, rgb, alpha);
+        BufferUploader.drawWithShader(buf.buildOrThrow());
     }
 
     private void renderLabels(GuiGraphics gfx, int cx, int cy, float eased, int alpha) {
@@ -217,7 +334,11 @@ public class RadialMenuScreen extends Screen {
             int lx = cx + (int) Math.round(Math.cos(midAngle) * labelR);
             int ly = cy + (int) Math.round(Math.sin(midAngle) * labelR) - 4;
             Component label = Component.translatable("wp.radial.item." + lowerName(sectors.get(i)));
-            int color = sectors.get(i) == hoveredItem ? 0xFFFFFF : 0xCCCCCC;
+            boolean hover = sectors.get(i) == hoveredItem;
+            // Cream-on-olive when hovered (matches MilitaryButton hover text),
+            // muted pale-green when idle. The drop shadow under each label is
+            // free via drawCenteredString.
+            int color = hover ? 0xF1E9CC : 0xC9D4A6;
             gfx.drawCenteredString(font, label, lx, ly, (alpha << 24) | color);
         }
     }
@@ -233,14 +354,45 @@ public class RadialMenuScreen extends Screen {
         Component statusComp = Component.translatable("wp.player_state." + status.getSerializedName())
                 .withStyle(ChatFormatting.GRAY);
 
-        gfx.drawCenteredString(font, name, cx, cy - 14, (alpha << 24) | 0xFFFFFF);
-        gfx.drawCenteredString(font, faction, cx, cy - 2, (alpha << 24) | 0xFFFFFF);
-        gfx.drawCenteredString(font, statusComp, cx, cy + 10, (alpha << 24) | 0xCCCCCC);
+        // Dark slab behind the centre text — a "passport window" framed in pale
+        // green. Sized to fit name + faction + status (and optional collab tag).
+        boolean hasCollab = targetView.collaborator();
+        int cardW = 86;
+        int cardH = hasCollab ? 56 : 44;
+        int cardX = cx - cardW / 2;
+        int cardY = cy - cardH / 2;
 
-        if (targetView.collaborator()) {
+        int cardAlphaMain = (alpha * 0xE0) / 255;
+        int cardAlphaFrame = (alpha * 0xFF) / 255;
+
+        // Body
+        gfx.fill(cardX, cardY, cardX + cardW, cardY + cardH,
+                (cardAlphaMain << 24) | COL_CARD_FILL);
+        // 1px frame
+        int frameCol = (cardAlphaFrame << 24) | COL_CARD_FRAME;
+        gfx.fill(cardX, cardY, cardX + cardW, cardY + 1, frameCol);
+        gfx.fill(cardX, cardY + cardH - 1, cardX + cardW, cardY + cardH, frameCol);
+        gfx.fill(cardX, cardY, cardX + 1, cardY + cardH, frameCol);
+        gfx.fill(cardX + cardW - 1, cardY, cardX + cardW, cardY + cardH, frameCol);
+        // Single chamfer in the top-right corner (matches MilitaryButton DNA)
+        int chamfer = 3;
+        int bgCol = (cardAlphaMain << 24) | 0x000000; // transparent-ish black
+        for (int i = 0; i < chamfer; i++) {
+            gfx.fill(cardX + cardW - chamfer + i, cardY, cardX + cardW, cardY + 1 + i, 0);
+            // Repaint that triangle with a diagonal frame stub
+            gfx.fill(cardX + cardW - chamfer + i, cardY + (chamfer - 1 - i),
+                    cardX + cardW - chamfer + i + 1, cardY + (chamfer - i), frameCol);
+        }
+
+        int textTop = cardY + 6;
+        gfx.drawCenteredString(font, name, cx, textTop, (alpha << 24) | 0xF1E9CC);
+        gfx.drawCenteredString(font, faction, cx, textTop + 12, (alpha << 24) | 0xFFFFFF);
+        gfx.drawCenteredString(font, statusComp, cx, textTop + 24, (alpha << 24) | 0xCFD7B6);
+
+        if (hasCollab) {
             gfx.drawCenteredString(font,
                     Component.translatable("wp.collab.tag").withStyle(ChatFormatting.RED),
-                    cx, cy + 22, (alpha << 24) | 0xFF5555);
+                    cx, textTop + 36, (alpha << 24) | 0xFF6E6E);
         }
     }
 

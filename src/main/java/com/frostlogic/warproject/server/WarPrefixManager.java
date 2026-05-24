@@ -1,5 +1,8 @@
 package com.frostlogic.warproject.server;
 
+import com.frostlogic.warproject.attachment.FactionId;
+import com.frostlogic.warproject.attachment.PlayerState;
+import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -7,6 +10,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
+
+import java.util.Optional;
 
 public final class WarPrefixManager {
     private static final String TEAM_PREFIX = "wp_";
@@ -77,6 +82,40 @@ public final class WarPrefixManager {
                     ChatFormatting.DARK_RED);
         }
 
+        // ─── Attachment-first path ─────────────────────────────────────────
+        // The new (DB-backed) pipeline writes faction / state / rank to
+        // attachments and does NOT touch the legacy WarPlayerProfile, so
+        // reading the profile alone would leave new-pipeline players with no
+        // prefix at all. We prefer attachments when they're populated and fall
+        // back to the legacy profile for accounts still on the old flow.
+        Optional<FactionId> attFaction = player.getData(WpAttachmentTypes.FACTION.get());
+        PlayerState attState = player.getData(WpAttachmentTypes.PLAYER_STATE.get());
+        if (attFaction.isPresent()) {
+            FactionId fid = attFaction.get();
+            // ACCEPTED + a real rank → full faction/rank tag.
+            if (attState == PlayerState.ACCEPTED) {
+                String rawRank = player.getData(WpAttachmentTypes.RANK.get());
+                Rank rank = (rawRank == null || rawRank.isBlank())
+                        ? Rank.NONE
+                        : Rank.fromInput(rawRank).orElse(Rank.NONE);
+                Faction f = mapFactionIdToFaction(fid);
+                if (rank == Rank.NONE) {
+                    // Joined a faction but no rank yet → still a civilian on paper.
+                    return civilianSpec(f);
+                }
+                String commanderMark = rank.isCommander() ? "КОМ " : "";
+                String label = "[" + f.shortName() + " | " + commanderMark + rank.shortName() + "] ";
+                String teamName = TEAM_PREFIX + f.id() + "_" + rank.id();
+                return new TeamSpec(teamName,
+                        Component.literal(label).withStyle(f.color()),
+                        f.color());
+            }
+            // CANDIDATE (chose faction, not yet accepted) → [Гражданин] tag.
+            // Same for any other non-ACCEPTED state where a faction is set.
+            return civilianSpec(mapFactionIdToFaction(fid));
+        }
+
+        // ─── Legacy fallback ───────────────────────────────────────────────
         Faction faction = profile.getFaction();
         if (faction.isPlayable()) {
             Rank rank = profile.getRank();
@@ -89,14 +128,26 @@ public final class WarPrefixManager {
         }
 
         if (profile.getCandidateFaction().isPlayable()) {
-            return new TeamSpec(TEAM_PREFIX + "candidate_" + profile.getCandidateFaction().id(),
-                    Component.literal("[Гражданин] ").withStyle(ChatFormatting.GRAY),
-                    ChatFormatting.GRAY);
+            return civilianSpec(profile.getCandidateFaction());
         }
 
         return new TeamSpec(TEAM_PREFIX + "default",
                 Component.empty(),
                 ChatFormatting.WHITE);
+    }
+
+    /** "[Гражданин]" tag painted in the faction colour so allies can spot each other. */
+    private static TeamSpec civilianSpec(Faction faction) {
+        return new TeamSpec(TEAM_PREFIX + "candidate_" + faction.id(),
+                Component.literal("[Гражданин] ").withStyle(faction.color()),
+                faction.color());
+    }
+
+    private static Faction mapFactionIdToFaction(FactionId fid) {
+        return switch (fid) {
+            case ZARNAVIA -> Faction.ZARNAVIA;
+            case CHERNOGRYAD -> Faction.CHERNOGRYAD;
+        };
     }
 
     private record TeamSpec(String name, Component prefix, ChatFormatting color) {

@@ -16,7 +16,7 @@ public final class WarKeyBindings {
     public static final KeyMapping RADIAL_MENU = new KeyMapping(
             "key.warproject.radial",
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_H,
+            GLFW.GLFW_KEY_X,
             CATEGORY
     );
 

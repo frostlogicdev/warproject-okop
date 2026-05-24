@@ -41,8 +41,13 @@ public final class FactionNpcAutoSpawner {
     private static final double CHERNOGRYAD_Y = -1942.0D;
     private static final double CHERNOGRYAD_Z = -287.5D;
 
-    /** Search radius (in blocks) for an existing tagged NPC around the target xyz. */
-    private static final double SEARCH_RADIUS = 5.0D;
+    /**
+     * Search radius (in blocks) for an existing tagged NPC around the target
+     * xyz. Was 5 but that's tight enough that any drift (admin nudged the NPC
+     * a few blocks, layout change, etc.) put the saved NPC outside the search
+     * box, so the next start spawned a fresh one alongside it.
+     */
+    private static final double SEARCH_RADIUS = 16.0D;
 
     private FactionNpcAutoSpawner() {
     }
@@ -122,8 +127,34 @@ public final class FactionNpcAutoSpawner {
         List<FactionNpcEntity> existing = level.getEntitiesOfClass(FactionNpcEntity.class, searchBox,
                 npc -> npc.getFactionId() == factionId);
         if (!existing.isEmpty()) {
-            WarProject.LOGGER.debug("[WP] Faction NPC for {} already present near {} {} {} (count={}).",
-                    factionId.getSerializedName(), x, y, z, existing.size());
+            // If multiple NPCs for the same faction exist in the search box
+            // (legacy from a prior smaller-radius spawn pass), keep the one
+            // nearest the configured coordinates and discard the rest.
+            if (existing.size() > 1) {
+                FactionNpcEntity keeper = existing.get(0);
+                double bestDistSq = Double.POSITIVE_INFINITY;
+                for (FactionNpcEntity npc : existing) {
+                    double dx = npc.getX() - x;
+                    double dy = npc.getY() - y;
+                    double dz = npc.getZ() - z;
+                    double d2 = dx * dx + dy * dy + dz * dz;
+                    if (d2 < bestDistSq) {
+                        bestDistSq = d2;
+                        keeper = npc;
+                    }
+                }
+                int removed = 0;
+                for (FactionNpcEntity npc : existing) {
+                    if (npc != keeper) {
+                        npc.discard();
+                        removed++;
+                    }
+                }
+                WarProject.LOGGER.info("[WP] Removed {} duplicate faction NPC(s) for {}.",
+                        removed, factionId.getSerializedName());
+            }
+            WarProject.LOGGER.debug("[WP] Faction NPC for {} already present near {} {} {}.",
+                    factionId.getSerializedName(), x, y, z);
             return;
         }
 

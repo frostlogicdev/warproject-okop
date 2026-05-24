@@ -7,6 +7,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
@@ -42,6 +43,24 @@ public class TransportNpcEntity extends Mob {
 
     /** Server-side counter for the active animation. -1 when IDLE. */
     private int animationTicksRemaining = -1;
+
+    /**
+     * Total duration the current animation was scheduled for. Used by the
+     * head-shake renderer to compute a clean local time {@code (total - remaining)}
+     * so the swing starts at zero amplitude, peaks in the middle and decays
+     * back to zero — instead of latching onto whatever phase the global
+     * {@code tickCount} sine happened to be at when the animation began.
+     */
+    private int animationTotalTicks = 0;
+
+    /**
+     * Client-side mirror of {@code animationTotalTicks - animationTicksRemaining}.
+     * The remaining-ticks counter is server-only; clients derive their own
+     * progress by tracking how long they have observed the synced animation
+     * state. Reset back to 0 whenever the synced state changes.
+     */
+    private int clientAnimationTicks = 0;
+    private TransportNpcAnimation clientLastAnimation = TransportNpcAnimation.IDLE;
 
     public TransportNpcEntity(EntityType<? extends TransportNpcEntity> entityType, Level level) {
         super(entityType, level);
@@ -88,6 +107,7 @@ public class TransportNpcEntity extends Mob {
     public void playAnimation(TransportNpcAnimation animation) {
         this.entityData.set(DATA_ANIMATION_ORDINAL, animation.ordinal());
         this.animationTicksRemaining = animation.durationTicks();
+        this.animationTotalTicks = animation.durationTicks();
         if (animation == TransportNpcAnimation.ARM_WAVE) {
             this.swing(InteractionHand.MAIN_HAND, true);
         }
@@ -97,24 +117,64 @@ public class TransportNpcEntity extends Mob {
     public void tick() {
         super.tick();
 
+        // ─── Head-shake animation ────────────────────────────────────────
         // Drive the head rotation every tick so the renderer's built-in
         // yHeadRotO → yHeadRot partial-tick interpolation smooths the motion.
-        // We deliberately run this on both client and server; the synced
-        // animation state stays in lockstep via SynchedEntityData.
+        // We run on both client and server; the synced animation state stays
+        // in lockstep via SynchedEntityData.
+        //
+        // The animation uses a LOCAL timer (not the global tickCount). This
+        // matters because:
+        //   • tickCount keeps advancing forever, so sin(tickCount * k) at
+        //     animation start is at a random phase — the head would snap to
+        //     a non-zero offset on the first frame.
+        //   • When the animation ends and the head returns to body yaw, the
+        //     snap-back is jarring.
+        // With a local timer we can window the amplitude with sin(π·progress)
+        // so the swing fades in at start and out at end, and use sin(N·π·progress)
+        // for the oscillation itself — clean start and end at exactly zero.
         TransportNpcAnimation current = getAnimation();
         if (current == TransportNpcAnimation.HEAD_SHAKE) {
-            // ±28° amplitude, ~1 Hz over the 30-tick window → ~3 left/right swings.
-            float offset = (float) Math.sin(this.tickCount * 0.9F) * 28.0F;
+            int total = clientLastAnimation == current
+                    ? Math.max(1, current.durationTicks())
+                    : Math.max(1, current.durationTicks());
+            // Local progress 0..1 over the animation duration. Server uses its
+            // authoritative remaining-counter; client uses its mirror counter.
+            float progress;
+            if (this.level().isClientSide) {
+                progress = Mth.clamp(clientAnimationTicks / (float) total, 0.0F, 1.0F);
+            } else {
+                int elapsed = Math.max(0, animationTotalTicks - Math.max(0, animationTicksRemaining));
+                progress = Mth.clamp(elapsed / (float) Math.max(1, animationTotalTicks), 0.0F, 1.0F);
+            }
+            // Amplitude envelope: 0 → peak → 0 across the duration (sin curve).
+            // Peak amplitude reduced from 28° to 14° — the old value was too
+            // aggressive and made the head visually clip into the shoulders.
+            float envelope = (float) Math.sin(Math.PI * progress);
+            // Oscillation: 2.5 full cycles → 5 left/right swings, smoothed by
+            // the envelope so both ends settle at zero exactly.
+            float oscillation = (float) Math.sin(progress * 2 * Math.PI * 2.5);
+            float offset = envelope * oscillation * 14.0F;
             this.setYHeadRot(this.getYRot() + offset);
         } else {
             // Pin the head to body yaw so the NPC always faces its spawn direction.
             this.setYHeadRot(this.getYRot());
         }
 
-        // Animation duration countdown is server-authoritative.
+        // ─── Client-side animation timer ─────────────────────────────────
+        // Track local animation progress so the renderer can compute the same
+        // ease curve the server uses, without an extra synced field.
         if (this.level().isClientSide) {
+            if (clientLastAnimation != current) {
+                clientLastAnimation = current;
+                clientAnimationTicks = 0;
+            } else if (current != TransportNpcAnimation.IDLE) {
+                clientAnimationTicks++;
+            }
             return;
         }
+
+        // ─── Server-side duration countdown ──────────────────────────────
         if (animationTicksRemaining > 0) {
             animationTicksRemaining--;
             if (animationTicksRemaining == 0) {

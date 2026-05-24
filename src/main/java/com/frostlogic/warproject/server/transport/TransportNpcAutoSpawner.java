@@ -35,7 +35,14 @@ public final class TransportNpcAutoSpawner {
     private static final double CHERNOGRYAD_Z = 1331.040D;
 
     /** Search radius (in blocks) for an existing transport NPC around the target xyz. */
-    private static final double SEARCH_RADIUS = 5.0D;
+    // Search radius for existing NPCs around the configured coordinates. Was
+    // 5 blocks but that's tight: any prior server run that spawned an NPC at
+    // slightly different coordinates (e.g. after the layout was edited or the
+    // chunk was force-loaded with the player drifted a few blocks) would put
+    // the saved NPC outside the box, so the next start spawned a fresh one
+    // alongside it — visible to players as "two NPCs in one spot".
+    // 16 blocks is generous without risking grabbing unrelated NPCs.
+    private static final double SEARCH_RADIUS = 16.0D;
 
     private TransportNpcAutoSpawner() {
     }
@@ -86,19 +93,54 @@ public final class TransportNpcAutoSpawner {
         // of the base in the world layout.
         float targetYaw = 180.0F;
         if (!existing.isEmpty()) {
-            for (TransportNpcEntity npc : existing) {
-                if (Math.abs(net.minecraft.util.Mth.wrapDegrees(npc.getYRot() - targetYaw)) > 1.0F) {
-                    // moveTo with the same x/y/z just re-applies yaw safely;
-                    // setYHeadRot pins the head so TransportNpcEntity.tick()
-                    // (which locks head→body when IDLE) keeps the new heading.
-                    npc.moveTo(npc.getX(), npc.getY(), npc.getZ(), targetYaw, 0.0F);
-                    npc.setYHeadRot(targetYaw);
-                    WarProject.LOGGER.info("[WP Transport] Reoriented existing NPC for {} to yaw={}",
-                            factionId.getSerializedName(), targetYaw);
+            // If multiple NPCs are present (from a prior version that used a
+            // smaller search radius), keep the one closest to the configured
+            // coordinates and discard the rest. Otherwise the player sees two
+            // overlapping NPC models at the counter.
+            TransportNpcEntity keeper = existing.get(0);
+            if (existing.size() > 1) {
+                double bestDistSq = Double.POSITIVE_INFINITY;
+                for (TransportNpcEntity npc : existing) {
+                    double dx = npc.getX() - x;
+                    double dy = npc.getY() - y;
+                    double dz = npc.getZ() - z;
+                    double d2 = dx * dx + dy * dy + dz * dz;
+                    if (d2 < bestDistSq) {
+                        bestDistSq = d2;
+                        keeper = npc;
+                    }
                 }
+                int removed = 0;
+                for (TransportNpcEntity npc : existing) {
+                    if (npc != keeper) {
+                        npc.discard();
+                        removed++;
+                    }
+                }
+                WarProject.LOGGER.info(
+                        "[WP Transport] Removed {} duplicate transport NPC(s) at {} for faction {}.",
+                        removed, factionId.getSerializedName(), factionId.getSerializedName());
             }
-            WarProject.LOGGER.debug("[WP Transport] NPC for {} already present at {} {} {} (count={}).",
-                    factionId.getSerializedName(), x, y, z, existing.size());
+            // Snap the survivor back to the configured coordinates so prior
+            // drift (e.g. an admin nudged the entity by 1 block) is corrected.
+            if (Math.abs(keeper.getX() - x) > 0.5D
+                    || Math.abs(keeper.getY() - y) > 0.5D
+                    || Math.abs(keeper.getZ() - z) > 0.5D) {
+                keeper.moveTo(x, y, z, targetYaw, 0.0F);
+                keeper.setYHeadRot(targetYaw);
+                WarProject.LOGGER.info("[WP Transport] Snapped existing NPC for {} back to {}, {}, {}.",
+                        factionId.getSerializedName(), x, y, z);
+            } else if (Math.abs(net.minecraft.util.Mth.wrapDegrees(keeper.getYRot() - targetYaw)) > 1.0F) {
+                // moveTo with the same x/y/z just re-applies yaw safely;
+                // setYHeadRot pins the head so TransportNpcEntity.tick()
+                // (which locks head→body when IDLE) keeps the new heading.
+                keeper.moveTo(keeper.getX(), keeper.getY(), keeper.getZ(), targetYaw, 0.0F);
+                keeper.setYHeadRot(targetYaw);
+                WarProject.LOGGER.info("[WP Transport] Reoriented existing NPC for {} to yaw={}",
+                        factionId.getSerializedName(), targetYaw);
+            }
+            WarProject.LOGGER.debug("[WP Transport] NPC for {} already present at {} {} {}.",
+                    factionId.getSerializedName(), x, y, z);
             return;
         }
 

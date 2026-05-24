@@ -15,7 +15,9 @@ import com.frostlogic.warproject.persistence.dao.PassportSequenceDao;
 import com.frostlogic.warproject.persistence.dao.PassportsDao;
 import com.frostlogic.warproject.persistence.dao.PlayersDao;
 import com.frostlogic.warproject.server.ServerEvents;
+import com.frostlogic.warproject.server.WarPrefixManager;
 import com.frostlogic.warproject.server.faction.npc.FactionNpcEntity;
+import net.minecraft.world.effect.MobEffects;
 import com.frostlogic.warproject.server.passport.PassportGenerator;
 import com.frostlogic.warproject.server.passport.PassportPlacement;
 import net.minecraft.network.chat.Component;
@@ -228,8 +230,17 @@ public final class FactionChoiceHandler {
             // within ~2 seconds, but doing it inline here avoids the visible
             // delay between selecting a faction and the player becoming visible
             // to teammates at the faction spawn.
+            //
+            // Belt-and-braces: also strip the vanilla INVISIBILITY potion
+            // effect (some legacy code paths gave the player a long-duration
+            // invisibility effect during the lobby; if that's present, the
+            // boolean `setInvisible(false)` alone won't make them visible —
+            // the effect tick re-applies the flag every game tick).
             if (player.isInvisible()) {
                 player.setInvisible(false);
+            }
+            if (player.hasEffect(MobEffects.INVISIBILITY)) {
+                player.removeEffect(MobEffects.INVISIBILITY);
             }
 
             // Note: the Military ID card is intentionally NOT issued here.
@@ -240,6 +251,12 @@ public final class FactionChoiceHandler {
             // Notify the player
             player.sendSystemMessage(Component.translatable("wp.faction.chosen",
                     Component.translatable(faction.displayNameKey())));
+
+            // Refresh the scoreboard team prefix so the [Гражданин] tag shows
+            // up immediately on the player above their head, in chat, and in
+            // the tab list. WarPrefixManager now reads the FACTION attachment
+            // we just set, so this picks up the new state synchronously.
+            WarPrefixManager.refresh(player);
 
             // Teleport to faction spawn
             teleportToFactionSpawn(player, faction);
