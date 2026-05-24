@@ -169,7 +169,7 @@ RCON_PASSWORD=<secret>
 | Swap | 0–2 GB |
 | Docker image | `ghcr.io/pterodactyl/yolks:java_21` |
 
-JVM-флаги в `server/user_jvm_args.txt` уже настроены под 6 GB хип (`-Xmx6G -Xms6G`) + G1 + `AlwaysPreTouch` + `G1HeapRegionSize=8M`.
+JVM-флаги в `server/user_jvm_args.txt` настроены под 4 GB хип (`-Xmx4G -Xms4G`) + G1 + `AlwaysPreTouch` + `G1HeapRegionSize=8M`. Это оставляет ≈2 GB на NeoForge native, метаspace, потоки, SQLite/JourneyMap и ОС в рамках 6 GB-лимита Pterodactyl. На хосте с ≥8 GB RAM можно поднять до `-Xmx6G -Xms6G`.
 
 ## 5. Моды
 

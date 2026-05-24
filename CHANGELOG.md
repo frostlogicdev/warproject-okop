@@ -7,7 +7,10 @@ The current release scope is **mod + server for Pterodactyl**. Launcher and site
 ## [Unreleased]
 
 ### Fixed
-- `server.properties`: `allow-flight=true` (captcha sky-cage requires flight).
+- ~87 missing translation keys added to `en_us.json` and `ru_ru.json`. Without them, players saw raw IDs like `wp.captivity.error.too_far` and `wp.auth.error.invalid_credentials` instead of localized error messages — affected captivity flow, auth/login flow, awards, diplomacy, events, passport guard and rank promote/demote.
+- `server.properties`: `max-players=30`, `view-distance=10`, `simulation-distance=8` realigned with `docs/DEPLOY.md §2.5` open-beta tuning (previously drifted to 150 / 8 / 6).
+- `server/user_jvm_args.txt`: `-Xms4G -Xmx4G` realigned with `docs/DEPLOY.md §4` (previously `-Xms3G -Xmx4G`; DEPLOY.md claimed `-Xmx6G`). Doc updated to match the safer 4 GB heap that leaves ≈2 GB for native / metaspace on a 6 GB Pterodactyl plan.
+- `allow-flight=false` is the documented anti-cheat baseline; the captcha sky-cage works through the player's `mayfly` ability (set by `CaptchaManager`), so vanilla flight does not need to be globally enabled.
 - `server.properties`: `enforce-whitelist=false` / `white-list=false` for open beta.
 - `server.properties`: `player-idle-timeout=0` (prevent idle kick during captcha).
 - `RegionGuard` now resolves faction from attachments (new DB pipeline) before falling back to legacy profile.
@@ -19,7 +22,7 @@ The current release scope is **mod + server for Pterodactyl**. Launcher and site
 - WGuard translation keys for `KILL_AURA` / `FAST_BREAK` / `NO_FALL` now match the lang files. The service previously built keys like `wp.wguard.kill_aura`, but `en_us.json` / `ru_ru.json` declare `wp.wguard.killaura` / `wp.wguard.fastbreak` / `wp.wguard.nofall`. Players flagged by those three checks would otherwise see the raw key string as the warning.
 - Server boot now logs WARN if any `factions.*Spawn` in `warproject-server.toml` is still left at the placeholder `[0, 64, 0]` (catches the most common pre-launch misconfiguration).
 - JourneyMap sample admin identities removed so a fresh deploy does not ship with unknown OP slots.
-- Flight default in `server.properties` no longer contradicts the anti-cheat baseline.
+
 - `docker/entrypoint.sh` install path now includes `netcat`, so the TCP HEALTHCHECK can actually run.
 - `.gitignore` covers dev-run artifacts (`runs/`, `.warproject-write-probe`).
 

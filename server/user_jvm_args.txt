@@ -1,8 +1,9 @@
-# WarProject — JVM flags for 6 GB Pterodactyl hosting.
-# Hosting limit: 6144 MB RAM. Keep heap below the full limit so NeoForge,
-# native memory, metaspace, thread stacks, SQLite/JourneyMap and the OS have room.
+# WarProject — JVM flags for 6 GB Pterodactyl hosting (open beta, 10–30 players).
+# Hosting limit: 6144 MB RAM. Heap is sized at 4 GB so NeoForge native memory,
+# metaspace, thread stacks, SQLite/JourneyMap and the OS still have ~2 GB of room.
+# Adjust to -Xmx6G/-Xms6G only on hosts with >= 8 GB total RAM (see docs/DEPLOY.md §4).
 
--Xms3G
+-Xms4G
 -Xmx4G
 
 -XX:+UseG1GC
