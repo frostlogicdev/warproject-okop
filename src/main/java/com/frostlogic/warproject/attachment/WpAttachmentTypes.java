@@ -99,19 +99,6 @@ public final class WpAttachmentTypes {
                     .build()
     );
 
-    /**
-     * Whether the JourneyMap auto-preload spiral has already been completed
-     * for this player. Set to {@code true} once the player has been flown
-     * around their faction base in a spiral so JourneyMap could render the
-     * surrounding chunks; subsequent logins skip the preload.
-     */
-    public static final Supplier<AttachmentType<Boolean>> MAP_PRELOAD_DONE = REG.register(
-            "map_preload_done",
-            () -> AttachmentType.builder(() -> false)
-                    .serialize(Codec.BOOL)
-                    .build()
-    );
-
     /** Whether the RP name has been locked (cannot be changed without admin override). */
     public static final Supplier<AttachmentType<Boolean>> RP_NAME_LOCKED = REG.register(
             "rp_name_locked",
