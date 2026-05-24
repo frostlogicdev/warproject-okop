@@ -6,8 +6,10 @@ import com.frostlogic.warproject.attachment.FactionId;
 import com.frostlogic.warproject.attachment.PlayerState;
 import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import com.frostlogic.warproject.server.Rank;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -115,6 +117,35 @@ public final class TransportVehicleService {
             }
         }
         return false;
+    }
+
+    /**
+     * Logs a warning for every configured vehicle entry whose item id does
+     * not resolve to a real registered item (i.e. resolves to AIR, which the
+     * runtime then displays as a BARRIER icon and would otherwise hand to
+     * the player). Called once on {@code ServerStartedEvent} so admins see
+     * stale wp-server.toml entries at startup instead of discovering them
+     * by getting a barrier in their inventory.
+     */
+    public static void auditCatalog() {
+        int bad = 0;
+        for (FactionId faction : FactionId.values()) {
+            for (TransportVehicle v : catalog(faction)) {
+                if (BuiltInRegistries.ITEM.get(v.itemId()) == Items.AIR) {
+                    WarProject.LOGGER.warn(
+                            "[WP Transport] Configured vehicle '{}' for faction {} is NOT a registered "
+                            + "item — players will see a barrier icon in the menu and the server will "
+                            + "refuse to grant the item. Edit config/wp-server.toml.",
+                            v.itemId(), faction.getSerializedName());
+                    bad++;
+                }
+            }
+        }
+        if (bad == 0) {
+            WarProject.LOGGER.info("[WP Transport] Vehicle catalog audit OK — all configured entries resolve.");
+        } else {
+            WarProject.LOGGER.warn("[WP Transport] Vehicle catalog audit found {} stale entries in wp-server.toml.", bad);
+        }
     }
 
     /** Looks up the configured entry for a given vehicle id (without rank filtering). */

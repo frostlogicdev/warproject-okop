@@ -55,6 +55,12 @@ public final class TransportNpcAutoSpawner {
 
         ensureNpc(overworld, FactionId.ZARNAVIA, ZARNAVIA_X, ZARNAVIA_Y, ZARNAVIA_Z);
         ensureNpc(overworld, FactionId.CHERNOGRYAD, CHERNOGRYAD_X, CHERNOGRYAD_Y, CHERNOGRYAD_Z);
+
+        // Validate that every configured vehicle item id is actually a
+        // registered item. This catches stale wp-server.toml entries (e.g.
+        // 'iv:tiger_2' placeholders left over from an older config) and
+        // logs them so admins notice before players try to claim.
+        TransportVehicleService.auditCatalog();
     }
 
     private static void forceLoadChunk(ServerLevel level, double x, double z) {

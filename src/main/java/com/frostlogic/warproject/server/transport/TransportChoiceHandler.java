@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -77,9 +78,15 @@ public final class TransportChoiceHandler {
         }
 
         ItemStack stack = new ItemStack(vehicle.resolveItem());
-        if (stack.isEmpty()) {
-            // resolveItem() falls back to barrier (which is not empty), so this
-            // only triggers if Items registry was somehow empty. Belt-and-braces.
+        if (stack.isEmpty() || stack.is(Items.BARRIER)) {
+            // resolveItem() falls back to barrier when the vehicle's mod isn't
+            // installed OR when the configured item id is unknown (e.g. stale
+            // placeholder ids from an older wp-server.toml). The GUI happily
+            // shows the barrier icon so admins can spot bad config, but we
+            // must NEVER actually hand a barrier item to the player.
+            WarProject.LOGGER.warn("[WP Transport] Refusing to grant '{}' to {} — item not registered "
+                    + "(barrier fallback). Update config/wp-server.toml.",
+                    itemId, player.getGameProfile().getName());
             denyWithShake(player, npc, Component.translatable("wp.transport.mod_missing"));
             return;
         }
