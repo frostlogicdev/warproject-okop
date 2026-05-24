@@ -28,7 +28,7 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class ChoiceHallVisibilityHandler {
 
     /** Cooldown (in ticks) between visibility-refresh checks per player. */
-    private static final int REFRESH_INTERVAL_TICKS = 40; // ~2 seconds
+    private static final int REFRESH_INTERVAL_TICKS = 10; // ~0.5 seconds — fast convergence after faction choice
 
     private ChoiceHallVisibilityHandler() {
         // static utility — no instantiation

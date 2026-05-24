@@ -223,6 +223,15 @@ public final class FactionChoiceHandler {
             player.setData(WpAttachmentTypes.FACTION.get(), Optional.of(faction));
             player.setData(WpAttachmentTypes.PLAYER_STATE.get(), PlayerState.CANDIDATE);
 
+            // Immediately drop the choice-hall invisibility flag. The periodic
+            // ChoiceHallVisibilityHandler tick refresh would also clear this
+            // within ~2 seconds, but doing it inline here avoids the visible
+            // delay between selecting a faction and the player becoming visible
+            // to teammates at the faction spawn.
+            if (player.isInvisible()) {
+                player.setInvisible(false);
+            }
+
             // Note: the Military ID card is intentionally NOT issued here.
             // Per Requirement 4.1, it is issued only when the player transitions
             // from CANDIDATE to ACCEPTED — i.e. inside AcceptCommandHandler. At
