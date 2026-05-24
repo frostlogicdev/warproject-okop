@@ -9,6 +9,7 @@ import com.frostlogic.warproject.attachment.PlayerState;
 import com.frostlogic.warproject.attachment.WpAttachmentTypes;
 import com.frostlogic.warproject.item.PassportData;
 import com.frostlogic.warproject.persistence.Database;
+import com.frostlogic.warproject.persistence.dao.AccountsDao;
 import com.frostlogic.warproject.persistence.dao.AuditLogDao;
 import com.frostlogic.warproject.persistence.dao.PassportSequenceDao;
 import com.frostlogic.warproject.persistence.dao.PassportsDao;
@@ -55,6 +56,7 @@ public final class FactionChoiceHandler {
     /** Maximum distance (in blocks) from the NPC for a valid faction choice. */
     private static final double MAX_NPC_DISTANCE = 5.0;
 
+    private static final AccountsDao accountsDao = new AccountsDao();
     private static final PlayersDao playersDao = new PlayersDao();
     private static final PassportsDao passportsDao = new PassportsDao();
     private static final PassportSequenceDao sequenceDao = new PassportSequenceDao();
@@ -164,6 +166,25 @@ public final class FactionChoiceHandler {
             PassportsDao.Passport[] generatedPassport = new PassportsDao.Passport[1];
 
             db.transaction(conn -> {
+                long now = System.currentTimeMillis();
+
+                // 0. Defensive: ensure the FK chain accounts → players exists
+                //    for this UUID. Normally registration creates both rows,
+                //    but OPs can reach this point without registering (see the
+                //    isOp bypass in handleChoice), and any future code path
+                //    that skips the auth pipeline would otherwise crash on the
+                //    passport FK constraint. INSERT OR IGNORE is a no-op for
+                //    properly-registered players.
+                boolean healedAccount = accountsDao.ensureExists(conn, uuid, now);
+                boolean healedPlayer  = playersDao.ensureExists(conn, uuid, now);
+                if (healedAccount || healedPlayer) {
+                    WarProject.LOGGER.warn(
+                            "[WarProject] FK self-heal for {} during faction choice "
+                                    + "(account_inserted={}, player_inserted={}). "
+                                    + "Likely an OP bypass or interrupted registration.",
+                            playerName, healedAccount, healedPlayer);
+                }
+
                 // 1. Set faction and status in DB
                 playersDao.setFactionAndStatus(conn, uuid,
                         faction.getSerializedName().toUpperCase(),

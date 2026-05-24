@@ -44,6 +44,28 @@ public final class AccountsDao {
         }
     }
 
+    /**
+     * Idempotently ensures an {@code accounts} row exists for the given UUID.
+     * Uses {@code INSERT OR IGNORE}, so an existing account is left untouched.
+     * <p>
+     * The placeholder password hash is deliberately invalid (does not match
+     * any BCrypt prefix), so it cannot accidentally authenticate. Defensive
+     * shim for paths that can reach persistence without going through the
+     * normal auth pipeline (e.g. operators bypassing registration).
+     *
+     * @return {@code true} if a new row was actually inserted, {@code false} otherwise.
+     */
+    public boolean ensureExists(Connection conn, String uuid, long now) {
+        String sql = "INSERT OR IGNORE INTO accounts (uuid, password_hash, registered_at, failed_login_cnt, cooldown_until) VALUES (?, 'OP_NO_PASSWORD', ?, 0, 0)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid);
+            ps.setLong(2, now);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("AccountsDao.ensureExists failed", e);
+        }
+    }
+
     public Optional<Account> findByUuid(Connection conn, String uuid) {
         String sql = "SELECT uuid, password_hash, registered_at, last_login_at, failed_login_cnt, cooldown_until FROM accounts WHERE uuid = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

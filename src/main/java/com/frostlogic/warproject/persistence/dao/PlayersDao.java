@@ -161,6 +161,32 @@ public final class PlayersDao {
     }
 
     /**
+     * Idempotently ensures a {@code players} row exists for the given UUID.
+     * Uses {@code INSERT OR IGNORE} so an existing row is preserved untouched.
+     * <p>
+     * Defensive shim for paths that can reach faction choice or other
+     * persistence steps without having gone through the standard auth
+     * pipeline (e.g. operators clicking a recruiter NPC without registering).
+     *
+     * @return {@code true} if a new row was actually inserted (self-heal happened),
+     *         {@code false} if the row already existed.
+     */
+    public boolean ensureExists(Connection conn, String uuid, long now) {
+        String sql = """
+                INSERT OR IGNORE INTO players (uuid, role, status, collaborator,
+                    captured, enemy_region_ticks, joined_at)
+                VALUES (?, 'CANDIDATE', 'NEW', 0, 0, 0, ?)
+                """;
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, uuid);
+            ps.setLong(2, now);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("PlayersDao.ensureExists failed", e);
+        }
+    }
+
+    /**
      * Updates only the {@code captured} column for the given player.
      *
      * @param conn     the JDBC connection (caller manages transaction)

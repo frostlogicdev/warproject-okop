@@ -25,9 +25,30 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public class FactionChoiceScreen extends Screen {
 
     private static final int CARD_W = 240;
-    private static final int CARD_H = 196;
+    // CARD_H was 196 → cramped: the irreversibility line collided with the
+    // primary button, the cancel button sat on top of the footer dashed rule,
+    // and the footer text overlapped the cancel widget. New value gives 14-16 px
+    // gaps between every label, the disc, the buttons and the footer.
+    private static final int CARD_H = 240;
     private static final int BTN_W = 200;
     private static final int BTN_H = 22;
+
+    // Vertical layout (offsets from cardY).  Kept as named constants so we can
+    // reason about gaps in one place — every value is at least 12 px below the
+    // bottom of the previous element to avoid overlap with 9-px glyphs.
+    private static final int Y_COAT        = 14;
+    private static final int Y_SUBTITLE    = 32;
+    private static final int Y_TITLE       = 48;
+    private static final int Y_RULE        = 64;
+    private static final int Y_DISC_CENTER = 96;
+    private static final int DISC_R        = 16;
+    private static final int Y_FACTION     = 126;
+    private static final int Y_QUESTION    = 142;
+    private static final int Y_WARNING     = 156;
+    private static final int Y_BTN_CONFIRM = 174;          // bottom = 196
+    private static final int Y_BTN_CANCEL  = 200;          // bottom = 218 (BTN_H-4 = 18)
+    private static final int Y_FOOT_RULE   = CARD_H - 18;  // 222
+    private static final int Y_FOOT_TEXT   = CARD_H - 12;  // 228
 
     private final String factionId;
     private final Component factionDisplayName;
@@ -51,7 +72,7 @@ public class FactionChoiceScreen extends Screen {
         // Primary CTA — irreversible, so DANGER variant (crimson body).
         this.addRenderableWidget(new PaperButton(
                 centerX - BTN_W / 2,
-                cardY + CARD_H - 56,
+                cardY + Y_BTN_CONFIRM,
                 BTN_W, BTN_H,
                 Component.translatable("wp.faction.confirm"),
                 PaperButton.Variant.DANGER,
@@ -60,7 +81,7 @@ public class FactionChoiceScreen extends Screen {
         // Secondary — quiet "cancel" line under the danger button.
         this.addRenderableWidget(new PaperButton(
                 centerX - BTN_W / 2,
-                cardY + CARD_H - 56 + BTN_H + 4,
+                cardY + Y_BTN_CANCEL,
                 BTN_W, BTN_H - 4,
                 Component.translatable("wp.faction.cancel"),
                 PaperButton.Variant.SECONDARY,
@@ -78,44 +99,48 @@ public class FactionChoiceScreen extends Screen {
         PaperUi.drawCardFrame(g, cardX, cardY, CARD_W, CARD_H);
 
         // Header
-        PaperUi.drawCoat(g, centerX, cardY + 16);
+        PaperUi.drawCoat(g, centerX, cardY + Y_COAT);
         g.drawCenteredString(this.font,
                 Component.translatable("wp.ui.oath_header"),
-                centerX, cardY + 28, PaperUi.INK_FADED);
+                centerX, cardY + Y_SUBTITLE, PaperUi.INK_FADED);
         PaperUi.drawSpacedCentered(g, this.font,
                 this.title.getString(),
-                centerX, cardY + 44, PaperUi.INK);
-        PaperUi.drawHeaderRule(g, cardX + 16, cardY + 60, CARD_W - 32);
+                centerX, cardY + Y_TITLE, PaperUi.INK);
+        PaperUi.drawHeaderRule(g, cardX + 16, cardY + Y_RULE, CARD_W - 32);
 
         // Faction emblem disc (single, large) — colored per faction.
         int discColor = factionAccent(factionId);
-        PaperUi.drawDisc(g, centerX, cardY + 90, 18, PaperUi.PAPER);
-        PaperUi.drawCircleOutline(g, centerX, cardY + 90, 18, discColor);
-        PaperUi.drawCircleOutline(g, centerX, cardY + 90, 14, discColor);
+        PaperUi.drawDisc(g, centerX, cardY + Y_DISC_CENTER, DISC_R, PaperUi.PAPER);
+        PaperUi.drawCircleOutline(g, centerX, cardY + Y_DISC_CENTER, DISC_R, discColor);
+        PaperUi.drawCircleOutline(g, centerX, cardY + Y_DISC_CENTER, DISC_R - 4, discColor);
         // First letter of the faction id.
         String initial = factionInitial(factionId);
         int iw = this.font.width(initial);
         g.drawString(this.font, initial,
-                centerX - iw / 2, cardY + 90 - this.font.lineHeight / 2 + 1, discColor, false);
+                centerX - iw / 2,
+                cardY + Y_DISC_CENTER - this.font.lineHeight / 2 + 1,
+                discColor, false);
 
         // Faction name
         PaperUi.drawSpacedCentered(g, this.font,
-                factionDisplayName.getString(), centerX, cardY + 116, PaperUi.INK);
+                factionDisplayName.getString(), centerX, cardY + Y_FACTION, PaperUi.INK);
 
         // Confirmation question
         Component question = Component.translatable("wp.faction.choice_question", factionDisplayName);
-        g.drawCenteredString(this.font, question, centerX, cardY + 130, PaperUi.INK_FADED);
+        g.drawCenteredString(this.font, question, centerX, cardY + Y_QUESTION, PaperUi.INK_FADED);
 
         // Irreversibility warning
         g.drawCenteredString(this.font,
                 Component.translatable("wp.ui.oath_irreversible"),
-                centerX, cardY + 142, PaperUi.SEAL);
+                centerX, cardY + Y_WARNING, PaperUi.SEAL);
 
         // Footer
-        PaperUi.drawDashedRule(g, cardX + 16, cardY + CARD_H - 18, CARD_W - 32, PaperUi.INK_MUTED);
-        g.drawString(this.font, "WP · т. 3.0.0", cardX + 18, cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+        PaperUi.drawDashedRule(g, cardX + 16, cardY + Y_FOOT_RULE, CARD_W - 32, PaperUi.INK_MUTED);
+        g.drawString(this.font, "WP · т. 3.0.0", cardX + 18, cardY + Y_FOOT_TEXT, PaperUi.INK_MUTED, false);
         Component foot = Component.translatable("wp.ui.signed_voluntarily");
-        g.drawString(this.font, foot, cardX + CARD_W - 16 - this.font.width(foot), cardY + CARD_H - 12, PaperUi.INK_MUTED, false);
+        g.drawString(this.font, foot,
+                cardX + CARD_W - 16 - this.font.width(foot),
+                cardY + Y_FOOT_TEXT, PaperUi.INK_MUTED, false);
 
         for (Renderable r : this.renderables) {
             r.render(g, mouseX, mouseY, partialTick);
