@@ -1,7 +1,9 @@
 package com.frostlogic.warproject.client.screen;
 
-import com.frostlogic.warproject.client.widget.EyeToggleButton;
-import com.frostlogic.warproject.client.widget.MilitaryButton;
+import com.frostlogic.warproject.client.widget.PaperButton;
+import com.frostlogic.warproject.client.widget.PaperEditBox;
+import com.frostlogic.warproject.client.widget.PaperEyeToggle;
+import com.frostlogic.warproject.client.widget.PaperUi;
 import com.frostlogic.warproject.network.SubmitPasswordPayload;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -13,44 +15,46 @@ import net.minecraft.util.FormattedCharSequence;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Full-screen login / registration overlay shown to a player on connect until
- * they authenticate. The screen:
+ * Full-screen login / registration overlay shown to a player on connect.
+ *
+ * <p>Paper-passport visual direction (selected by the project owner 2026-05-24):
+ * cream paper background, double-rule frame, crimson under-rule, rubber-stamp
+ * accent (ВХОД for login, НОВЫЙ ПРИЗЫВ for register), ink-on-paper text,
+ * underlined edit boxes (no vanilla borders), ink primary button.
+ *
+ * <p>Behavioural contract preserved from the previous implementation:
  * <ul>
  *   <li>Refuses to close on ESC ({@link #shouldCloseOnEsc()} returns false).</li>
  *   <li>Does not pause the singleplayer integrated server.</li>
  *   <li>Masks password inputs visually via an {@link EditBox} formatter.</li>
- *   <li>Uses {@link WarMenuBackground} for the same Ken-Burns background as the
- *       custom title screen for visual consistency.</li>
+ *   <li>Constructor signature {@code WarLoginScreen(boolean register)} unchanged.</li>
+ *   <li>{@link #onLoginFailure(String)} unchanged.</li>
  * </ul>
- * The actual authentication is server-side ({@code WarLoginHandler}); this
- * widget only collects input and ships it via {@link SubmitPasswordPayload}.
  */
 public class WarLoginScreen extends Screen {
-    private static final int FIELD_WIDTH  = 240;
-    private static final int FIELD_HEIGHT = 22;
-    private static final int FIELD_GAP    = 10;
-    private static final int BUTTON_W     = 240;
-    private static final int BUTTON_H     = 32;
 
-    private static final int LABEL_COLOR  = 0xFFE8E4C9;
-    private static final int ACCENT_COLOR = 0xFFCBD9A1;
-    private static final int ERROR_COLOR  = 0xFFFF6B6B;
-    private static final int SHADOW_COLOR = 0xC0000000;
-    private static final int PANEL_COLOR  = 0xB0000000;
-    private static final int PANEL_BORDER = 0xFF6F8244;
+    /* Card geometry — width is the same in both modes, height grows for register
+     * mode (two fields instead of one). */
+    private static final int CARD_W           = 284;
+    private static final int CARD_H_LOGIN     = 196;
+    private static final int CARD_H_REGISTER  = 244;
+
+    private static final int FIELD_WIDTH      = 210;
+    private static final int FIELD_HEIGHT     = 16;
+    private static final int FIELD_GAP        = 26;
+    private static final int BUTTON_W         = 232;
+    private static final int BUTTON_H         = 22;
+
+    private static final int EYE_SIZE         = 16;
+    private static final int EYE_GAP          = 6;
 
     /** Replaces every character with this glyph when rendering masked input. */
     private static final char MASK_GLYPH = '\u2022'; // bullet •
 
-    /** Gap between a password field and its eye toggle, in pixels. */
-    private static final int EYE_GAP = 4;
-    /** Eye toggle square side, mirrors {@link EyeToggleButton}. */
-    private static final int EYE_SIZE = 16;
-
     private final boolean register;
-    private EditBox passwordField;
-    private EditBox confirmField; // only when register == true
-    private MilitaryButton submitButton;
+    private PaperEditBox passwordField;
+    private PaperEditBox confirmField; // only when register == true
+    private PaperButton submitButton;
     private String errorMessage = "";
     private boolean passwordVisible = false;
     private boolean confirmVisible = false;
@@ -66,48 +70,57 @@ public class WarLoginScreen extends Screen {
 
     @Override
     protected void init() {
-        // Vertical layout, centred.
-        int fieldCount = register ? 2 : 1;
-        int totalH = fieldCount * FIELD_HEIGHT + (fieldCount - 1) * FIELD_GAP + 16 + BUTTON_H;
-        int startY = (this.height - totalH) / 2 + 24;
-        int centerX = this.width / 2;
-        int fieldX = centerX - FIELD_WIDTH / 2;
+        int cardH = register ? CARD_H_REGISTER : CARD_H_LOGIN;
+        int cardX = (this.width  - CARD_W) / 2;
+        int cardY = (this.height - cardH) / 2;
 
-        passwordField = new EditBox(this.font, fieldX, startY, FIELD_WIDTH, FIELD_HEIGHT, Component.literal("Пароль"));
+        int centerX = this.width / 2;
+        int fieldX  = centerX - FIELD_WIDTH / 2;
+        int firstFieldY = cardY + (register ? 96 : 84);
+
+        passwordField = new PaperEditBox(
+                this.font, fieldX, firstFieldY, FIELD_WIDTH, FIELD_HEIGHT,
+                Component.literal(register ? "Пароль" : "Пароль"));
         passwordField.setMaxLength(SubmitPasswordPayload.MAX_PASSWORD_LENGTH);
-        passwordField.setHint(Component.literal(register ? "Придумай пароль" : "Пароль").withStyle(style -> style.withColor(0xFF8A8A6A)));
+        passwordField.setHint(Component.literal(register ? "придумай пароль" : "введи пароль")
+                .withStyle(s -> s.withColor(PaperUi.INK_MUTED)));
         passwordField.setFormatter(this::formatPassword);
         addRenderableWidget(passwordField);
         setInitialFocus(passwordField);
 
-        int eyeY = startY + (FIELD_HEIGHT - EYE_SIZE) / 2;
-        int eyeX = fieldX + FIELD_WIDTH + EYE_GAP;
-        addRenderableWidget(new EyeToggleButton(eyeX, eyeY, passwordVisible, visible -> passwordVisible = visible));
+        int eyeY1 = firstFieldY + (FIELD_HEIGHT - EYE_SIZE) / 2 - 1;
+        int eyeX  = fieldX + FIELD_WIDTH + EYE_GAP;
+        addRenderableWidget(new PaperEyeToggle(eyeX, eyeY1, passwordVisible, v -> passwordVisible = v));
 
         int submitY;
         if (register) {
-            int confirmY = startY + FIELD_HEIGHT + FIELD_GAP;
-            confirmField = new EditBox(this.font, fieldX, confirmY, FIELD_WIDTH, FIELD_HEIGHT, Component.literal("Подтвердите пароль"));
+            int confirmY = firstFieldY + FIELD_GAP;
+            confirmField = new PaperEditBox(
+                    this.font, fieldX, confirmY, FIELD_WIDTH, FIELD_HEIGHT,
+                    Component.literal("Подтвердите пароль"));
             confirmField.setMaxLength(SubmitPasswordPayload.MAX_PASSWORD_LENGTH);
-            confirmField.setHint(Component.literal("Повтори пароль").withStyle(style -> style.withColor(0xFF8A8A6A)));
+            confirmField.setHint(Component.literal("повтори пароль")
+                    .withStyle(s -> s.withColor(PaperUi.INK_MUTED)));
             confirmField.setFormatter(this::formatConfirm);
             addRenderableWidget(confirmField);
 
-            int eye2Y = confirmY + (FIELD_HEIGHT - EYE_SIZE) / 2;
-            addRenderableWidget(new EyeToggleButton(eyeX, eye2Y, confirmVisible, visible -> confirmVisible = visible));
-            submitY = confirmY + FIELD_HEIGHT + 16;
+            int eyeY2 = confirmY + (FIELD_HEIGHT - EYE_SIZE) / 2 - 1;
+            addRenderableWidget(new PaperEyeToggle(eyeX, eyeY2, confirmVisible, v -> confirmVisible = v));
+
+            submitY = confirmY + FIELD_HEIGHT + 22;
         } else {
-            submitY = startY + FIELD_HEIGHT + 16;
+            submitY = firstFieldY + FIELD_HEIGHT + 22;
         }
 
-        Component buttonLabel = Component.literal(register ? "Зарегистрироваться" : "Войти");
-        submitButton = new MilitaryButton(centerX - BUTTON_W / 2, submitY, BUTTON_W, BUTTON_H, buttonLabel, this::onSubmit);
+        Component buttonLabel = Component.literal(register ? "Зачислить" : "Войти");
+        submitButton = new PaperButton(
+                centerX - BUTTON_W / 2, submitY, BUTTON_W, BUTTON_H,
+                buttonLabel, PaperButton.Variant.PRIMARY, this::onSubmit);
         addRenderableWidget(submitButton);
     }
 
-    /** Formatter for the main password field. Bound to instance state so the
-     *  visibility toggle just flips {@link #passwordVisible} and the next
-     *  formatter invocation reflects the new state. */
+    /* ----------------------- formatters & callbacks ----------------------- */
+
     private FormattedCharSequence formatPassword(String input, int cursorPosUnused) {
         return passwordVisible ? rawFormatter(input) : maskFormatter(input);
     }
@@ -117,9 +130,7 @@ public class WarLoginScreen extends Screen {
     }
 
     private void onSubmit() {
-        if (passwordField == null) {
-            return;
-        }
+        if (passwordField == null) return;
         String password = passwordField.getValue();
         if (password.isEmpty()) {
             errorMessage = "Введи пароль.";
@@ -145,82 +156,110 @@ public class WarLoginScreen extends Screen {
         if (passwordField != null) setInitialFocus(passwordField);
     }
 
+    /* -------------------------------- render ------------------------------ */
+
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // Custom background (no vanilla blur/dirt).
-        WarMenuBackground.render(g, this.width, this.height, mouseX, mouseY);
+        int cardH = register ? CARD_H_REGISTER : CARD_H_LOGIN;
+        int cardX = (this.width  - CARD_W) / 2;
+        int cardY = (this.height - cardH) / 2;
 
-        // Header banner.
-        String brand = "WAR PROJECT";
-        int brandScale = 2;
-        int brandTextWidth = font.width(brand) * brandScale;
-        int brandX = (this.width - brandTextWidth) / 2;
-        int brandY = this.height / 2 - 110;
-        drawScaledText(g, brand, brandX, brandY, brandScale, ACCENT_COLOR);
+        // 1) Full-window paper background.
+        PaperUi.drawPaperBackground(g, this.width, this.height);
 
-        String subtitle = register ? "// РЕГИСТРАЦИЯ" : "// АВТОРИЗАЦИЯ";
-        int subWidth = font.width(subtitle);
-        drawTextWithShadow(g, subtitle, (this.width - subWidth) / 2, brandY + 14 * brandScale + 4, LABEL_COLOR);
+        // 2) Card frame (double rule).
+        PaperUi.drawCardFrame(g, cardX, cardY, CARD_W, cardH);
 
-        // Centre panel framing the form.
-        int panelW = FIELD_WIDTH + 40;
-        int fieldCount = register ? 2 : 1;
-        int panelH = fieldCount * FIELD_HEIGHT + (fieldCount - 1) * FIELD_GAP + BUTTON_H + 56;
-        int panelX = (this.width - panelW) / 2;
-        int panelY = (this.height - panelH) / 2 + 12;
-        MilitaryButton.drawRoundedRectFilled(g, panelX, panelY, panelW, panelH, PANEL_COLOR);
-        MilitaryButton.drawRoundedRectOutline(g, panelX, panelY, panelW, panelH, PANEL_BORDER);
+        // 3) Stamp accent — top-right for login, bottom-right for register.
+        if (register) {
+            PaperUi.drawSeal(g, cardX + CARD_W - 34, cardY + cardH - 30, 22,
+                    Component.literal("НОВЫЙ"), Component.literal("ПРИЗЫВ"));
+        } else {
+            PaperUi.drawSeal(g, cardX + CARD_W - 30, cardY + 30, 20,
+                    Component.literal("ВХОД"), null);
+        }
 
-        // Field labels above the fields.
+        // 4) Brand line at top of card (small, letter-spaced, sepia).
+        PaperUi.drawSpacedCentered(g, font, "ВОЕННЫЙ КОММИССАРИАТ",
+                cardX + CARD_W / 2, cardY + 16, PaperUi.INK_MUTED);
+
+        // 5) Crimson rule under the brand line.
+        int ruleY = cardY + 30;
+        g.fill(cardX + 22, ruleY, cardX + CARD_W - 22, ruleY + 1, PaperUi.SEAL);
+
+        // 6) Mode title — large, ink, centred.
+        String title = register ? "ПРИЗЫВНОЙ ЛИСТ" : "АВТОРИЗАЦИЯ";
+        PaperUi.drawSpacedCentered(g, font, title,
+                cardX + CARD_W / 2, cardY + 40, PaperUi.INK);
+
+        // 7) Sub-line (form code).
+        String sub = register ? "форма А-1 / новобранец" : "контрольный пункт / вход";
+        int subW = font.width(sub);
+        g.drawString(font, sub, cardX + CARD_W / 2 - subW / 2, cardY + 54,
+                PaperUi.INK_FADED, false);
+
+        // 8) Dashed sepia separator above the form.
+        PaperUi.drawDashedRule(g, cardX + 22, cardY + 66, CARD_W - 44, PaperUi.INK_MUTED);
+
+        // 9) Field labels — sepia, above each field.
         if (passwordField != null) {
-            String label = register ? "Придумай пароль" : "Введи пароль";
-            drawTextWithShadow(g, label, passwordField.getX(), passwordField.getY() - 10, LABEL_COLOR);
+            String label = register ? "Пароль:" : "Введи пароль:";
+            g.drawString(font, label, passwordField.getX(), passwordField.getY() - 11,
+                    PaperUi.INK_FADED, false);
         }
         if (register && confirmField != null) {
-            drawTextWithShadow(g, "Подтверди пароль", confirmField.getX(), confirmField.getY() - 10, LABEL_COLOR);
+            g.drawString(font, "Повтори:", confirmField.getX(), confirmField.getY() - 11,
+                    PaperUi.INK_FADED, false);
         }
 
-        // Render fields & button without invoking vanilla Screen#render
-        // (which would tile menu_background dirt over our background).
+        // 10) Live match indicator (register mode).
+        if (register && passwordField != null && confirmField != null) {
+            String p = passwordField.getValue();
+            String c = confirmField.getValue();
+            if (!p.isEmpty() && !c.isEmpty()) {
+                if (p.equals(c)) {
+                    g.drawString(font, "✓ пароли совпадают",
+                            confirmField.getX(), confirmField.getY() + FIELD_HEIGHT + 2,
+                            PaperUi.APPROVED, false);
+                } else {
+                    g.drawString(font, "✗ не совпадают",
+                            confirmField.getX(), confirmField.getY() + FIELD_HEIGHT + 2,
+                            PaperUi.SEAL, false);
+                }
+            }
+        }
+
+        // 11) Render fields & button without invoking vanilla Screen#render.
         for (Renderable r : this.renderables) {
             r.render(g, mouseX, mouseY, partialTick);
         }
 
-        // Error message below the button.
+        // 12) Error message under the button (crimson).
         if (!errorMessage.isEmpty() && submitButton != null) {
-            int errY = submitButton.getY() + BUTTON_H + 8;
+            int errY = submitButton.getY() + BUTTON_H + 4;
             int errWidth = font.width(errorMessage);
-            drawTextWithShadow(g, errorMessage, (this.width - errWidth) / 2, errY, ERROR_COLOR);
+            g.drawString(font, errorMessage,
+                    cardX + CARD_W / 2 - errWidth / 2, errY, PaperUi.SEAL, false);
         }
 
-        // Hint at the bottom.
+        // 13) Footer hint at the bottom of the card.
         String hint = register
-                ? "Минимум " + com.frostlogic.warproject.server.WarLoginHandler.MIN_PASSWORD_LENGTH + " символов. Запомни пароль — без него на сервер не зайти."
+                ? "Минимум " + com.frostlogic.warproject.server.WarLoginHandler.MIN_PASSWORD_LENGTH
+                  + " символов. Запиши и не теряй."
                 : "Введи пароль, который ты задал при первом входе.";
-        int hintWidth = font.width(hint);
-        drawTextWithShadow(g, hint, (this.width - hintWidth) / 2, this.height - 24, LABEL_COLOR);
+        int hintW = font.width(hint);
+        g.drawString(font, hint, cardX + CARD_W / 2 - hintW / 2,
+                cardY + cardH - 14, PaperUi.INK_MUTED, false);
     }
 
     @Override
     public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // No-op: render() draws our own background.
+        // No-op: render() draws the paper background itself.
     }
 
-    private void drawTextWithShadow(GuiGraphics g, String text, int x, int y, int color) {
-        g.drawString(font, text, x + 1, y + 1, SHADOW_COLOR, false);
-        g.drawString(font, text, x, y, color, false);
-    }
+    /* ------------------------ password mask helpers ----------------------- */
 
-    private void drawScaledText(GuiGraphics g, String text, int x, int y, float scale, int color) {
-        g.pose().pushPose();
-        g.pose().translate(x, y, 0f);
-        g.pose().scale(scale, scale, 1f);
-        g.drawString(font, text, 1, 1, SHADOW_COLOR, false);
-        g.drawString(font, text, 0, 0, color, false);
-        g.pose().popPose();
-    }
-
-    /** Replaces text with bullet glyphs for visual masking; cursor logic stays intact. */
+    /** Replaces text with bullet glyphs for visual masking; cursor logic intact. */
     private static FormattedCharSequence maskFormatter(String input) {
         if (input == null || input.isEmpty()) {
             return FormattedCharSequence.EMPTY;
@@ -232,7 +271,7 @@ public class WarLoginScreen extends Screen {
         return FormattedCharSequence.forward(masked.toString(), Style.EMPTY);
     }
 
-    /** Pass-through formatter: renders the password in cleartext for the eye-open state. */
+    /** Pass-through formatter: renders the password in cleartext for eye-open. */
     private static FormattedCharSequence rawFormatter(String input) {
         if (input == null || input.isEmpty()) {
             return FormattedCharSequence.EMPTY;
