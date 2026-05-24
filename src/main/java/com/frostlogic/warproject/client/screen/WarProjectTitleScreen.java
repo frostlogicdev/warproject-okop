@@ -20,9 +20,11 @@ import net.minecraft.network.chat.Component;
  * the renderables (buttons) ourselves to keep full control of layer order.
  */
 public class WarProjectTitleScreen extends Screen {
-    private static final int BUTTON_WIDTH = 220;
-    private static final int BUTTON_HEIGHT = 36;
-    private static final int BUTTON_SPACING = 10;
+    // Larger panel + denser layout — the new MilitaryButton has an index
+    // column ("01 │") which needs a touch more horizontal room to breathe.
+    private static final int BUTTON_WIDTH = 248;
+    private static final int BUTTON_HEIGHT = 38;
+    private static final int BUTTON_SPACING = 12;
     private static final int LEFT_MARGIN = 48;
 
     private static final int LABEL_COLOR  = 0xFFE8E4C9;
@@ -42,22 +44,22 @@ public class WarProjectTitleScreen extends Screen {
         addRenderableWidget(new MilitaryButton(LEFT_MARGIN, startY,
                 BUTTON_WIDTH, BUTTON_HEIGHT,
                 Component.literal("Играть"),
-                () -> mc.setScreen(new SelectWorldScreen(this))));
+                () -> mc.setScreen(new SelectWorldScreen(this))).setIndex(0));
 
         addRenderableWidget(new MilitaryButton(LEFT_MARGIN, startY + (BUTTON_HEIGHT + BUTTON_SPACING),
                 BUTTON_WIDTH, BUTTON_HEIGHT,
                 Component.literal("Сервер"),
-                () -> mc.setScreen(new JoinMultiplayerScreen(this))));
+                () -> mc.setScreen(new JoinMultiplayerScreen(this))).setIndex(1));
 
         addRenderableWidget(new MilitaryButton(LEFT_MARGIN, startY + 2 * (BUTTON_HEIGHT + BUTTON_SPACING),
                 BUTTON_WIDTH, BUTTON_HEIGHT,
                 Component.literal("Настройки"),
-                () -> mc.setScreen(new OptionsScreen(this, mc.options))));
+                () -> mc.setScreen(new OptionsScreen(this, mc.options))).setIndex(2));
 
         addRenderableWidget(new MilitaryButton(LEFT_MARGIN, startY + 3 * (BUTTON_HEIGHT + BUTTON_SPACING),
                 BUTTON_WIDTH, BUTTON_HEIGHT,
                 Component.literal("О моде"),
-                () -> mc.setScreen(new AboutScreen(this))));
+                () -> mc.setScreen(new AboutScreen(this))).setIndex(3));
     }
 
     @Override
