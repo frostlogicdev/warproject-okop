@@ -4,6 +4,7 @@ import com.frostlogic.warproject.client.widget.PaperButton;
 import com.frostlogic.warproject.client.widget.PaperUi;
 import com.frostlogic.warproject.network.payload.c2s.TransportChoicePayload;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -148,7 +149,12 @@ public class TransportChoiceScreen extends Screen {
             g.drawCenteredString(this.font,
                     Component.translatable("wp.transport.empty"),
                     cardX + CARD_W / 2, rowY + 8, PaperUi.INK_MUTED);
-            super.render(g, mouseX, mouseY, partialTick);
+            // Render widgets manually — calling super.render() would re-invoke
+            // Screen#renderBackground which paints the 1.21+ world blur shader
+            // on top of our paper background.
+            for (Renderable r : this.renderables) {
+                r.render(g, mouseX, mouseY, partialTick);
+            }
             return;
         }
 
@@ -170,7 +176,21 @@ public class TransportChoiceScreen extends Screen {
             if (rowY + ROW_H > cardY + cardH - FOOTER_AREA) break;
         }
 
-        super.render(g, mouseX, mouseY, partialTick);
+        // Render widgets manually — see comment above.
+        for (Renderable r : this.renderables) {
+            r.render(g, mouseX, mouseY, partialTick);
+        }
+    }
+
+    /**
+     * Disable the 1.21+ world blur + tile dim background. Our paper card
+     * sits on top of {@link PaperUi#drawPaperBackground}, which already
+     * covers the entire screen, so the vanilla background would only add
+     * an unwanted blur over the paper texture.
+     */
+    @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        // intentionally no-op
     }
 
     @Override

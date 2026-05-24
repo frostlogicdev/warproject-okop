@@ -70,7 +70,27 @@ public final class TransportNpcAutoSpawner {
         );
         List<TransportNpcEntity> existing = level.getEntitiesOfClass(TransportNpcEntity.class, searchBox,
                 npc -> npc.getFactionId() == factionId);
+        // Both factions face south by default ("в другую сторону" request from
+        // the user: Chernogryad was flipped from 0°→180° so it now matches
+        // Zarnavia). If the constant changes again the existing NPC needs to
+        // be reoriented too, otherwise old yaw stays pinned forever because
+        // TransportNpcEntity.tick() locks head yaw to body yaw when IDLE.
+        // Zarnavia: south (180°). Chernogryad: south (180°) — was 0° before,
+        // flipped per user request because the counter is on the opposite side
+        // of the base in the world layout.
+        float targetYaw = 180.0F;
         if (!existing.isEmpty()) {
+            for (TransportNpcEntity npc : existing) {
+                if (Math.abs(net.minecraft.util.Mth.wrapDegrees(npc.getYRot() - targetYaw)) > 1.0F) {
+                    // moveTo with the same x/y/z just re-applies yaw safely;
+                    // setYHeadRot pins the head so TransportNpcEntity.tick()
+                    // (which locks head→body when IDLE) keeps the new heading.
+                    npc.moveTo(npc.getX(), npc.getY(), npc.getZ(), targetYaw, 0.0F);
+                    npc.setYHeadRot(targetYaw);
+                    WarProject.LOGGER.info("[WP Transport] Reoriented existing NPC for {} to yaw={}",
+                            factionId.getSerializedName(), targetYaw);
+                }
+            }
             WarProject.LOGGER.debug("[WP Transport] NPC for {} already present at {} {} {} (count={}).",
                     factionId.getSerializedName(), x, y, z, existing.size());
             return;
@@ -83,12 +103,12 @@ public final class TransportNpcAutoSpawner {
             return;
         }
 
-        // Face the appropriate "towards player" direction. We use 180° (south)
-        // for Zarnavia and 0° (north) for Chernogryad as defaults — admins can
-        // re-orient via /summon if the bases are laid out differently. Pinning
-        // a yaw is important because TransportNpcEntity.tick() locks the head
-        // yaw to body yaw when IDLE, so the NPC will keep facing this direction.
-        float yaw = factionId == FactionId.CHERNOGRYAD ? 0.0F : 180.0F;
+        // Per user request both bases face the same direction (south, 180°);
+        // Chernogryad was flipped from 0° because in the world layout the
+        // counter is now on the other side. Pinning a yaw is important
+        // because TransportNpcEntity.tick() locks head yaw to body yaw
+        // when IDLE.
+        float yaw = targetYaw;
         npc.moveTo(x, y, z, yaw, 0.0F);
         npc.setYHeadRot(yaw);
         npc.setFactionId(factionId);

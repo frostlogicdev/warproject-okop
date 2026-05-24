@@ -489,17 +489,19 @@ public final class WpConfig {
                         "If the mod that registers item_id is not installed, the entry shows the barrier icon."
                 )
                 .defineListAllowEmpty("vehiclesZarnavia", List.of(
-                        "private|iv:tiger_2|wp.transport.vehicle.tiger_2",
-                        "sergeant|iv:btr_80a|wp.transport.vehicle.btr_80a",
-                        "lieutenant|iv:t_72b3|wp.transport.vehicle.t_72b3"
+                        "private|mts:cmacitizenstransport.hummer_h2_gray|wp.transport.vehicle.hummer_h2",
+                        "corporal|mts:cmamilitarytransport.kamaz_63968|wp.transport.vehicle.kamaz_taifun",
+                        "sergeant|mts:cmamilitarytransport.btr80a|wp.transport.vehicle.btr_80a",
+                        "lieutenant|mts:cmamilitarytransport.pantsir|wp.transport.vehicle.pantsir_s1"
                 ), WpConfig::validateString);
 
         TRANSPORT_VEHICLES_CHERNOGRYAD = builder
                 .comment("Vehicles offered by the Chernogryad technician. Same format as vehiclesZarnavia.")
                 .defineListAllowEmpty("vehiclesChernogryad", List.of(
-                        "private|iv:tiger_2|wp.transport.vehicle.tiger_2",
-                        "sergeant|iv:btr_80a|wp.transport.vehicle.btr_80a",
-                        "lieutenant|iv:t_72b3|wp.transport.vehicle.t_72b3"
+                        "private|mts:cmacitizenstransport.hummer_h2_gray|wp.transport.vehicle.hummer_h2",
+                        "corporal|mts:cmamilitarytransport.kamaz_63968|wp.transport.vehicle.kamaz_taifun",
+                        "sergeant|mts:cmamilitarytransport.btr80a|wp.transport.vehicle.btr_80a",
+                        "lieutenant|mts:cmamilitarytransport.pantsir|wp.transport.vehicle.pantsir_s1"
                 ), WpConfig::validateString);
 
         builder.pop(); // transport

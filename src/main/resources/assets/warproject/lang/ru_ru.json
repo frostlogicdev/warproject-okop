@@ -391,5 +391,8 @@
   "wp.transport.mod_missing": "Мод транспорта не установлен на сервере.",
   "wp.transport.vehicle.tiger_2": "Tiger II",
   "wp.transport.vehicle.btr_80a": "БТР-80А",
-  "wp.transport.vehicle.t_72b3": "Т-72Б3"
+  "wp.transport.vehicle.t_72b3": "Т-72Б3",
+  "wp.transport.vehicle.hummer_h2": "Hummer H2 (серый)",
+  "wp.transport.vehicle.kamaz_taifun": "КамАЗ-63968 «Тайфун»",
+  "wp.transport.vehicle.pantsir_s1": "Панцирь-С1 (на КамАЗ Тайфун)"
 }
