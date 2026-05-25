@@ -192,10 +192,27 @@ public final class FactionChoiceHandler {
                         faction.getSerializedName().toUpperCase(),
                         PlayerState.CANDIDATE.getSerializedName());
 
-                // 2. Generate passport
+                // 2. Defensive: remove any pre-existing passport rows for this
+                //    UUID. Required because:
+                //      • OPs bypass the FACTIONLESS guard (see handleChoice
+                //        above), so an admin re-testing the choice flow can
+                //        reach this branch with an existing passport row that
+                //        would otherwise trip the UNIQUE(owner_uuid) constraint.
+                //      • Any future "switch faction" / "return from captivity
+                //        with a fresh identity" code path lands here, and the
+                //        cleanest contract is "issuing a new passport replaces
+                //        the old one".
+                int removed = passportsDao.deleteByOwnerUuid(conn, uuid);
+                if (removed > 0) {
+                    WarProject.LOGGER.info(
+                            "[WarProject] Removed {} pre-existing passport row(s) for {} before issuing a new one.",
+                            removed, playerName);
+                }
+
+                // 3. Generate passport
                 generatedPassport[0] = passportGenerator.generate(conn, uuid, faction, rpName, rpSurname);
 
-                // 3. Insert passport into DB
+                // 4. Insert passport into DB
                 passportsDao.insert(conn, generatedPassport[0]);
 
                 // 4. Create passport ItemStack and attempt placement

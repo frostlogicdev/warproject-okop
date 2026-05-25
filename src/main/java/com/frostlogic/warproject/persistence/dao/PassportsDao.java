@@ -196,6 +196,24 @@ public final class PassportsDao {
     }
 
     /**
+     * Deletes every passport row belonging to the given player UUID.
+     * <p>
+     * Returns the number of rows removed. Used by {@code FactionChoiceHandler}
+     * before issuing a new passport, so OP-driven re-tests and any future
+     * legitimate "switch faction" flow don't hit the {@code UNIQUE(owner_uuid)}
+     * constraint on {@code passports.owner_uuid}.
+     */
+    public int deleteByOwnerUuid(Connection conn, String ownerUuid) {
+        String sql = "DELETE FROM passports WHERE owner_uuid = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, ownerUuid);
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("PassportsDao.deleteByOwnerUuid failed", e);
+        }
+    }
+
+    /**
      * Returns every passport currently marked as captured (captured_by_uuid IS NOT NULL).
      * Used by CaptivityTimeoutService to iterate all live captures each tick.
      */
