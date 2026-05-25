@@ -83,6 +83,24 @@ public final class RegionService {
     }
 
     /**
+     * Returns {@code true} if at least one base region is configured for the
+     * given faction (across all dimensions). Used by candidate containment to
+     * skip the teleport-back behaviour when the admin hasn't set up bases yet,
+     * so candidates can roam freely instead of being stuck in a teleport loop.
+     */
+    public boolean hasRegionForFaction(com.frostlogic.warproject.attachment.FactionId faction) {
+        if (faction == null) {
+            return false;
+        }
+        for (BaseRegion r : allRegions) {
+            if (r.faction() == faction) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the regions grouped by dimension (unmodifiable).
      */
     public Map<ResourceKey<Level>, List<BaseRegion>> regionsByDimension() {

@@ -265,6 +265,16 @@ public final class CandidateRulesHandler {
         }
         FactionId faction = factionOpt.get();
 
+        // If no base region is configured for this faction, do NOT teleport.
+        // Otherwise candidates spawn at the faction spawn, walk one block, and
+        // get yanked back forever (regionAt() returns null when bases are
+        // empty). Until an admin configures wp-server.toml [regions.bases]
+        // for this faction the candidate is allowed to roam freely; damage
+        // and container rules still apply.
+        if (!RegionCacheHandler.regionService().hasRegionForFaction(faction)) {
+            return;
+        }
+
         @Nullable BaseRegion region = RegionCacheHandler.regionService()
                 .regionAt(player.serverLevel().dimension(), player.position());
 

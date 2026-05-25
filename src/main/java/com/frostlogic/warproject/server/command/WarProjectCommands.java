@@ -398,6 +398,12 @@ public final class WarProjectCommands {
 
         notifyOnline(source.getServer(), targetProfile, Component.literal("[WP] Ты принят в " + managingFaction.get().displayName() + ". Звание: " + rank.get().displayName()).withStyle(ChatFormatting.GREEN));
         source.sendSystemMessage(Component.literal("[WP] Игрок " + targetProfile.getLastKnownName() + " принят в " + managingFaction.get().displayName() + " как " + rank.get().displayName()).withStyle(ChatFormatting.GREEN));
+        // Push ACCEPTED to attachments + DB directly so the new-pipeline guards
+        // (CandidateRulesHandler, ChoiceHallVisibility, etc.) immediately stop
+        // treating this player as a candidate. bridgeSyncIfOnline alone is a
+        // no-op for new-pipeline players, which is why /wp invite on them
+        // previously left them teleport-locked to the faction spawn.
+        forceAcceptOnline(source.getServer(), targetProfile, managingFaction.get(), rank.get());
         refreshPrefixIfOnline(source.getServer(), targetProfile);
         bridgeSyncIfOnline(source.getServer(), targetProfile);
         issuePassportIfOnline(source.getServer(), targetProfile);
@@ -735,6 +741,87 @@ public final class WarProjectCommands {
         if (player != null) {
             LegacyAttachmentBridge.sync(player);
         }
+    }
+
+    /**
+     * After {@code /wp invite}, force-applies ACCEPTED state directly to the
+     * target player's attachments and the DB row, regardless of which onboarding
+     * pipeline owns the player.
+     * <p>
+     * The legacy {@link LegacyAttachmentBridge#sync} skips new-pipeline players
+     * (so their attachments aren't clobbered by stale legacy JSON), but that
+     * also means an admin's legacy {@code /wp invite} on a new-pipeline player
+     * never propagates to attachments — the player stays a CANDIDATE and gets
+     * teleported back by {@code CandidateRulesHandler}. This helper closes that
+     * gap by writing attachments + DB directly when the target is online.
+     */
+    private static void forceAcceptOnline(MinecraftServer server, WarPlayerProfile profile, Faction faction, Rank rank) {
+        ServerPlayer player = server.getPlayerList().getPlayer(profile.getUuid());
+        if (player == null) {
+            return;
+        }
+        com.frostlogic.warproject.attachment.FactionId fid = switch (faction) {
+            case ZARNAVIA -> com.frostlogic.warproject.attachment.FactionId.ZARNAVIA;
+            case CHERNOGRYAD -> com.frostlogic.warproject.attachment.FactionId.CHERNOGRYAD;
+            default -> null;
+        };
+        if (fid == null) {
+            return;
+        }
+
+        // Attachments — immediate, visible effect (CandidateRulesHandler.tick
+        // reads PLAYER_STATE every tick).
+        player.setData(com.frostlogic.warproject.attachment.WpAttachmentTypes.FACTION.get(), java.util.Optional.of(fid));
+        player.setData(com.frostlogic.warproject.attachment.WpAttachmentTypes.PLAYER_STATE.get(),
+                com.frostlogic.warproject.attachment.PlayerState.ACCEPTED);
+        player.setData(com.frostlogic.warproject.attachment.WpAttachmentTypes.RANK.get(),
+                rank == null ? "" : rank.id());
+
+        com.frostlogic.warproject.attachment.Role role = computeRoleFor(player, rank);
+        player.setData(com.frostlogic.warproject.attachment.WpAttachmentTypes.ROLE.get(), role);
+
+        // DB — persist so the state survives a relog. INSERT-OR-IGNORE the row
+        // first because admins can invite a player who never went through the
+        // new pipeline (no players-table row would otherwise exist).
+        com.frostlogic.warproject.persistence.Database db =
+                com.frostlogic.warproject.server.ServerEvents.getDatabase();
+        if (db != null) {
+            String uuid = player.getStringUUID();
+            long now = System.currentTimeMillis();
+            try {
+                db.transaction(conn -> {
+                    com.frostlogic.warproject.persistence.dao.PlayersDao players =
+                            new com.frostlogic.warproject.persistence.dao.PlayersDao();
+                    players.ensureExists(conn, uuid, now);
+                    players.setFactionAndStatus(conn, uuid,
+                            fid.getSerializedName().toUpperCase(java.util.Locale.ROOT),
+                            com.frostlogic.warproject.attachment.PlayerState.ACCEPTED.getSerializedName());
+                    players.setRank(conn, uuid,
+                            rank == null ? null : rank.id(),
+                            role.getSerializedName());
+                });
+            } catch (Throwable t) {
+                com.frostlogic.warproject.WarProject.LOGGER.warn(
+                        "[WP Invite] DB persist failed for {}: {}",
+                        player.getGameProfile().getName(), t.toString());
+            }
+        }
+    }
+
+    private static com.frostlogic.warproject.attachment.Role computeRoleFor(ServerPlayer player, Rank rank) {
+        if (player.hasPermissions(2)) {
+            return com.frostlogic.warproject.attachment.Role.OP;
+        }
+        if (rank == null || rank == Rank.NONE) {
+            return com.frostlogic.warproject.attachment.Role.CANDIDATE;
+        }
+        if (rank == Rank.GENERAL) {
+            return com.frostlogic.warproject.attachment.Role.GENERAL;
+        }
+        if (rank.isCommander()) {
+            return com.frostlogic.warproject.attachment.Role.COMMANDER;
+        }
+        return com.frostlogic.warproject.attachment.Role.SOLDIER;
     }
 
     private static int verifyCaptcha(CommandSourceStack source, int code) {

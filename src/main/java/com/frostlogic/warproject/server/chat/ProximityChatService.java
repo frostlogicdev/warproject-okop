@@ -3,7 +3,6 @@ package com.frostlogic.warproject.server.chat;
 import com.frostlogic.warproject.WarProject;
 import com.frostlogic.warproject.WpConfig;
 import com.frostlogic.warproject.attachment.FactionId;
-import com.frostlogic.warproject.attachment.PlayerState;
 import com.frostlogic.warproject.attachment.Role;
 import com.frostlogic.warproject.attachment.RpName;
 import com.frostlogic.warproject.attachment.WpAttachmentTypes;
@@ -68,11 +67,14 @@ public final class ProximityChatService {
     public static void onServerChat(ServerChatEvent event) {
         ServerPlayer sender = event.getPlayer();
 
-        // Only route for ACCEPTED players (others are blocked by FreezeService)
-        PlayerState state = sender.getData(WpAttachmentTypes.PLAYER_STATE.get());
-        if (state != PlayerState.ACCEPTED && !sender.hasPermissions(2)) {
-            return; // Let vanilla/FreezeService handle non-accepted players
-        }
+        // Route every message that reaches us through the formatter so the
+        // visible chat line is always "[Role] Имя Фамилия: текст" — never the
+        // vanilla "<launcherName> ..." form. Players who must not chat at all
+        // are already cancelled upstream by FreezeService / mute checks at
+        // HIGHEST / HIGH priority, so anything reaching this LOW handler is
+        // allowed to be delivered. CANDIDATEs in particular need this so they
+        // appear as "[Гражданин] Имя Фамилия: ..." instead of leaking their
+        // Mojang launcher name.
 
         // Cancel vanilla broadcast — we handle delivery ourselves
         event.setCanceled(true);
