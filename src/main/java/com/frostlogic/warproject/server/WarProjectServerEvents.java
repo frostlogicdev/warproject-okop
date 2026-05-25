@@ -45,6 +45,15 @@ public final class WarProjectServerEvents {
             return;
         }
 
+        // Single-player / integrated server: no auth pipeline at all.
+        // ServerEvents.onPlayerLoginAuthFlow (HIGH priority) already forced
+        // PLAYER_STATE=ACCEPTED in this case; mirror the early-out so the
+        // legacy WarLoginHandler.promptLogin is never invoked and the player
+        // does not get hit with the "введи пароль" screen in a SP world.
+        if (player.getServer() == null || !player.getServer().isDedicatedServer()) {
+            return;
+        }
+
         // ─── Pipeline guard ───────────────────────────────────────────────
         // If the new DB-backed auth pipeline is active for this player, skip
         // the entire legacy login flow. ServerEvents.onPlayerLoginAuthFlow

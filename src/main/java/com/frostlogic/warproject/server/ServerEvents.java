@@ -299,6 +299,19 @@ public final class ServerEvents {
             return;
         }
 
+        // Single-player / integrated server: the whole DB-backed auth pipeline
+        // (registration, captcha, login, faction choice…) makes no sense in an
+        // offline world. Skipping just the prompt is not enough — the default
+        // PLAYER_STATE attachment is NEW which keeps FreezeService and other
+        // lifecycle gates active. Force the player into ACCEPTED so every
+        // downstream state-driven handler treats them as a fully-onboarded
+        // player, then bail before any DB / network work happens.
+        if (player.getServer() == null || !player.getServer().isDedicatedServer()) {
+            player.setData(com.frostlogic.warproject.attachment.WpAttachmentTypes.PLAYER_STATE.get(),
+                    com.frostlogic.warproject.attachment.PlayerState.ACCEPTED);
+            return;
+        }
+
         if (database == null) {
             // DB not ready — fall through to legacy flow
             return;
